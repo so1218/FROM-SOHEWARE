@@ -113,6 +113,8 @@ private:
     XINPUT_STATE prevPadStates_[kMaxPadCount] = {};
     bool isPadConnected_[kMaxPadCount] = {};
     float vibrationTimers_[kMaxPadCount] = {};
+    // つながっていない番号を次に調べるまでの時間
+    float disconnectedPadPollTimers_[kMaxPadCount] = {};
 
     Device lastUsedDevice_ = Device::KeyboardMouse;
 };

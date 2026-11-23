@@ -241,7 +241,6 @@ private:
 
     // 演出
     FS::ParticleEmitter* moveFireEmitterPtr_ = nullptr;
-    FS::ParticleEmitter* moveSmokeEmitterPtr_ = nullptr;
     FS::ParticleEmitter* explosionEmitterPtr_ = nullptr;
     FS::ParticleEmitter* deathSparkEmitterPtr_ = nullptr;
     FS::ParticleEmitter* thrusterBreakEmitterPtr_ = nullptr;

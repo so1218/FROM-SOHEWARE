@@ -7,9 +7,9 @@
         "CoinModel_AlbedoMap": "white1x1",
         "CoinModel_AlphaThres": 0.009999999776482582,
         "CoinModel_Color": [
-            0.9505806565284729,
-            0.9937888383865356,
-            0.0,
+            0.959222137928009,
+            1.0,
+            0.06211179494857788,
             1.0
         ],
         "CoinModel_DiffuseRef": 4.0,
@@ -24,7 +24,7 @@
         "CoinModel_EdgeInten": 2.0,
         "CoinModel_EdgeWidth": 0.05000000074505806,
         "CoinModel_Emissive": 1.100000023841858,
-        "CoinModel_EnvMapInt": 0.17000000178813934,
+        "CoinModel_EnvMapInt": 0.27000001072883606,
         "CoinModel_EnvMapTex": "pureSky",
         "CoinModel_LightMode": 3,
         "CoinModel_Lighting": 0,
@@ -42,13 +42,13 @@
         "CoinModel_OutlineEnable": 0,
         "CoinModel_OutlineWidth": 1.0,
         "CoinModel_RimColor": [
-            0.8944099545478821,
-            0.47461941838264465,
-            0.016666080802679062
+            0.8291925191879272,
+            0.5422492623329163,
+            0.11845606565475464
         ],
-        "CoinModel_RimEnable": 1,
-        "CoinModel_RimInten": 1.0,
-        "CoinModel_RimPower": 10.399999618530273,
+        "CoinModel_RimEnable": 0,
+        "CoinModel_RimInten": 6.800000190734863,
+        "CoinModel_RimPower": 1.5,
         "CoinModel_RimUseDir": 0,
         "CoinModel_Rot": [
             0.0,
@@ -95,34 +95,23 @@
         ],
         "CoinsPerBurst": 10,
         "CollectRadius": 0.800000011920929,
-        "EjectSpeed": 30.0,
+        "EjectSpeed": 25.0,
         "Gravity": 64.5,
         "LifeTime": 30.0,
-        "LightColor": [
-            1.0,
-            0.800000011920929,
-            0.30000001192092896,
-            1.0
-        ],
-        "LightHeight": 0.5,
-        "LightIntensity": 5.0,
-        "LightRadius": 13.5,
-        "LightVolumetric": 52.25,
         "MagnetAcceleration": 70.0,
         "MagnetDelay": 0.30000001192092896,
         "MagnetMaxSpeed": 50.0,
         "MagnetRadius": 4.0,
-        "MaxLitBursts": 1,
+        "MaxSparkleBursts": 4,
         "RestSpeed": 1.5,
         "Scale": [
-            1.5,
-            0.3100000023841858,
-            1.5
+            1.2000000476837158,
+            0.25,
+            1.2000000476837158
         ],
+        "SparkleHeight": 0.10000000149011612,
         "SpawnDuration": 1.0,
-        "SpinSpeed": 0.0,
-        "SpreadSpeed": 6.0,
-        "TiltAngle": 0.3499999940395355,
+        "SpreadSpeed": 3.200000047683716,
         "ValuePerCoin": 3
     }
 }

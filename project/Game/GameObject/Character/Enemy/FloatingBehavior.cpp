@@ -57,8 +57,6 @@ void FloatingBehavior::Initialize(Enemy* owner)
     ParticleSystem* particleSystem = engine_->GetParticleSystem();
     moveFireEmitterPtr_ = particleSystem->SpawnEmitter("floatingEnemyMoveFire");
     moveFireEmitterPtr_->SetTargetToFollow(&owner->GetModel()->GetTransform());
-    moveSmokeEmitterPtr_ = particleSystem->SpawnEmitter("floatingEnemyMoveSmoke");
-    moveSmokeEmitterPtr_->SetTargetToFollow(&owner->GetModel()->GetTransform());
     explosionEmitterPtr_ = particleSystem->SpawnEmitter("floatingEnemyExplosion");
     deathSparkEmitterPtr_ = particleSystem->SpawnEmitter("enemyDeathSpark");
     thrusterBreakEmitterPtr_ = particleSystem->SpawnEmitter("floatingDamage");
@@ -873,13 +871,6 @@ void FloatingBehavior::ReleaseEffects()
         moveFireEmitterPtr_->Stop();
         moveFireEmitterPtr_->Destroy();
         moveFireEmitterPtr_ = nullptr;
-    }
-
-    if (moveSmokeEmitterPtr_)
-    {
-        moveSmokeEmitterPtr_->Stop();
-        moveSmokeEmitterPtr_->Destroy();
-        moveSmokeEmitterPtr_ = nullptr;
     }
 }
 

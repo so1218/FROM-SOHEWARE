@@ -62,7 +62,7 @@
             1.5
         ],
         "ScanTurnSpeed": 0.5,
-        "ScreamVolume": 0.5,
+        "ScreamVolume": 0.3499999940395355,
         "ShotInterval": 0.10000000149011612,
         "ShotSoundVolume": 1.0,
         "ShotSpread": 0.029999999329447746,

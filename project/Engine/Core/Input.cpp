@@ -107,10 +107,38 @@ void Input::UpdatePads()
 {
     const float deltaTime = TimeManager::GetInstance()->GetUnscaledDeltaTime();
 
+    // つながっていない番号への問い合わせは遅いので、1 秒に 1 回だけ調べる
+    constexpr float kDisconnectedPadPollInterval = 1.0f;
+
     for (int i = 0; i < kMaxPadCount; ++i)
     {
         prevPadStates_[i] = padStates_[i];
-        isPadConnected_[i] = (XInputGetState(i, &padStates_[i]) == ERROR_SUCCESS);
+
+        bool shouldPoll = isPadConnected_[i];
+        if (!shouldPoll)
+        {
+            disconnectedPadPollTimers_[i] -= deltaTime;
+            if (disconnectedPadPollTimers_[i] <= 0.0f)
+            {
+                disconnectedPadPollTimers_[i] = kDisconnectedPadPollInterval;
+                shouldPoll = true;
+            }
+        }
+
+        if (shouldPoll)
+        {
+            const bool wasConnected = isPadConnected_[i];
+            isPadConnected_[i] = (XInputGetState(i, &padStates_[i]) == ERROR_SUCCESS);
+            if (!isPadConnected_[i])
+            {
+                padStates_[i] = {};
+            }
+            else if (!wasConnected)
+            {
+                // つないだ瞬間に押していたボタンを押した瞬間と数えない
+                prevPadStates_[i] = padStates_[i];
+            }
+        }
 
         if (vibrationTimers_[i] > 0.0f)
         {

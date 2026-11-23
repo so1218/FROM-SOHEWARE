@@ -36,8 +36,6 @@ void CoinManager::Initialize()
     binder_->Bind("Gravity", &c.gravity, c.gravity, 0.5f, 0.0f, 200.0f);
     binder_->Bind("Bounce", &c.bounce, c.bounce, 0.01f, 0.0f, 1.0f);
     binder_->Bind("RestSpeed", &c.restSpeed, c.restSpeed, 0.05f, 0.0f, 20.0f);
-    binder_->Bind("SpinSpeed", &c.spinSpeed, c.spinSpeed, 0.1f, 0.0f, 50.0f);
-    binder_->Bind("TiltAngle", &c.tiltAngle, c.tiltAngle, 0.01f, -1.57f, 1.57f);
     binder_->Bind("MagnetDelay", &c.magnetDelay, c.magnetDelay, 0.01f, 0.0f, 5.0f);
     binder_->Bind("MagnetRadius", &c.magnetRadius, c.magnetRadius, 0.1f, 0.0f, 100.0f);
     binder_->Bind("MagnetAcceleration", &c.magnetAcceleration, c.magnetAcceleration, 1.0f, 0.0f, 1000.0f);
@@ -46,12 +44,11 @@ void CoinManager::Initialize()
     binder_->Bind("LifeTime", &c.lifeTime, c.lifeTime, 0.5f, 1.0f, 600.0f);
     binder_->Bind("BlinkTime", &c.blinkTime, c.blinkTime, 0.1f, 0.0f, 30.0f);
     binder_->Bind("Scale", &c.scale, c.scale, 0.005f);
-    binder_->BindColor("LightColor", &c.lightColor, c.lightColor);
-    binder_->Bind("LightIntensity", &c.lightIntensity, c.lightIntensity, 0.1f, 0.0f, 100.0f);
-    binder_->Bind("LightRadius", &c.lightRadius, c.lightRadius, 0.1f, 0.0f, 100.0f);
-    binder_->Bind("LightVolumetric", &c.lightVolumetric, c.lightVolumetric, 0.05f, 0.0f, 100.0f);
-    binder_->Bind("LightHeight", &c.lightHeight, c.lightHeight, 0.05f, 0.0f, 10.0f);
-    binder_->Bind("MaxLitBursts", &c.maxLitBursts, c.maxLitBursts, 1.0f, 0, 10);
+    binder_->Bind("MaxSparkleBursts", &c.maxSparkleBursts, c.maxSparkleBursts, 1.0f, 0, 16);
+    binder_->Bind("SparkleHeight", &c.sparkleHeight, c.sparkleHeight, 0.01f, -5.0f, 10.0f);
+
+    sparkleEmitters_.clear();
+    isSparklePlaying_.clear();
 }
 
 void CoinManager::SpawnBurst(const Vector3& position)
@@ -68,7 +65,6 @@ void CoinManager::SpawnBurst(const Vector3& position)
         coin.model->ShareMaterialsFrom(sourceModel_.get());
         coin.position = position;
         coin.spawnDelay = config_.spawnDuration * static_cast<float>(coinIndex) / static_cast<float>(config_.coinsPerBurst);
-        coin.spinAngle = std::uniform_real_distribution<float>(0.0f, Math::PI * 2.0f)(random_);
         coin.burstId = burstId;
         coins_.push_back(std::move(coin));
     }
@@ -77,6 +73,7 @@ void CoinManager::SpawnBurst(const Vector3& position)
 void CoinManager::Clear()
 {
     coins_.clear();
+    StopSparkles();
 }
 
 void CoinManager::Update()
@@ -99,7 +96,7 @@ void CoinManager::Update()
         return coin.isCollected || coin.elapsedTime >= config_.lifeTime;
     });
 
-    SubmitBurstLights(playerCenter);
+    UpdateSparkles(playerCenter);
 }
 
 void CoinManager::UpdateCoin(Coin& coin, float deltaTime, const PlayerArea& playerArea)
@@ -142,10 +139,6 @@ void CoinManager::UpdateCoin(Coin& coin, float deltaTime, const PlayerArea& play
         UpdateFlying(coin, deltaTime);
         break;
 
-    case State::Resting:
-        coin.spinAngle += config_.spinSpeed * deltaTime;
-        break;
-
     case State::Attracted:
     {
         // 横向きの勢いを残すとプレイヤーの周りを回り続けるので、まっすぐ向かわせる
@@ -160,7 +153,6 @@ void CoinManager::UpdateCoin(Coin& coin, float deltaTime, const PlayerArea& play
             return;
         }
         coin.position += toPlayer / distance * step;
-        coin.spinAngle += config_.spinSpeed * 4.0f * deltaTime;
         break;
     }
 
@@ -170,7 +162,6 @@ void CoinManager::UpdateCoin(Coin& coin, float deltaTime, const PlayerArea& play
 
     WorldTransform& transform = coin.model->GetTransform();
     transform.translation_ = coin.position;
-    transform.SetRotation(Quaternion::FromAxisAngle({ 0.0f, 1.0f, 0.0f }, coin.spinAngle) * Quaternion::FromAxisAngle({ 1.0f, 0.0f, 0.0f }, config_.tiltAngle));
     transform.scale_ = config_.scale;
 }
 
@@ -178,7 +169,6 @@ void CoinManager::UpdateFlying(Coin& coin, float deltaTime)
 {
     coin.velocity.y -= config_.gravity * deltaTime;
     coin.position += coin.velocity * deltaTime;
-    coin.spinAngle += config_.spinSpeed * 3.0f * deltaTime;
 
     float groundHeight = 0.0f;
     if (!terrain_ || !terrain_->GetHeightAt(coin.position.x, coin.position.z, groundHeight))
@@ -222,46 +212,73 @@ void CoinManager::Collect(Coin& coin)
     AudioPlayer::GetInstance().Play("coinCollect", 0.3f);
 }
 
-// 1 回分ずつ、残っている枚数の中心に点光源を置く
-void CoinManager::SubmitBurstLights(const Vector3& playerCenter)
+// 落ちているアイテムが光の粒を立ち昇らせて「拾える」と知らせる (FF7 リメイクのアイテムと同じ考え方)
+void CoinManager::UpdateSparkles(const Vector3& playerCenter)
 {
-    struct BurstLight
+    // 地面に落ちて止まっているコインだけを、散らばった 1 回分ごとにまとめる
+    struct Burst
     {
         Vector3 positionSum = { 0.0f, 0.0f, 0.0f };
         int count = 0;
     };
-    std::map<int, BurstLight> bursts;
+    std::map<int, Burst> bursts;
     for (const Coin& coin : coins_)
     {
-        if (coin.state == State::Waiting || IsHiddenByBlink(coin))
+        if (coin.state != State::Resting)
         {
             continue;
         }
-        BurstLight& burst = bursts[coin.burstId];
+        Burst& burst = bursts[coin.burstId];
         burst.positionSum += coin.position;
         ++burst.count;
     }
 
-    std::vector<std::pair<float, const BurstLight*>> sorted;
+    std::vector<std::pair<float, Vector3>> centers;
     for (const auto& [burstId, burst] : bursts)
     {
         const Vector3 center = burst.positionSum / static_cast<float>(burst.count);
-        sorted.push_back({ (center - playerCenter).LengthSq(), &burst });
+        centers.push_back({ (center - playerCenter).LengthSq(), center });
     }
-    std::sort(sorted.begin(), sorted.end(), [](const auto& a, const auto& b) { return a.first < b.first; });
+    std::sort(centers.begin(), centers.end(), [](const auto& a, const auto& b) { return a.first < b.first; });
 
-    const int litCount = std::min(static_cast<int>(sorted.size()), config_.maxLitBursts);
-    for (int lightIndex = 0; lightIndex < litCount; ++lightIndex)
+    // 足りない分だけ作り、作ったものは止めて使い回す
+    const size_t emitterCount = static_cast<size_t>(std::max(config_.maxSparkleBursts, 0));
+    while (sparkleEmitters_.size() < emitterCount)
     {
-        const BurstLight& burst = *sorted[lightIndex].second;
-        const Vector3 center = burst.positionSum / static_cast<float>(burst.count);
-        const float remainingRatio = static_cast<float>(burst.count) / static_cast<float>(config_.coinsPerBurst);
-        engine_->GetLightManager()->SubmitPointLight(
-            center + Vector3{ 0.0f, 1.0f, 0.0f } * config_.lightHeight,
-            config_.lightColor,
-            config_.lightIntensity * std::min(remainingRatio, 1.0f),
-            config_.lightRadius,
-            config_.lightVolumetric);
+        sparkleEmitters_.push_back(engine_->GetParticleSystem()->SpawnEmitter("coinSparkle"));
+        isSparklePlaying_.push_back(false);
+    }
+
+    for (size_t index = 0; index < sparkleEmitters_.size(); ++index)
+    {
+        ParticleEmitter* emitter = sparkleEmitters_[index];
+        if (!emitter)
+        {
+            continue;
+        }
+
+        const bool shouldPlay = index < emitterCount && index < centers.size();
+        if (shouldPlay)
+        {
+            emitter->SetPosition(centers[index].second + Vector3(0.0f, config_.sparkleHeight, 0.0f));
+        }
+        if (shouldPlay != isSparklePlaying_[index])
+        {
+            shouldPlay ? emitter->Play() : emitter->Stop();
+            isSparklePlaying_[index] = shouldPlay;
+        }
+    }
+}
+
+void CoinManager::StopSparkles()
+{
+    for (size_t index = 0; index < sparkleEmitters_.size(); ++index)
+    {
+        if (sparkleEmitters_[index] && isSparklePlaying_[index])
+        {
+            sparkleEmitters_[index]->Stop();
+        }
+        isSparklePlaying_[index] = false;
     }
 }
 
@@ -304,8 +321,6 @@ void CoinManager::DebugGui()
         binder_->Draw("Gravity", "重力");
         binder_->Draw("Bounce", "跳ね返り");
         binder_->Draw("RestSpeed", "止まる速さ");
-        binder_->Draw("SpinSpeed", "回る速さ");
-        binder_->Draw("TiltAngle", "回るときの傾き (ラジアン)");
         ImGui::TreePop();
     }
 
@@ -321,15 +336,11 @@ void CoinManager::DebugGui()
         ImGui::TreePop();
     }
 
-    if (ImGui::TreeNode("見た目と光"))
+    if (ImGui::TreeNode("見た目ときらめき"))
     {
         binder_->Draw("Scale", "大きさ");
-        binder_->Draw("LightColor", "光の色");
-        binder_->Draw("LightIntensity", "光の強さ");
-        binder_->Draw("LightRadius", "光の届く距離");
-        binder_->Draw("LightVolumetric", "霧に当たる強さ");
-        binder_->Draw("LightHeight", "光の高さ");
-        binder_->Draw("MaxLitBursts", "同時に照らす数");
+        binder_->Draw("MaxSparkleBursts", "きらめきを出す数 (プレイヤーに近い順)");
+        binder_->Draw("SparkleHeight", "きらめきを出す高さ");
         binder_->DrawModel("CoinModel", "マテリアル");
         ImGui::TreePop();
     }
