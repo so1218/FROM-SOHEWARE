@@ -23,10 +23,13 @@
         "HearingRange": 120.0,
         "HiddenLoseTime": 4.0,
         "HiddenSightRange": 10.0,
+        "InitialMinDistance": 80.0,
+        "IsSpawnEnabled": true,
         "KeepDistance": 25.0,
         "KeepHeight": 10.0,
         "LockOnTime": 1.0,
         "LoseRange": 150.0,
+        "MaxAliveCount": 3,
         "MaxFireDistance": 80.0,
         "MoveSpeed": 18.0,
         "MuzzleOffset": [
@@ -41,10 +44,15 @@
             1.5,
             1.5
         ],
+        "ScanTurnSpeed": 0.5,
         "ScreamVolume": 0.5,
         "ShotInterval": 0.10000000149011612,
         "ShotSpread": 0.029999999329447746,
         "SightRange": 60.0,
+        "SpawnHeight": 60.0,
+        "SpawnInterval": 40.0,
+        "SpawnMaxDistance": 160.0,
+        "SpawnMinDistance": 100.0,
         "SpotAngle": 16.530000686645508,
         "SpotColor": [
             0.9922178983688354,
@@ -78,6 +86,13 @@
         ],
         "ThrustersToCrash": 2,
         "TurnSpeed": 6.0,
+        "WanderHeight": 15.0,
+        "WanderLeashDistance": 180.0,
+        "WanderMaxStep": 80.0,
+        "WanderMinStep": 30.0,
+        "WanderPauseMaxTime": 5.0,
+        "WanderPauseMinTime": 2.0,
+        "WanderSpeed": 10.0,
         "WobbleAmount": 2.0
     }
 }

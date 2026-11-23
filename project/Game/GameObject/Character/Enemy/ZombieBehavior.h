@@ -29,7 +29,7 @@ struct ZombieConfig
     float despawnDistance = 90.0f;  
     float emergeTime = 2.5f;        
     float emergeDepth = 1.8f;       
-    float emergeBuryMargin = 0.3f;   // 頭のてっぺんより、さらに深く埋める分
+    float emergeBuryMargin = 0.3f;   
 
     // 発見
     float sightRange = 40.0f;       
@@ -48,6 +48,9 @@ struct ZombieConfig
     float attackRange = 1.6f;
     int attackDamage = 10;
     float attackHitTime = 0.45f;    
+    float attackReachMargin = 0.5f;     
+    float attackHalfAngle = 60.0f;      
+    float attackTrackEndTime = 0.3f;    
 
     // アニメーション速度
     float emergeAnimSpeed = 1.0f;
@@ -131,6 +134,8 @@ private:
     bool TryNoticePlayer(const FS::Vector3& position);
     // 地面に沿って歩き、進む向きを向く
     bool MoveToward(Enemy* owner, const FS::Vector3& target, float speed, float deltaTime);
+    // 正面から左右 attackHalfAngle の中にいるか
+    bool IsInAttackAngle(Enemy* owner, const FS::Vector3& targetPosition) const;
     void FaceDirection(Enemy* owner, const FS::Vector3& direction, float deltaTime);
     float GetGroundHeight(float x, float z) const;
     void PlayAnimation(const char* name, bool isLoop, float speed);

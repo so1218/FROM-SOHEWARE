@@ -1,18 +1,21 @@
 {
     "ZombieEnemy": {
         "AnimBlendTime": 0.25,
-        "AttackAnimSpeed": 1.0,
+        "AttackAnimSpeed": 3.0,
         "AttackDamage": 10,
+        "AttackHalfAngle": 60.0,
         "AttackHitTime": 0.44999998807907104,
-        "AttackRange": 1.600000023841858,
+        "AttackRange": 6.0,
+        "AttackReachMargin": 6.5,
+        "AttackTrackEndTime": 0.30000001192092896,
         "BurnAfterburnTime": 3.0,
-        "BurnDamagePerSecond": 20.0,
+        "BurnDamagePerSecond": 4.0,
         "BurnFireThreshold": 0.20000000298023224,
         "BurnSparkHearingDistance": 30.0,
         "BurnSparkInterval": 0.800000011920929,
         "BurnSparkVolume": 0.3499999940395355,
         "BurnTickInterval": 0.5,
-        "ChaseSpeed": 2.200000047683716,
+        "ChaseSpeed": 10.5,
         "CloseNoticeRange": 4.0,
         "ColliderOffset": [
             0.0,
@@ -45,9 +48,9 @@
             5.0
         ],
         "SearchTime": 6.0,
-        "SeparationRadius": 1.2000000476837158,
+        "SeparationRadius": 6.050000190734863,
         "SightRange": 40.0,
-        "SparkSoundVolume": 0.25999999046325684,
+        "SparkSoundVolume": 0.3499999940395355,
         "SpawnEnable": true,
         "SpawnInterval": 5.0,
         "SpawnMaxDistance": 35.0,
@@ -61,8 +64,8 @@
         "ZombieModel_Mat0_AlphaThres": 0.009999999776482582,
         "ZombieModel_Mat0_Color": [
             1.0,
-            0.9094942212104797,
-            0.1428571343421936,
+            0.0,
+            0.0,
             1.0
         ],
         "ZombieModel_Mat0_DiffuseRef": 4.0,
@@ -135,9 +138,9 @@
         "ZombieModel_Mat1_AlbedoMap": "white1x1",
         "ZombieModel_Mat1_AlphaThres": 0.009999999776482582,
         "ZombieModel_Mat1_Color": [
-            0.884996771812439,
+            0.006210803985595703,
+            0.0,
             1.0,
-            0.15838509798049927,
             1.0
         ],
         "ZombieModel_Mat1_DiffuseRef": 4.0,
@@ -210,9 +213,9 @@
         "ZombieModel_Mat2_AlbedoMap": "white1x1",
         "ZombieModel_Mat2_AlphaThres": 0.009999999776482582,
         "ZombieModel_Mat2_Color": [
-            0.9311755299568176,
             1.0,
-            0.3074533939361572,
+            0.0,
+            0.0,
             1.0
         ],
         "ZombieModel_Mat2_DiffuseRef": 4.0,
@@ -285,9 +288,9 @@
         "ZombieModel_Mat3_AlbedoMap": "white1x1",
         "ZombieModel_Mat3_AlphaThres": 0.009999999776482582,
         "ZombieModel_Mat3_Color": [
-            0.7888199090957642,
-            1.0,
+            0.006210803985595703,
             0.0,
+            1.0,
             1.0
         ],
         "ZombieModel_Mat3_DiffuseRef": 4.0,
@@ -360,9 +363,9 @@
         "ZombieModel_Mat4_AlbedoMap": "white1x1",
         "ZombieModel_Mat4_AlphaThres": 0.009999999776482582,
         "ZombieModel_Mat4_Color": [
-            0.9937888383865356,
-            1.0,
             0.0,
+            0.19875764846801758,
+            1.0,
             1.0
         ],
         "ZombieModel_Mat4_DiffuseRef": 4.0,
@@ -435,8 +438,8 @@
         "ZombieModel_Mat5_AlbedoMap": "white1x1",
         "ZombieModel_Mat5_AlphaThres": 0.009999999776482582,
         "ZombieModel_Mat5_Color": [
-            0.8447204828262329,
             1.0,
+            0.0,
             0.0,
             1.0
         ],

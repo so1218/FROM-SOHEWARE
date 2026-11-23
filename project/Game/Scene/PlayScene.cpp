@@ -67,7 +67,6 @@ PlayScene::PlayScene(Engine* engine)
     titleMenu_ = objectManager_.Create<TitleMenu>(engine_);
     objectManager_.Create<PauseMenuHint>(engine_);
     pauseMenu_ = objectManager_.Create<PauseMenu>(engine_);
-    // プレイヤーの画面の縁を上書きするので、プレイヤーより後に更新する
     gameOverScreen_ = objectManager_.Create<GameOverScreen>(engine_);
 }
 
@@ -77,7 +76,7 @@ void PlayScene::OnInitialize()
     titleCamera_->Initialize();
     EnterTitle();
 
-    // タイトルでステージを切り替えて作り直したときは、画面のフェードで十分なので、タイトルの黒い画面を省く
+    // タイトルでステージを切り替えて作り直したときは、タイトルの黒い画面を省く
     if (StageCatalog::TakeJustSwitched())
     {
         titleMenu_->SkipFadeIn();

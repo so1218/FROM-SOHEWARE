@@ -13,8 +13,10 @@
 
 using namespace FS;
 
-FloatingBehavior::FloatingBehavior(const FloatingEnemyConfig& config, const Terrain* terrain, const Model* thrusterSourceModel)
-    : config_(config), thrusterSourceModel_(thrusterSourceModel), terrain_(terrain), random_(std::random_device{}())
+FloatingBehavior::FloatingBehavior(const FloatingEnemyConfig& config, const Terrain* terrain, const Model* thrusterSourceModel,
+    const Vector3& spawnPosition, const Vector3& firstWanderTarget)
+    : config_(config), thrusterSourceModel_(thrusterSourceModel), terrain_(terrain), random_(std::random_device{}()),
+    spawnPosition_(spawnPosition), wanderTarget_(firstWanderTarget), hasWanderTarget_(true)
 {
 }
 
@@ -30,14 +32,6 @@ FloatingBehavior::~FloatingBehavior()
 void FloatingBehavior::Initialize(Enemy* owner)
 {
     engine_ = owner->GetEngine();
-    auto binder = owner->GetBinder();
-
-    binder->Bind("BasePosition", &basePosition_, basePosition_);
-    binder->Bind("Amplitude", &amplitude_, { 3.0f, 2.0f, 0.0f });
-    binder->Bind("Frequency", &frequency_, { 0.5f, 1.0f, 0.0f });
-    binder->Bind("Phase", &phase_, { 0.0f, 0.0f, 0.0f });
-    binder->Bind("PatrolSpeed", &patrolSpeed_, 30.0f, 0.5f, 0.0f, 200.0f);
-
     // スラスターは本体とは別の箱で、弾のレイで当たったかを調べる
     for (Collider*& collider : thrusterColliders_)
     {
@@ -63,11 +57,18 @@ void FloatingBehavior::Initialize(Enemy* owner)
     deathSparkEmitterPtr_ = particleSystem->SpawnEmitter("enemyDeathSpark");
     thrusterBreakEmitterPtr_ = particleSystem->SpawnEmitter("floatingDamage");
 
-    owner->GetTransform().translation_ = basePosition_;
+    // 最初の目的地の方を向いて出てくる
+    WorldTransform& transform = owner->GetTransform();
+    transform.translation_ = spawnPosition_;
+    const Vector3 toTarget = { wanderTarget_.x - spawnPosition_.x, 0.0f, wanderTarget_.z - spawnPosition_.z };
+    if (toTarget.LengthSq() > 0.0001f)
+    {
+        transform.SetRotation(Quaternion::LookRotation(-toTarget.Normalize(), { 0.0f, 1.0f, 0.0f }));
+    }
     owner->SyncTransform();
     UpdateThrusters(owner);
 
-    soundHandleID_ = AudioPlayer::GetInstance().Play3D("floatingEnemy", basePosition_, { .volume = 0.6f, .maxDistance = 100.0f, .isLoop = true });
+    soundHandleID_ = AudioPlayer::GetInstance().Play3D("floatingEnemy", spawnPosition_, { .volume = 0.6f, .maxDistance = 100.0f, .isLoop = true });
 }
 
 void FloatingBehavior::Update(Enemy* owner)
@@ -137,19 +138,109 @@ void FloatingBehavior::Update(Enemy* owner)
 
 void FloatingBehavior::UpdatePatrol(Enemy* owner, float deltaTime)
 {
-    const Vector3 waveOffset = {
-        std::sin(elapsedTime_ * frequency_.x + phase_.x * Math::PI / 180.0f) * amplitude_.x,
-        std::sin(elapsedTime_ * frequency_.y + phase_.y * Math::PI / 180.0f) * amplitude_.y,
-        std::sin(elapsedTime_ * frequency_.z + phase_.z * Math::PI / 180.0f) * amplitude_.z
-    };
+    // 目的地に着いたとみなす水平距離
+    constexpr float kArriveDistance = 4.0f;
 
-    MoveToward(owner, basePosition_ + waveOffset, patrolSpeed_, deltaTime);
-    FaceDirection(owner, velocity_, deltaTime);
+    const Vector3& position = owner->GetTransform().translation_;
+    if (!hasWanderTarget_)
+    {
+        ChooseWanderTarget(position);
+    }
 
-    if (CanDetectPlayer(owner->GetTransform().translation_))
+    // 地形の起伏に沿って、今いる所の地面から一定の高さを飛ぶ。上空から入ってきたときは、ここへ降りてくる
+    const float cruiseHeight = GetGroundHeight(position.x, position.z) + config_.wanderHeight;
+
+    if (wanderPauseTimer_ > 0.0f)
+    {
+        // 止まって、ライトで周りを照らしながらゆっくり見回す
+        MoveToward(owner, { position.x, cruiseHeight, position.z }, config_.wanderSpeed, deltaTime);
+        scanAngle_ += scanDirection_ * config_.scanTurnSpeed * deltaTime;
+        FaceDirection(owner, { std::sin(scanAngle_), 0.0f, std::cos(scanAngle_) }, deltaTime);
+
+        wanderPauseTimer_ -= deltaTime;
+        if (wanderPauseTimer_ <= 0.0f)
+        {
+            ChooseWanderTarget(position);
+        }
+    }
+    else
+    {
+        MoveToward(owner, { wanderTarget_.x, cruiseHeight, wanderTarget_.z }, config_.wanderSpeed, deltaTime);
+        FaceDirection(owner, { velocity_.x, 0.0f, velocity_.z }, deltaTime);
+
+        const float offsetX = wanderTarget_.x - position.x;
+        const float offsetZ = wanderTarget_.z - position.z;
+        if (offsetX * offsetX + offsetZ * offsetZ < kArriveDistance * kArriveDistance)
+        {
+            wanderPauseTimer_ = RandomRange(config_.wanderPauseMinTime, std::max(config_.wanderPauseMinTime, config_.wanderPauseMaxTime));
+            const Vector3 forward = owner->GetTransform().rotation_.RotateVector({ 0.0f, 0.0f, -1.0f });
+            scanAngle_ = std::atan2(forward.x, forward.z);
+            scanDirection_ = RandomRange(0.0f, 1.0f) < 0.5f ? -1.0f : 1.0f;
+        }
+    }
+
+    if (CanDetectPlayer(position))
     {
         StartChase(owner);
     }
+}
+
+void FloatingBehavior::ChooseWanderTarget(const Vector3& position)
+{
+    // フィールドの端からこれより内側を選ぶ
+    constexpr float kFieldEdgeMargin = 30.0f;
+    constexpr int kAttemptCount = 8;
+
+    hasWanderTarget_ = true;
+    wanderPauseTimer_ = 0.0f;
+
+    // プレイヤーから離れすぎたら、プレイヤーのいる辺りを回るように戻す
+    Vector3 origin = position;
+    if (player_)
+    {
+        const Vector3& playerPosition = player_->GetTransform().translation_;
+        const float offsetX = playerPosition.x - position.x;
+        const float offsetZ = playerPosition.z - position.z;
+        if (offsetX * offsetX + offsetZ * offsetZ > config_.wanderLeashDistance * config_.wanderLeashDistance)
+        {
+            origin = playerPosition;
+        }
+    }
+
+    if (!terrain_)
+    {
+        wanderTarget_ = origin;
+        return;
+    }
+
+    const Vector2 center = terrain_->GetCenterXZ();
+    const Vector2 halfSize = terrain_->GetSizeXZ() * 0.5f - Vector2(kFieldEdgeMargin, kFieldEdgeMargin);
+    const float minStep = std::min(config_.wanderMinStep, config_.wanderMaxStep);
+    const float maxStep = std::max(config_.wanderMinStep, config_.wanderMaxStep);
+    for (int attempt = 0; attempt < kAttemptCount; ++attempt)
+    {
+        const float angle = RandomRange(0.0f, Math::PI * 2.0f);
+        const float step = RandomRange(minStep, maxStep);
+        const Vector3 candidate = { origin.x + std::cos(angle) * step, 0.0f, origin.z + std::sin(angle) * step };
+        if (std::abs(candidate.x - center.x) <= halfSize.x && std::abs(candidate.z - center.y) <= halfSize.y)
+        {
+            wanderTarget_ = candidate;
+            return;
+        }
+    }
+
+    // 端に追い詰められて見つからなければ、フィールドの中央へ向かう
+    wanderTarget_ = { center.x, 0.0f, center.y };
+}
+
+float FloatingBehavior::GetGroundHeight(float x, float z) const
+{
+    float groundHeight = 0.0f;
+    if (terrain_ && terrain_->GetHeightAt(x, z, groundHeight))
+    {
+        return groundHeight;
+    }
+    return 0.0f;
 }
 
 void FloatingBehavior::UpdateChase(Enemy* owner, float deltaTime)
@@ -264,6 +355,13 @@ void FloatingBehavior::ChangeState(State state)
     state_ = state;
     stateTimer_ = 0.0f;
     shotsFired_ = 0;
+
+    // 見失ったら、その場所から徘徊し直す
+    if (state == State::Patrol)
+    {
+        hasWanderTarget_ = false;
+        wanderPauseTimer_ = 0.0f;
+    }
 }
 
 void FloatingBehavior::StartChase(Enemy* owner)
@@ -597,8 +695,6 @@ void FloatingBehavior::RepairThrusters()
 
 void FloatingBehavior::DebugGui(Enemy* owner)
 {
-    auto binder = owner->GetBinder();
-
     constexpr const char* kStateNames[] = { "巡回", "追跡", "ロックオン", "射撃", "墜落" };
     ImGui::Text("状態: %s", kStateNames[static_cast<int>(state_)]);
     ImGui::Text("スラスター HP: %d / %d / %d / %d", thrusterHP_[0], thrusterHP_[1], thrusterHP_[2], thrusterHP_[3]);
@@ -608,12 +704,7 @@ void FloatingBehavior::DebugGui(Enemy* owner)
         RepairThrusters();
     }
 
-    ImGui::Text("巡回");
-    binder->Draw("BasePosition", "基準座標 (中心)");
-    binder->Draw("Amplitude", "移動幅");
-    binder->Draw("Frequency", "移動スピード");
-    binder->Draw("Phase", "波のズレ");
-    binder->Draw("PatrolSpeed", "巡回の最高速度");
+    ImGui::Text("目的地: (%.0f, %.0f)%s", wanderTarget_.x, wanderTarget_.z, wanderPauseTimer_ > 0.0f ? " で見回し中" : "");
 }
 
 void FloatingEnemyConfig::Bind(PropertyBinder& binder)
@@ -623,6 +714,23 @@ void FloatingEnemyConfig::Bind(PropertyBinder& binder)
     binder.Bind("ColliderSize", &body.colliderSize, { 6.5f, 6.5f, 6.5f });
     binder.Bind("ColliderOffset", &body.colliderOffset, { 0.0f, 2.0f, 0.0f });
     binder.Bind("TurnSpeed", &turnSpeed, 6.0f, 0.1f, 0.0f, 50.0f);
+
+    binder.Bind("IsSpawnEnabled", &isSpawnEnabled, true);
+    binder.Bind("MaxAliveCount", &maxAliveCount, 3, 1.0f, 0, 10);
+    binder.Bind("SpawnInterval", &spawnInterval, 40.0f, 0.5f, 0.0f, 600.0f);
+    binder.Bind("SpawnMinDistance", &spawnMinDistance, 100.0f, 1.0f, 0.0f, 1000.0f);
+    binder.Bind("SpawnMaxDistance", &spawnMaxDistance, 160.0f, 1.0f, 0.0f, 1000.0f);
+    binder.Bind("SpawnHeight", &spawnHeight, 60.0f, 1.0f, 0.0f, 500.0f);
+    binder.Bind("InitialMinDistance", &initialMinDistance, 80.0f, 1.0f, 0.0f, 1000.0f);
+
+    binder.Bind("WanderSpeed", &wanderSpeed, 10.0f, 0.1f, 0.0f, 200.0f);
+    binder.Bind("WanderHeight", &wanderHeight, 15.0f, 0.5f, 0.0f, 200.0f);
+    binder.Bind("WanderMinStep", &wanderMinStep, 30.0f, 1.0f, 1.0f, 1000.0f);
+    binder.Bind("WanderMaxStep", &wanderMaxStep, 80.0f, 1.0f, 1.0f, 1000.0f);
+    binder.Bind("WanderLeashDistance", &wanderLeashDistance, 180.0f, 1.0f, 10.0f, 2000.0f);
+    binder.Bind("WanderPauseMinTime", &wanderPauseMinTime, 2.0f, 0.1f, 0.0f, 60.0f);
+    binder.Bind("WanderPauseMaxTime", &wanderPauseMaxTime, 5.0f, 0.1f, 0.0f, 60.0f);
+    binder.Bind("ScanTurnSpeed", &scanTurnSpeed, 0.5f, 0.01f, 0.0f, 10.0f);
 
     binder.Bind("SightRange", &sightRange, 60.0f, 1.0f, 0.0f, 500.0f);
     binder.Bind("HearingRange", &hearingRange, 120.0f, 1.0f, 0.0f, 500.0f);
@@ -677,6 +785,31 @@ void FloatingEnemyConfig::Draw(PropertyBinder& binder)
         binder.Draw("ColliderSize", "当たり判定の大きさ");
         binder.Draw("ColliderOffset", "当たり判定の位置");
         binder.Draw("TurnSpeed", "向きを変える速さ");
+        ImGui::TreePop();
+    }
+
+    if (ImGui::TreeNode("出現"))
+    {
+        binder.Draw("IsSpawnEnabled", "出す");
+        binder.Draw("MaxAliveCount", "フィールドにいる上限");
+        binder.Draw("SpawnInterval", "減ってから次が飛んでくるまで (秒)");
+        binder.Draw("SpawnMinDistance", "出す距離 (プレイヤーから、最小)");
+        binder.Draw("SpawnMaxDistance", "出す距離 (プレイヤーから、最大)");
+        binder.Draw("SpawnHeight", "出す高さ (地面から)");
+        binder.Draw("InitialMinDistance", "遊び始めにいる機体をプレイヤーから離す距離");
+        ImGui::TreePop();
+    }
+
+    if (ImGui::TreeNode("徘徊"))
+    {
+        binder.Draw("WanderSpeed", "速さ");
+        binder.Draw("WanderHeight", "飛ぶ高さ (地面から)");
+        binder.Draw("WanderMinStep", "次の目的地までの距離 (最小)");
+        binder.Draw("WanderMaxStep", "次の目的地までの距離 (最大)");
+        binder.Draw("WanderLeashDistance", "プレイヤーからこれより離れたら戻ってくる距離");
+        binder.Draw("WanderPauseMinTime", "目的地で見回す時間 (最小、秒)");
+        binder.Draw("WanderPauseMaxTime", "目的地で見回す時間 (最大、秒)");
+        binder.Draw("ScanTurnSpeed", "見回す速さ (ラジアン/秒)");
         ImGui::TreePop();
     }
 

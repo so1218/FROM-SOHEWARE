@@ -20,8 +20,6 @@ namespace
 constexpr float kArriveDistance = 0.3f;
 // うろついて目的地に着いたら、ここまで立ち止まる
 constexpr float kWanderPauseTime = 3.0f;
-// 殴る範囲から少し出ても、振り下ろしは当たる
-constexpr float kAttackReachMargin = 0.5f;
 // 攻撃や倒れるアニメーションが無いときに次へ進むまで
 constexpr float kAnimationFallbackTime = 3.0f;
 
@@ -217,15 +215,21 @@ void ZombieBehavior::UpdateAttack(Enemy* owner, float deltaTime)
 
     const Vector3& position = owner->GetTransform().translation_;
     const Vector3 playerPosition = player_->GetTransform().translation_;
-    FaceDirection(owner, playerPosition - position, deltaTime);
-
-    // 振り下ろした瞬間に、まだ届く所にいれば当たる
     const bool hasAttackAnimation = HasAnimation(kAttackAnimation);
     const float attackProgress = hasAttackAnimation ? animationModel_->GetNormalizedTime() : stateTimer_ / kAnimationFallbackTime;
+
+    // 振りかぶる間だけプレイヤーへ向き直る
+    if (attackProgress < config_.attackTrackEndTime)
+    {
+        FaceDirection(owner, playerPosition - position, deltaTime);
+    }
+
+    // 振り下ろした瞬間に、正面の届く所にいれば当たる
     if (!hasHitThisAttack_ && attackProgress >= config_.attackHitTime)
     {
         hasHitThisAttack_ = true;
-        if (HorizontalDistance(position, playerPosition) <= config_.attackRange + kAttackReachMargin)
+        if (HorizontalDistance(position, playerPosition) <= config_.attackRange + config_.attackReachMargin &&
+            IsInAttackAngle(owner, playerPosition))
         {
             player_->TakeDamage(config_.attackDamage);
         }
@@ -351,6 +355,30 @@ bool ZombieBehavior::MoveToward(Enemy* owner, const Vector3& target, float speed
     position.y = GetGroundHeight(position.x, position.z);
 
     return distance <= kArriveDistance;
+}
+
+bool ZombieBehavior::IsInAttackAngle(Enemy* owner, const Vector3& targetPosition) const
+{
+    const Vector3& position = owner->GetTransform().translation_;
+    const float toTargetX = targetPosition.x - position.x;
+    const float toTargetZ = targetPosition.z - position.z;
+    const float distance = std::sqrt(toTargetX * toTargetX + toTargetZ * toTargetZ);
+    // 重なるほど近いときは向きが決まらないので当てる
+    if (distance < 0.001f)
+    {
+        return true;
+    }
+
+    // モデルは +Z が正面
+    const Vector3 forward = owner->GetTransform().rotation_.RotateVector({ 0.0f, 0.0f, 1.0f });
+    const float forwardLength = std::sqrt(forward.x * forward.x + forward.z * forward.z);
+    if (forwardLength < 0.001f)
+    {
+        return true;
+    }
+
+    const float cosAngle = (forward.x * toTargetX + forward.z * toTargetZ) / (forwardLength * distance);
+    return cosAngle >= std::cos(config_.attackHalfAngle * Math::PI / 180.0f);
 }
 
 void ZombieBehavior::FaceDirection(Enemy* owner, const Vector3& direction, float deltaTime)
@@ -640,9 +668,12 @@ void ZombieConfig::Bind(PropertyBinder& binder)
     binder.Bind("WanderRadius", &wanderRadius, 8.0f, 0.1f, 0.0f, 100.0f);
     binder.Bind("SeparationRadius", &separationRadius, 1.2f, 0.05f, 0.0f, 10.0f);
 
-    binder.Bind("AttackRange", &attackRange, 1.6f, 0.05f, 0.1f, 10.0f);
+    binder.Bind("AttackRange", &attackRange, 1.6f, 0.05f, 0.1f, 30.0f);
+    binder.Bind("AttackReachMargin", &attackReachMargin, 0.5f, 0.05f, 0.0f, 30.0f);
     binder.Bind("AttackDamage", &attackDamage, 10, 1.0f, 0, 1000);
     binder.Bind("AttackHitTime", &attackHitTime, 0.45f, 0.01f, 0.0f, 1.0f);
+    binder.Bind("AttackHalfAngle", &attackHalfAngle, 60.0f, 1.0f, 0.0f, 180.0f);
+    binder.Bind("AttackTrackEndTime", &attackTrackEndTime, 0.3f, 0.01f, 0.0f, 1.0f);
 
     binder.Bind("EmergeAnimSpeed", &emergeAnimSpeed, 1.0f, 0.01f, 0.1f, 5.0f);
     binder.Bind("WalkAnimSpeed", &walkAnimSpeed, 1.0f, 0.01f, 0.1f, 5.0f);
@@ -712,9 +743,12 @@ void ZombieConfig::Draw(PropertyBinder& binder)
 
     if (ImGui::TreeNode("攻撃"))
     {
-        binder.Draw("AttackRange", "殴る距離");
+        binder.Draw("AttackRange", "攻撃を始める距離");
+        binder.Draw("AttackReachMargin", "当たる瞬間に、始める距離より遠くまで届く分");
         binder.Draw("AttackDamage", "ダメージ");
         binder.Draw("AttackHitTime", "当たる瞬間 (アニメーションの 0 ~ 1)");
+        binder.Draw("AttackHalfAngle", "当たる範囲 (正面から左右の角度、度)");
+        binder.Draw("AttackTrackEndTime", "向きを合わせ続ける所 (アニメーションの 0 ~ 1)");
         ImGui::TreePop();
     }
 
