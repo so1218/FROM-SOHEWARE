@@ -468,6 +468,16 @@ void EnemyManager::DebugGui()
 {
     ImGui::Begin("敵マネージャー");
 
+    // 保存はしない
+    if (Player* player = GetManager()->FindObjectWithTag<Player>(ObjectTag::Player))
+    {
+        bool isIgnoredByEnemies = player->IsIgnoredByEnemies();
+        if (ImGui::Checkbox("敵が襲ってこない", &isIgnoredByEnemies))
+        {
+            player->SetIgnoredByEnemies(isIgnoredByEnemies);
+        }
+    }
+
     binder_->DrawModel("sharedEnemyModel", "浮遊する敵のマテリアル (全機で共有)");
     binder_->DrawModel("ThrusterModel", "スラスターのモデル");
 

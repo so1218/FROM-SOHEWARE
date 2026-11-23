@@ -393,7 +393,7 @@ void RendererManager::SubmitAnimationModel(
 
 void RendererManager::SubmitSprite(const SpriteInstance& instance, int layerOrder)
 {
-	if (spriteRenderer_)
+	if (spriteRenderer_ && isSpriteDrawEnabled_)
 	{
 		// UI は高さ 720 の画面を基準に置いているので、実際の解像度に合わせて拡大する
 		SpriteInstance scaledInstance = instance;

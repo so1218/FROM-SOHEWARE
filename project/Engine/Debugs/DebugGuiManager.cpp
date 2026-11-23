@@ -70,6 +70,14 @@ void DebugGuiManager::Update(Camera* targetCamera)
         else time->Resume();
     }
 
+    ImGui::SameLine();
+    RendererManager* rendererManager = engine_->GetRendererManager();
+    bool isSpriteDrawEnabled = rendererManager->IsSpriteDrawEnabled();
+    if (ImGui::Checkbox("スプライト", &isSpriteDrawEnabled))
+    {
+        rendererManager->SetSpriteDrawEnabled(isSpriteDrawEnabled);
+    }
+
     ImGui::Separator();
 
     if (ImGui::CollapsingHeader("デバッグカメラ設定"))

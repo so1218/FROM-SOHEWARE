@@ -179,6 +179,12 @@ public:
 	void SetControllable(bool isControllable) { isControllable_ = isControllable; }
 	bool IsControllable() const { return isControllable_; }
 
+	// true の間は敵に気づかれず、狙われていても見失われる
+	void SetIgnoredByEnemies(bool isIgnored) { isIgnoredByEnemies_ = isIgnored; }
+	bool IsIgnoredByEnemies() const { return isIgnoredByEnemies_; }
+	// 敵が気づける状態か
+	bool CanBeNoticed() const { return isControllable_ && !isIgnoredByEnemies_; }
+
 private:
 	static constexpr float kMovingThreshold = 0.1f;
 
@@ -247,5 +253,6 @@ private:
 	float hitStopTimer_ = 0.0f;
 	float timeScaleBeforeHitStop_ = 1.0f;
 	bool isControllable_ = true;
+	bool isIgnoredByEnemies_ = false;
 };
 

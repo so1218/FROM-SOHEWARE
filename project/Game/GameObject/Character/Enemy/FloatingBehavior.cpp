@@ -106,6 +106,12 @@ void FloatingBehavior::Update(Enemy* owner)
         lastPlayerShotCount_ = player_ ? player_->GetShotCount() : 0;
     }
 
+    // 敵に無視される設定にしたら、追いかけるのをやめる
+    if (player_ && player_->IsIgnoredByEnemies() && (state_ == State::Chase || state_ == State::LockOn || state_ == State::Fire))
+    {
+        ChangeState(State::Patrol);
+    }
+
     // 狙っている間や撃っている間も数え、隠れ続ければ見失う
     if (player_ && (state_ == State::Chase || state_ == State::LockOn || state_ == State::Fire))
     {
@@ -503,7 +509,7 @@ void FloatingBehavior::StartChase(Enemy* owner)
 
 bool FloatingBehavior::CanDetectPlayer(const Vector3& position)
 {
-    if (!player_ || !player_->IsControllable())
+    if (!player_ || !player_->CanBeNoticed())
     {
         return false;
     }
@@ -638,7 +644,7 @@ int FloatingBehavior::ModifyDamage(Enemy* owner, int damage, const Collider* hit
     }
 
     // 撃たれたら気づく
-    if (state_ == State::Patrol && player_)
+    if (state_ == State::Patrol && player_ && player_->CanBeNoticed())
     {
         StartChase(owner);
     }

@@ -6,6 +6,7 @@
 
 ### 追加
 - `ParticleSystem::ReleaseAttractionTarget` を追加。粒は `ParticleEmitter::SetAttractionTarget` で渡した `WorldTransform` を指したまま飛ぶので、その持ち主が先に消えると、消えたメモリを読んで落ちることがあった。持ち主を消す前 (デストラクタなど) に呼ぶと、そこへ向かっている粒を消す
+- `RendererManager::SetSpriteDrawEnabled` を追加。false の間はスプライトと文字を描かない。「全体のデバッグ情報・設定」の「スプライト」で切り替えられる
 
 ### 変更
 - v1.2.0 で CHANGELOG の中身が消えていたのを元に戻した。v1.2.0 で変わった内容は下の「v1.2.0」に書いてある

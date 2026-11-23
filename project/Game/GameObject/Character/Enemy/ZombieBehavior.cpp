@@ -321,7 +321,7 @@ void ZombieBehavior::ChangeState(State state)
 
 bool ZombieBehavior::TryNoticePlayer(const Vector3& position)
 {
-    if (!player_ || !player_->IsControllable())
+    if (!player_ || !player_->CanBeNoticed())
     {
         return false;
     }
@@ -612,7 +612,7 @@ int ZombieBehavior::ModifyDamage(Enemy* owner, int damage, const Collider* hitCo
     }
 
     // 撃たれたら、隠れていてもそちらへ向かう
-    if (player_ && (state_ == State::Search || state_ == State::Wander))
+    if (player_ && player_->CanBeNoticed() && (state_ == State::Search || state_ == State::Wander))
     {
         lastKnownPlayerPosition_ = player_->GetTransform().translation_;
         ChangeState(State::Chase);

@@ -73,6 +73,9 @@ public:
         const std::vector<MaterialHandle>& materials, BlendMode blendMode,
         RenderGroup group, const Vector4& instanceColor);
     void SubmitSprite(const SpriteInstance& instance, int layerOrder);
+    // false の間はスプライトと文字を描かない。動画を撮るときに UI を消すのに使う
+    void SetSpriteDrawEnabled(bool isEnabled) { isSpriteDrawEnabled_ = isEnabled; }
+    bool IsSpriteDrawEnabled() const { return isSpriteDrawEnabled_; }
     void SubmitLine(const Vector3& start, const Vector3& end, uint32_t color);
     void SubmitParticleInstance(const WorldTransform& worldTransform, uint32_t color, uint32_t textureIndex, float rotationZ,
         BlendMode blendMode, bool isBillboard, float intensity);
@@ -266,6 +269,7 @@ private:
     RenderEnvironment env_; // 各種マネージャーのポインタをまとめた構造体
     std::unique_ptr<ModelRenderer> modelRenderer_;
     std::unique_ptr<SpriteRenderer> spriteRenderer_;
+    bool isSpriteDrawEnabled_ = true;
     std::unique_ptr<LineRenderer> lineRenderer_;
     std::unique_ptr<ParticleRenderer> particleRenderer_;
     std::unique_ptr<TrailRenderer> trailRenderer_;
