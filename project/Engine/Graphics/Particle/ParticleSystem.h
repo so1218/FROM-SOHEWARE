@@ -38,6 +38,8 @@ public:
     const ParticleConfig& GetConfig(const std::string& presetName) const { return definitions_.at(presetName).particleConfig; }
     ParticleConfig& GetConfig(const std::string& presetName) { return definitions_.at(presetName).particleConfig; }
     void Clear();
+    // 吸い寄せる先を消す前に呼ぶ
+    void ReleaseAttractionTarget(const WorldTransform* target);
     std::vector<std::string> GetPresetNames() const;
 
 public:

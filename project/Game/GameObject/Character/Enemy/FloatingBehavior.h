@@ -47,6 +47,30 @@ struct FloatingEnemyConfig
     float maxFireDistance = 80.0f;
     FS::Vector3 muzzleOffset = { 0.0f, 2.0f, 0.0f };
 
+    // 狙い
+    float aimTrackSharpness = 6.0f;   
+    float lockFreezeTime = 0.3f;     
+
+    // ためている間に銃口へ吸い込まれる粒の量
+    float chargeRateStart = 0.3f;
+    float chargeRateEnd = 2.0f;
+
+    // 撃ったとき
+    FS::Vector4 muzzleFlashColor = { 1.0f, 0.7f, 0.35f, 1.0f };
+    float muzzleFlashIntensity = 30.0f;
+    float muzzleFlashRadius = 12.0f;
+    float muzzleFlashTime = 0.06f;
+
+    // 銃口の位置を合わせるときに、その場所に印を出す
+    bool showMuzzleMarker = false;
+
+    // 音 
+    float shotSoundVolume = 0.5f;        
+    float lockOnSoundVolume = 0.5f;     
+    float beepSoundVolume = 0.4f;      
+    float beepInterval = 0.25f;
+    float lockBeepInterval = 0.07f;
+
     // スラスター 
     FS::Vector3 thrusterOffset = { 1.0f, 1.0f, 1.0f };  
     FS::Vector3 thrusterScale = { 0.5f, 0.5f, 0.5f };
@@ -89,6 +113,11 @@ struct FloatingEnemyConfig
     float spotAngleDeg = 28.13f;
     float spotVolumetric = 200.0f;
     FS::Vector3 spotLocalDirection = { 0.0f, -0.3f, -1.0f };   
+    // 状態ごとのライトの色
+    FS::Vector4 spotAlertColor = { 1.0f, 0.7f, 0.1f, 1.0f };
+    FS::Vector4 spotLockColor = { 1.0f, 0.08f, 0.05f, 1.0f };
+    float spotLockAngleDeg = 6.0f;     
+    float spotChangeSpeed = 6.0f;     
 };
 
 // 空中を飛ぶドローン型の敵
@@ -118,7 +147,7 @@ private:
     {
         Patrol,   // フィールドを徘徊する
         Chase,    // プレイヤーの周りを回りながら近づく
-        LockOn,   // レーザーで狙う
+        LockOn,   // ライトを絞って狙う
         Fire,     // 連射
         Crash,    // 墜落
     };
@@ -133,6 +162,7 @@ private:
     void UpdateCrash(Enemy* owner, float deltaTime);
     void ChangeState(State state);
     void StartChase(Enemy* owner);
+    void StartLockOn(Enemy* owner);
     void StartCrash();
 
     // 移動と向き
@@ -147,6 +177,9 @@ private:
 
     // 射撃
     void FireShot(Enemy* owner);
+    // 弾が地面に当たる所を探す
+    bool FindGroundHit(const FS::Vector3& start, const FS::Vector3& direction, float maxDistance, FS::Vector3& outPoint) const;
+    void PlayIfLoaded3D(const std::string& name, const FS::Vector3& position, float volume) const;
     FS::Vector3 GetMuzzlePosition(Enemy* owner) const;
 
     // スラスター
@@ -187,14 +220,16 @@ private:
     float propellerAngle_ = 0.0f;
     int destroyedThrusterCount_ = 0;
 
-    // 撃った弾の線を少しだけ残す
-    struct Tracer
-    {
-        FS::Vector3 start;
-        FS::Vector3 end;
-        float remainingTime;
-    };
-    std::vector<Tracer> tracers_;
+    // 狙い
+    bool wasLocked_ = false;
+    float beepTimer_ = 0.0f;
+
+    // 撃ったとき
+    float muzzleFlashTimer_ = 0.0f;
+
+    // 今のライトの色と絞り
+    FS::Vector4 currentSpotColor_ = { 0.0f, 0.0f, 0.0f, 1.0f };
+    float currentSpotAngleDeg_ = 0.0f;
 
     // 徘徊
     FS::Vector3 spawnPosition_;
@@ -210,5 +245,12 @@ private:
     FS::ParticleEmitter* explosionEmitterPtr_ = nullptr;
     FS::ParticleEmitter* deathSparkEmitterPtr_ = nullptr;
     FS::ParticleEmitter* thrusterBreakEmitterPtr_ = nullptr;
+    FS::ParticleEmitter* muzzleFlashEmitterPtr_ = nullptr;
+    FS::ParticleEmitter* muzzleSparkEmitterPtr_ = nullptr;
+    FS::ParticleEmitter* tracerEmitterPtr_ = nullptr;
+    FS::ParticleEmitter* impactEmitterPtr_ = nullptr;
+    // ためている間に銃口へ吸い込まれる粒
+    FS::ParticleEmitter* chargeEmitterPtr_ = nullptr;
+    FS::WorldTransform chargeTarget_;
     int soundHandleID_ = -1;
 };

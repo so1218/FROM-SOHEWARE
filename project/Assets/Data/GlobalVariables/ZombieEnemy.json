@@ -15,7 +15,7 @@
         "BurnSparkInterval": 0.800000011920929,
         "BurnSparkVolume": 0.3499999940395355,
         "BurnTickInterval": 0.5,
-        "ChaseSpeed": 10.5,
+        "ChaseSpeed": 0.15000000596046448,
         "CloseNoticeRange": 4.0,
         "ColliderOffset": [
             0.0,

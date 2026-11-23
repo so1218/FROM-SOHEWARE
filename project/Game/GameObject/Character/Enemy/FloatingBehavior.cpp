@@ -27,6 +27,12 @@ FloatingBehavior::~FloatingBehavior()
         AudioPlayer::GetInstance().Stop(soundHandleID_);
         soundHandleID_ = -1;
     }
+
+    // 吸い込まれている途中の粒が、消えた銃口の位置を読まないようにする
+    if (engine_)
+    {
+        engine_->GetParticleSystem()->ReleaseAttractionTarget(&chargeTarget_);
+    }
 }
 
 void FloatingBehavior::Initialize(Enemy* owner)
@@ -56,6 +62,16 @@ void FloatingBehavior::Initialize(Enemy* owner)
     explosionEmitterPtr_ = particleSystem->SpawnEmitter("floatingEnemyExplosion");
     deathSparkEmitterPtr_ = particleSystem->SpawnEmitter("enemyDeathSpark");
     thrusterBreakEmitterPtr_ = particleSystem->SpawnEmitter("floatingDamage");
+    // 撃ったときの演出は、プレイヤーの銃と同じものを使う
+    muzzleFlashEmitterPtr_ = particleSystem->SpawnEmitter("floatingMuzzleFlash");
+    muzzleSparkEmitterPtr_ = particleSystem->SpawnEmitter("floatingShotSpark");
+    tracerEmitterPtr_ = particleSystem->SpawnEmitter("floatingTracer");
+    impactEmitterPtr_ = particleSystem->SpawnEmitter("floatingImpact");
+    chargeEmitterPtr_ = particleSystem->SpawnEmitter("floatingCharge");
+    if (chargeEmitterPtr_)
+    {
+        chargeEmitterPtr_->SetAttractionTarget(&chargeTarget_);
+    }
 
     // 最初の目的地の方を向いて出てくる
     WorldTransform& transform = owner->GetTransform();
@@ -67,6 +83,9 @@ void FloatingBehavior::Initialize(Enemy* owner)
     }
     owner->SyncTransform();
     UpdateThrusters(owner);
+
+    currentSpotColor_ = config_.spotColor;
+    currentSpotAngleDeg_ = config_.spotAngleDeg;
 
     soundHandleID_ = AudioPlayer::GetInstance().Play3D("floatingEnemy", spawnPosition_, { .volume = 0.6f, .maxDistance = 100.0f, .isLoop = true });
 }
@@ -116,24 +135,58 @@ void FloatingBehavior::Update(Enemy* owner)
         AudioPlayer::GetInstance().SetEmitterPosition(soundHandleID_, position);
     }
 
-    // ライトは機体の向きについてくる。狙うときは機体がプレイヤーを向くので、ライトもプレイヤーに当たる
-    const Vector3 spotDirection = owner->GetTransform().rotation_.RotateVector(config_.spotLocalDirection).Normalize();
+    // ライトの色で状態を伝える。巡回は普段の色、見つけたら警戒の色、狙っている間は絞って狙いの先へ当てる
+    const bool isAiming = state_ == State::LockOn || state_ == State::Fire;
+    Vector4 targetSpotColor = config_.spotColor;
+    if (isAiming)
+    {
+        targetSpotColor = config_.spotLockColor;
+    }
+    else if (state_ == State::Chase)
+    {
+        targetSpotColor = config_.spotAlertColor;
+    }
+    const float targetSpotAngleDeg = isAiming ? config_.spotLockAngleDeg : config_.spotAngleDeg;
+    const float spotBlend = 1.0f - std::exp(-config_.spotChangeSpeed * deltaTime);
+    currentSpotColor_ = currentSpotColor_ + (targetSpotColor - currentSpotColor_) * spotBlend;
+    currentSpotAngleDeg_ += (targetSpotAngleDeg - currentSpotAngleDeg_) * spotBlend;
+
+    // 普段は機体の向きについてくる。狙っている間は狙いの向きへ当てる
+    const Vector3 spotDirection = isAiming
+        ? aimDirection_
+        : owner->GetTransform().rotation_.RotateVector(config_.spotLocalDirection).Normalize();
     engine_->GetLightManager()->SubmitSpotLight(
         position,
-        config_.spotColor,
+        currentSpotColor_,
         config_.spotIntensity,
         config_.spotDistance,
         spotDirection,
-        std::cos(config_.spotAngleDeg * Math::PI / 180.0f),
+        std::cos(currentSpotAngleDeg_ * Math::PI / 180.0f),
         config_.spotVolumetric
     );
 
-    for (Tracer& tracer : tracers_)
+    // 銃口の位置を合わせるときの印
+    if (config_.showMuzzleMarker)
     {
-        tracer.remainingTime -= deltaTime;
-        engine_->GetRendererManager()->SubmitLine(tracer.start, tracer.end, Math::ColorVectorToUint32({ 1.0f, 0.85f, 0.4f, 1.0f }));
+        // 3 本の軸の交わる所が銃口
+        constexpr float kMarkerSize = 0.5f;
+        const Vector3 muzzle = GetMuzzlePosition(owner);
+        const uint32_t markerColor = Math::ColorVectorToUint32({ 0.2f, 1.0f, 0.2f, 1.0f });
+        RendererManager* rendererManager = engine_->GetRendererManager();
+        for (const Vector3& axis : { Vector3(1.0f, 0.0f, 0.0f), Vector3(0.0f, 1.0f, 0.0f), Vector3(0.0f, 0.0f, 1.0f) })
+        {
+            rendererManager->SubmitLine(muzzle - axis * kMarkerSize, muzzle + axis * kMarkerSize, markerColor);
+        }
     }
-    std::erase_if(tracers_, [](const Tracer& tracer) { return tracer.remainingTime <= 0.0f; });
+
+    // 撃った瞬間に銃口を光らせ、すぐ消す
+    if (muzzleFlashTimer_ > 0.0f)
+    {
+        muzzleFlashTimer_ -= deltaTime;
+        const float flashRatio = std::clamp(muzzleFlashTimer_ / std::max(config_.muzzleFlashTime, 0.001f), 0.0f, 1.0f);
+        engine_->GetLightManager()->SubmitPointLight(GetMuzzlePosition(owner), config_.muzzleFlashColor,
+            config_.muzzleFlashIntensity * flashRatio, config_.muzzleFlashRadius, flashRatio);
+    }
 }
 
 void FloatingBehavior::UpdatePatrol(Enemy* owner, float deltaTime)
@@ -282,7 +335,7 @@ void FloatingBehavior::UpdateChase(Enemy* owner, float deltaTime)
     // 見えていない相手は狙わない
     if (stateTimer_ >= config_.attackInterval && distance <= config_.maxFireDistance && !IsPlayerHiddenFrom(distance))
     {
-        ChangeState(State::LockOn);
+        StartLockOn(owner);
     }
 }
 
@@ -291,18 +344,107 @@ void FloatingBehavior::UpdateLockOn(Enemy* owner, float deltaTime)
     // 狙っている間はほとんど止まる
     MoveToward(owner, owner->GetTransform().translation_, config_.moveSpeed, deltaTime);
 
+    // 追いかける間 → 狙いを止める間 → 撃つ、の順に進む
+    const float lockOnTime = std::max(config_.lockOnTime, 0.01f);
+    const float trackEndTime = std::max(lockOnTime - config_.lockFreezeTime, 0.0f);
+    const bool isLocked = stateTimer_ >= trackEndTime;
     const Vector3 muzzle = GetMuzzlePosition(owner);
-    const Vector3 toPlayer = player_->GetColliderCenter() - muzzle;
-    aimDirection_ = toPlayer.Normalize();
+
+    // 撃つ直前ほど激しく吸い込み、それ自体を「もうすぐ撃つ」合図にする
+    chargeTarget_.translation_ = muzzle;
+    if (chargeEmitterPtr_)
+    {
+        const float chargeRatio = std::min(stateTimer_ / lockOnTime, 1.0f);
+        chargeEmitterPtr_->SetPosition(muzzle);
+        chargeEmitterPtr_->SetEmissionRateMultiplier(config_.chargeRateStart + (config_.chargeRateEnd - config_.chargeRateStart) * chargeRatio);
+    }
+
+    // 少し遅れて追いかけるので、横へ動き続ければ狙いをずらせる
+    if (!isLocked)
+    {
+        const Vector3 toPlayer = player_->GetColliderCenter() - muzzle;
+        if (toPlayer.LengthSq() > 0.0001f)
+        {
+            const float blend = 1.0f - std::exp(-config_.aimTrackSharpness * deltaTime);
+            aimDirection_ = (aimDirection_ + (toPlayer.Normalize() - aimDirection_) * blend).Normalize();
+        }
+    }
     FaceDirection(owner, aimDirection_, deltaTime);
 
-    const float laserLength = std::min(toPlayer.Length(), config_.maxFireDistance);
-    engine_->GetRendererManager()->SubmitLine(muzzle, muzzle + aimDirection_ * laserLength, Math::ColorVectorToUint32({ 1.0f, 0.1f, 0.1f, 1.0f }));
+    // 狙いを止めた瞬間に音の間隔を詰め、「今避けろ」と伝える
+    if (isLocked && !wasLocked_)
+    {
+        beepTimer_ = 0.0f;
+    }
+    wasLocked_ = isLocked;
+    beepTimer_ -= deltaTime;
+    if (beepTimer_ <= 0.0f)
+    {
+        PlayIfLoaded3D("floatingBeep", muzzle, config_.beepSoundVolume);
+        beepTimer_ = isLocked ? config_.lockBeepInterval : config_.beepInterval;
+    }
 
-    // 撃ち始めたら狙いは固定する。ロックオンの終わりに横へ動けば避けられる
-    if (stateTimer_ >= config_.lockOnTime)
+    if (stateTimer_ >= lockOnTime)
     {
         ChangeState(State::Fire);
+    }
+}
+
+void FloatingBehavior::StartLockOn(Enemy* owner)
+{
+    // 今向いている先から追いかけ始める
+    const Vector3 muzzle = GetMuzzlePosition(owner);
+    const Vector3 toPlayer = player_->GetColliderCenter() - muzzle;
+    const Vector3 forward = owner->GetTransform().rotation_.RotateVector({ 0.0f, 0.0f, -1.0f });
+    aimDirection_ = (forward.LengthSq() > 0.0001f) ? forward.Normalize() : toPlayer.Normalize();
+
+    wasLocked_ = false;
+    beepTimer_ = config_.beepInterval;
+    PlayIfLoaded3D("floatingLockOn", muzzle, config_.lockOnSoundVolume);
+    ChangeState(State::LockOn);
+
+    chargeTarget_.translation_ = muzzle;
+    if (chargeEmitterPtr_)
+    {
+        chargeEmitterPtr_->SetPosition(muzzle);
+        chargeEmitterPtr_->SetEmissionRateMultiplier(config_.chargeRateStart);
+        chargeEmitterPtr_->Play();
+    }
+}
+
+bool FloatingBehavior::FindGroundHit(const Vector3& start, const Vector3& direction, float maxDistance, Vector3& outPoint) const
+{
+    if (!terrain_)
+    {
+        return false;
+    }
+
+    // 1m ずつ進めて地面の下に入った所を探し、前の点との間を割合で詰める
+    constexpr float kStep = 1.0f;
+    float previousDistance = 0.0f;
+    float previousHeightAbove = start.y - GetGroundHeight(start.x, start.z);
+    for (float distance = kStep; distance <= maxDistance; distance += kStep)
+    {
+        const Vector3 point = start + direction * distance;
+        const float heightAbove = point.y - GetGroundHeight(point.x, point.z);
+        if (heightAbove <= 0.0f)
+        {
+            const float ratio = previousHeightAbove / std::max(previousHeightAbove - heightAbove, 0.0001f);
+            outPoint = start + direction * (previousDistance + (distance - previousDistance) * ratio);
+            return true;
+        }
+        previousDistance = distance;
+        previousHeightAbove = heightAbove;
+    }
+    return false;
+}
+
+void FloatingBehavior::PlayIfLoaded3D(const std::string& name, const Vector3& position, float volume) const
+{
+    AudioPlayer& audioPlayer = AudioPlayer::GetInstance();
+    if (audioPlayer.HasSound(name))
+    {
+        audioPlayer.Play3D(name, position, { .volume = volume, .maxDistance = 150.0f });
     }
 }
 
@@ -355,6 +497,12 @@ void FloatingBehavior::ChangeState(State state)
     state_ = state;
     stateTimer_ = 0.0f;
     shotsFired_ = 0;
+
+    // ためるのは狙っている間だけ。撃ち始めたら、残りの粒は銃口へ吸い込まれて消える
+    if (state != State::LockOn && chargeEmitterPtr_)
+    {
+        chargeEmitterPtr_->Stop();
+    }
 
     // 見失ったら、その場所から徘徊し直す
     if (state == State::Patrol)
@@ -447,9 +595,11 @@ void FloatingBehavior::FireShot(Enemy* owner)
     const Vector3 spread = { RandomRange(-config_.shotSpread, config_.shotSpread), RandomRange(-config_.shotSpread, config_.shotSpread), RandomRange(-config_.shotSpread, config_.shotSpread) };
     const Vector3 shotDirection = (aimDirection_ + spread).Normalize();
 
-    AudioPlayer::GetInstance().Play3D("gunShot", muzzle, { .volume = 0.5f, .maxDistance = 150.0f });
+    // プレイヤーの銃と聞き分けられるよう、敵専用の銃声にする
+    AudioPlayer::GetInstance().Play3D("floatingEnemyShot", muzzle, { .volume = config_.shotSoundVolume, .maxDistance = 150.0f });
 
     Vector3 shotEnd = muzzle + shotDirection * config_.maxFireDistance;
+    bool hasHitPlayer = false;
 
     // プレイヤーの当たり判定 (箱) を、縦は高さ、横は円として扱う
     const Vector3 playerCenter = player_->GetColliderCenter();
@@ -466,12 +616,50 @@ void FloatingBehavior::FireShot(Enemy* owner)
         if (horizontalOffset <= hitRadius && std::abs(offset.y) <= playerHalfSize.y)
         {
             shotEnd = closestPoint;
+            hasHitPlayer = true;
             player_->TakeDamage(config_.damagePerShot);
         }
     }
 
-    constexpr float kTracerTime = 0.05f;
-    tracers_.push_back({ muzzle, shotEnd, kTracerTime });
+    // 外れた弾は地面で止め、火花を散らす
+    Vector3 groundHit;
+    if (!hasHitPlayer && FindGroundHit(muzzle, shotDirection, config_.maxFireDistance, groundHit))
+    {
+        shotEnd = groundHit;
+        if (impactEmitterPtr_)
+        {
+            impactEmitterPtr_->SetPosition(groundHit);
+            impactEmitterPtr_->SetRotation(Quaternion::LookRotation({ 0.0f, 1.0f, 0.0f }, { 0.0f, 0.0f, 1.0f }));
+            impactEmitterPtr_->Play();
+        }
+    }
+
+    // 銃口の火と火花、一瞬の光
+    const Quaternion shotRotation = Quaternion::LookRotation(shotDirection, { 0.0f, 1.0f, 0.0f });
+    for (ParticleEmitter* emitter : { muzzleFlashEmitterPtr_, muzzleSparkEmitterPtr_ })
+    {
+        if (emitter)
+        {
+            emitter->SetPosition(muzzle);
+            emitter->SetRotation(shotRotation);
+            emitter->Play();
+        }
+    }
+    muzzleFlashTimer_ = config_.muzzleFlashTime;
+
+    // 光る弾の筋。弾が止まる所で消えるよう寿命を決める
+    if (tracerEmitterPtr_)
+    {
+        const float tracerDistance = (shotEnd - muzzle).Length();
+        const float tracerSpeed = engine_->GetParticleSystem()->GetConfig("floatingTracer").velocity.speed;
+        if (tracerSpeed > 0.0f)
+        {
+            tracerEmitterPtr_->lifetime_ = tracerDistance / tracerSpeed;
+        }
+        tracerEmitterPtr_->SetPosition(muzzle);
+        tracerEmitterPtr_->SetRotation(shotRotation);
+        tracerEmitterPtr_->Play();
+    }
 }
 
 int FloatingBehavior::ModifyDamage(Enemy* owner, int damage, const Collider* hitCollider)
@@ -546,7 +734,8 @@ void FloatingBehavior::StartCrash()
 Vector3 FloatingBehavior::GetMuzzlePosition(Enemy* owner) const
 {
     const WorldTransform& transform = owner->GetTransform();
-    return transform.translation_ + transform.rotation_.RotateVector(config_.muzzleOffset);
+    // スラスターと同じく、機体の大きさを変えても銃口がずれないようにスケールを掛ける
+    return transform.translation_ + transform.rotation_.RotateVector(Vector3::Scale(config_.muzzleOffset, transform.scale_));
 }
 
 Vector3 FloatingBehavior::GetThrusterLocalPosition(int thrusterIndex) const
@@ -659,6 +848,16 @@ void FloatingBehavior::OnDespawn(Enemy* owner)
         thrusterBreakEmitterPtr_->Destroy();
         thrusterBreakEmitterPtr_ = nullptr;
     }
+
+    // 撃った演出は飛んでいる途中の粒が消えるまで残したいので、倒れたときではなく片付けるときに消す
+    for (ParticleEmitter** emitter : { &muzzleFlashEmitterPtr_, &muzzleSparkEmitterPtr_, &tracerEmitterPtr_, &impactEmitterPtr_, &chargeEmitterPtr_ })
+    {
+        if (*emitter)
+        {
+            (*emitter)->Destroy();
+            *emitter = nullptr;
+        }
+    }
 }
 
 void FloatingBehavior::ReleaseEffects()
@@ -755,6 +954,23 @@ void FloatingEnemyConfig::Bind(PropertyBinder& binder)
     binder.Bind("MaxFireDistance", &maxFireDistance, 80.0f, 1.0f, 1.0f, 500.0f);
     binder.Bind("MuzzleOffset", &muzzleOffset, { 0.0f, 2.0f, 0.0f });
 
+    binder.Bind("AimTrackSharpness", &aimTrackSharpness, 6.0f, 0.1f, 0.1f, 100.0f);
+    binder.Bind("LockFreezeTime", &lockFreezeTime, 0.3f, 0.01f, 0.0f, 5.0f);
+
+    binder.BindColor("MuzzleFlashColor", &muzzleFlashColor, { 1.0f, 0.7f, 0.35f, 1.0f });
+    binder.Bind("MuzzleFlashIntensity", &muzzleFlashIntensity, 30.0f, 0.5f, 0.0f, 500.0f);
+    binder.Bind("MuzzleFlashRadius", &muzzleFlashRadius, 12.0f, 0.1f, 0.0f, 100.0f);
+    binder.Bind("ChargeRateStart", &chargeRateStart, 0.3f, 0.01f, 0.0f, 20.0f);
+    binder.Bind("ChargeRateEnd", &chargeRateEnd, 2.0f, 0.01f, 0.0f, 20.0f);
+    binder.Bind("MuzzleFlashTime", &muzzleFlashTime, 0.06f, 0.005f, 0.0f, 1.0f);
+    binder.Bind("ShowMuzzleMarker", &showMuzzleMarker, false);
+
+    binder.Bind("ShotSoundVolume", &shotSoundVolume, 0.5f, 0.01f, 0.0f, 2.0f);
+    binder.Bind("LockOnSoundVolume", &lockOnSoundVolume, 0.5f, 0.01f, 0.0f, 2.0f);
+    binder.Bind("BeepSoundVolume", &beepSoundVolume, 0.4f, 0.01f, 0.0f, 2.0f);
+    binder.Bind("BeepInterval", &beepInterval, 0.25f, 0.005f, 0.01f, 2.0f);
+    binder.Bind("LockBeepInterval", &lockBeepInterval, 0.07f, 0.005f, 0.01f, 2.0f);
+
     binder.Bind("ThrusterOffset", &thrusterOffset, { 1.0f, 1.0f, 1.0f });
     binder.Bind("ThrusterScale", &thrusterScale, { 0.5f, 0.5f, 0.5f });
     binder.Bind("ThrusterColliderSize", &thrusterColliderSize, { 1.0f, 1.0f, 1.0f });
@@ -774,6 +990,10 @@ void FloatingEnemyConfig::Bind(PropertyBinder& binder)
     binder.Bind("SpotAngle", &spotAngleDeg, 28.13f);
     binder.Bind("SpotVolumetric", &spotVolumetric, 200.0f);
     binder.Bind("SpotLocalDirection", &spotLocalDirection, { 0.0f, -0.3f, -1.0f });
+    binder.BindColor("SpotAlertColor", &spotAlertColor, { 1.0f, 0.7f, 0.1f, 1.0f });
+    binder.BindColor("SpotLockColor", &spotLockColor, { 1.0f, 0.08f, 0.05f, 1.0f });
+    binder.Bind("SpotLockAngle", &spotLockAngleDeg, 6.0f, 0.1f, 0.5f, 90.0f);
+    binder.Bind("SpotChangeSpeed", &spotChangeSpeed, 6.0f, 0.1f, 0.1f, 50.0f);
 }
 
 void FloatingEnemyConfig::Draw(PropertyBinder& binder)
@@ -844,7 +1064,30 @@ void FloatingEnemyConfig::Draw(PropertyBinder& binder)
         binder.Draw("DamagePerShot", "1 発のダメージ");
         binder.Draw("ShotSpread", "ばらつき (ラジアン)");
         binder.Draw("MaxFireDistance", "射程");
-        binder.Draw("MuzzleOffset", "銃口の位置");
+        binder.Draw("MuzzleOffset", "銃口の位置 (機体のスケールが掛かる。-Z が正面)");
+        binder.Draw("ShowMuzzleMarker", "銃口の位置に印を出す");
+        ImGui::TreePop();
+    }
+
+    if (ImGui::TreeNode("狙い・撃ったとき"))
+    {
+        ImGui::SeparatorText("狙い");
+        binder.Draw("AimTrackSharpness", "追いかける速さ (大きいほどぴったり付いてくる)");
+        binder.Draw("LockFreezeTime", "撃つ前に狙いを止める時間 (秒)");
+        ImGui::SeparatorText("ため (floatingCharge)");
+        binder.Draw("ChargeRateStart", "狙い始めの吸い込む量 (倍)");
+        binder.Draw("ChargeRateEnd", "撃つ直前の吸い込む量 (倍)");
+        ImGui::SeparatorText("撃ったとき");
+        binder.Draw("MuzzleFlashColor", "銃口の光の色");
+        binder.Draw("MuzzleFlashIntensity", "銃口の光の強さ");
+        binder.Draw("MuzzleFlashRadius", "銃口の光が届く距離");
+        binder.Draw("MuzzleFlashTime", "銃口の光が消えるまで (秒)");
+        ImGui::SeparatorText("音 (置いたときだけ鳴る)");
+        binder.Draw("ShotSoundVolume", "銃声 (floatingEnemyShot) の大きさ");
+        binder.Draw("LockOnSoundVolume", "狙い始めの音 (floatingLockOn) の大きさ");
+        binder.Draw("BeepSoundVolume", "狙っている間の電子音 (floatingBeep) の大きさ");
+        binder.Draw("BeepInterval", "電子音の間隔 (秒)");
+        binder.Draw("LockBeepInterval", "狙いを止めてからの電子音の間隔 (秒)");
         ImGui::TreePop();
     }
 
@@ -866,12 +1109,17 @@ void FloatingEnemyConfig::Draw(PropertyBinder& binder)
 
     if (ImGui::TreeNode("スポットライト"))
     {
-        binder.Draw("SpotColor", "色");
         binder.Draw("SpotIntensity", "ライト輝度");
         binder.Draw("SpotDistance", "届く距離");
         binder.Draw("SpotAngle", "照射角");
         binder.Draw("SpotVolumetric", "ボリュームフォグ輝度");
         binder.Draw("SpotLocalDirection", "照射方向 (機体から見て。-Z が正面)");
+        ImGui::SeparatorText("状態ごとの色");
+        binder.Draw("SpotColor", "巡回中の色");
+        binder.Draw("SpotAlertColor", "見つけて追いかけている間の色");
+        binder.Draw("SpotLockColor", "狙っている間の色");
+        binder.Draw("SpotLockAngle", "狙っている間の照射角 (絞る)");
+        binder.Draw("SpotChangeSpeed", "色と絞りが移り変わる速さ");
         ImGui::TreePop();
     }
 }

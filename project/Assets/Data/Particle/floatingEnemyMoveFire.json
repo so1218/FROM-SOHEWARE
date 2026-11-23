@@ -41,7 +41,7 @@
             "startColor": 4212588799,
             "startColor2": 4294967295
         },
-        "intensity": 2.5999999046325684,
+        "intensity": 1.899999976158142,
         "noiseModule": {
             "enabled": false,
             "frequency": 1.0,
@@ -64,7 +64,7 @@
         "rotationModule": {
             "enabled": true,
             "isBillboard": true,
-            "maxAngularVelocity2D": 5.0,
+            "maxAngularVelocity2D": -174.0,
             "maxAngularVelocity3D": [
                 0.0,
                 0.0,
@@ -75,7 +75,7 @@
                 0.0,
                 360.0
             ],
-            "minAngularVelocity2D": 0.0,
+            "minAngularVelocity2D": 189.0,
             "minAngularVelocity3D": [
                 0.0,
                 0.0,

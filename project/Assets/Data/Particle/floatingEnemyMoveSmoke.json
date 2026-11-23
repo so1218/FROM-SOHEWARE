@@ -1,6 +1,6 @@
 {
     "EmitterConfig": {
-        "amount": 1,
+        "amount": 0,
         "duration": -0.10000000149011612,
         "followOffset": [
             0.0,
@@ -41,7 +41,7 @@
             "startColor": 3217014783,
             "startColor2": 4294967295
         },
-        "intensity": 1.0,
+        "intensity": 0.4000000059604645,
         "noiseModule": {
             "enabled": false,
             "frequency": 0.1979999989271164,

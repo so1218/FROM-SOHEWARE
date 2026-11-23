@@ -424,6 +424,21 @@ void ParticleSystem::DebugGui()
     editor_->ShowEditor();
 }
 
+void ParticleSystem::ReleaseAttractionTarget(const WorldTransform* target)
+{
+    if (!target) return;
+
+    // 寿命を終わらせて次の更新で消す
+    for (ParticleState& particle : particles_)
+    {
+        if (particle.attractionTarget == target)
+        {
+            particle.attractionTarget = nullptr;
+            particle.age = particle.lifetime;
+        }
+    }
+}
+
 void ParticleSystem::Clear()
 {
     // すべてのアクティブなパーティクルを削除

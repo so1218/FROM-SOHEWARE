@@ -1,9 +1,14 @@
 {
     "FloatingEnemy": {
         "Acceleration": 3.0,
+        "AimTrackSharpness": 6.0,
         "AttackInterval": 2.5,
+        "BeepInterval": 0.25,
+        "BeepSoundVolume": 0.4000000059604645,
         "BodyDamageRate": 0.30000001192092896,
         "BurstCount": 6,
+        "ChargeRateEnd": 2.0,
+        "ChargeRateStart": 0.30000001192092896,
         "ColliderOffset": [
             0.0,
             0.7599999904632568,
@@ -27,14 +32,26 @@
         "IsSpawnEnabled": true,
         "KeepDistance": 25.0,
         "KeepHeight": 10.0,
+        "LockBeepInterval": 0.07000000029802322,
+        "LockFreezeTime": 0.30000001192092896,
+        "LockOnSoundVolume": 0.5,
         "LockOnTime": 1.0,
         "LoseRange": 150.0,
         "MaxAliveCount": 3,
         "MaxFireDistance": 80.0,
         "MoveSpeed": 18.0,
+        "MuzzleFlashColor": [
+            1.0,
+            0.699999988079071,
+            0.3499999940395355,
+            1.0
+        ],
+        "MuzzleFlashIntensity": 30.0,
+        "MuzzleFlashRadius": 12.0,
+        "MuzzleFlashTime": 0.05999999865889549,
         "MuzzleOffset": [
             0.0,
-            2.0,
+            0.29999998211860657,
             0.0
         ],
         "OrbitSpeed": 0.6000000238418579,
@@ -47,17 +64,26 @@
         "ScanTurnSpeed": 0.5,
         "ScreamVolume": 0.5,
         "ShotInterval": 0.10000000149011612,
+        "ShotSoundVolume": 1.0,
         "ShotSpread": 0.029999999329447746,
+        "ShowMuzzleMarker": false,
         "SightRange": 60.0,
         "SpawnHeight": 60.0,
         "SpawnInterval": 40.0,
         "SpawnMaxDistance": 160.0,
         "SpawnMinDistance": 100.0,
+        "SpotAlertColor": [
+            1.0,
+            0.699999988079071,
+            0.10000000149011612,
+            1.0
+        ],
         "SpotAngle": 16.530000686645508,
+        "SpotChangeSpeed": 6.0,
         "SpotColor": [
-            0.9922178983688354,
-            0.16601312160491943,
-            0.16601312160491943,
+            0.07599999755620956,
+            0.2160000056028366,
+            1.0,
             1.0
         ],
         "SpotDistance": 49.95000076293945,
@@ -66,6 +92,13 @@
             0.0,
             -0.3400000035762787,
             -1.0
+        ],
+        "SpotLockAngle": 6.0,
+        "SpotLockColor": [
+            1.0,
+            0.07999999821186066,
+            0.05000000074505806,
+            1.0
         ],
         "SpotVolumetric": 19.770000457763672,
         "ThrusterColliderSize": [
