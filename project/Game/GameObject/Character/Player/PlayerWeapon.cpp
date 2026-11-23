@@ -59,6 +59,9 @@ void PlayerWeapon::Initialize()
     binder_->Bind("Muzzle Flash Volumetric", &config_.muzzleFlashVolumetricIntensity, 1.0f, 0.05f, 0.0f, 50.0f);
     binder_->Bind("Muzzle Flash Duration", &config_.muzzleFlashDuration, 0.05f, 0.005f, 0.01f, 0.2f);
     binder_->Bind("Muzzle Offset", &config_.muzzleOffset, { 0.0f, 0.05f, 0.35f });
+    binder_->Bind("Shot Sound Volume", &config_.shotSoundVolume, 0.2f, 0.01f, 0.0f, 2.0f);
+    binder_->Bind("Shot Boom Volume", &config_.shotBoomVolume, 0.8f, 0.01f, 0.0f, 2.0f);
+    binder_->Bind("Shot Trail Volume", &config_.shotTrailVolume, 0.15f, 0.01f, 0.0f, 2.0f);
     binder_->Bind("BaseDamage", &config_.baseDamage, 1);
     binder_->Bind("MaxDistance", &config_.maxDistance, 5.0f);
     binder_->Bind("IncendiaryRadius", &config_.incendiaryRadius, 2.0f, 0.1f, 0.1f, 20.0f);
@@ -263,7 +266,10 @@ bool PlayerWeapon::Fire(Camera* camera, float focusRatio, float maxDamageMultipl
     --ammoInMagazine_;
     fireCooldown_ = config_.fireInterval;
 
-    AudioPlayer::GetInstance().Play("gunShot", 0.2f);
+    AudioPlayer& audioPlayer = AudioPlayer::GetInstance();
+    audioPlayer.Play("gunShot", config_.shotSoundVolume);
+    audioPlayer.Play("gunShotBoom", config_.shotBoomVolume);
+    audioPlayer.Play("gunShotTrail", config_.shotTrailVolume);
 
     muzzleFlashTimer_ = config_.muzzleFlashDuration;
     if (muzzleFlashEmitterPtr_) muzzleFlashEmitterPtr_->Play();
@@ -499,6 +505,12 @@ void PlayerWeapon::DebugGui()
         binder_->Draw("Muzzle Flash Volumetric", "ボリュメトリック散乱強度");
         binder_->Draw("Muzzle Flash Duration", "発光時間");
         binder_->Draw("Muzzle Offset", "銃口位置オフセット");
+
+        ImGui::Spacing();
+        ImGui::TextDisabled("銃声");
+        binder_->Draw("Shot Sound Volume", "本体の破裂音 (gunShot) の大きさ");
+        binder_->Draw("Shot Boom Volume", "低い音 (gunShotBoom) の大きさ");
+        binder_->Draw("Shot Trail Volume", "遠くへ響く音 (gunShotTrail) の大きさ");
 
         ImGui::Spacing();
         ImGui::TextDisabled("性能設定");

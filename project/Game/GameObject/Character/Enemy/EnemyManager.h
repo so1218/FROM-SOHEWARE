@@ -9,11 +9,12 @@
 
 class CoinManager;
 class Player;
+class TreeField;
 
 class EnemyManager : public FS::GameObject
 {
 public:
-    EnemyManager(FS::Engine* engine, const std::string& groupName, const FS::Terrain* terrain, CoinManager* coinManager);
+    EnemyManager(FS::Engine* engine, const std::string& groupName, const FS::Terrain* terrain, const TreeField* treeField, CoinManager* coinManager);
 
     void Initialize() override;
     void Update() override;
@@ -50,6 +51,7 @@ private:
     FS::Engine* engine_;
     std::string managerGroupName_;
     const FS::Terrain* terrain_ = nullptr;
+    const TreeField* treeField_ = nullptr;
     CoinManager* coinManager_ = nullptr;
 
     // 全機のスラスターがマテリアルを共有する元のモデル

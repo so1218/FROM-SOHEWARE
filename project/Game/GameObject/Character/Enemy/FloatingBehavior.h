@@ -8,6 +8,7 @@
 namespace FS { class Terrain; }
 
 class Player;
+class TreeField;
 
 // 浮遊する敵で共通の設定
 struct FloatingEnemyConfig
@@ -55,21 +56,13 @@ struct FloatingEnemyConfig
     float chargeRateStart = 0.3f;
     float chargeRateEnd = 2.0f;
 
-    // 撃ったとき
-    FS::Vector4 muzzleFlashColor = { 1.0f, 0.7f, 0.35f, 1.0f };
-    float muzzleFlashIntensity = 30.0f;
-    float muzzleFlashRadius = 12.0f;
-    float muzzleFlashTime = 0.06f;
-
     // 銃口の位置を合わせるときに、その場所に印を出す
     bool showMuzzleMarker = false;
 
     // 音 
     float shotSoundVolume = 0.5f;        
     float lockOnSoundVolume = 0.5f;     
-    float beepSoundVolume = 0.4f;      
-    float beepInterval = 0.25f;
-    float lockBeepInterval = 0.07f;
+    float thrusterExplosionVolume = 0.3f;
 
     // スラスター 
     FS::Vector3 thrusterOffset = { 1.0f, 1.0f, 1.0f };  
@@ -124,7 +117,7 @@ struct FloatingEnemyConfig
 class FloatingBehavior : public IEnemyBehavior
 {
 public:
-    FloatingBehavior(const FloatingEnemyConfig& config, const FS::Terrain* terrain, const FS::Model* thrusterSourceModel,
+    FloatingBehavior(const FloatingEnemyConfig& config, const FS::Terrain* terrain, const TreeField* treeField, const FS::Model* thrusterSourceModel,
         const FS::Vector3& spawnPosition, const FS::Vector3& firstWanderTarget);
     ~FloatingBehavior() override;
 
@@ -194,6 +187,7 @@ private:
     const FloatingEnemyConfig& config_;
     const FS::Model* thrusterSourceModel_ = nullptr;
     const FS::Terrain* terrain_ = nullptr;  
+    const TreeField* treeField_ = nullptr;
     FS::Engine* engine_ = nullptr;
     Player* player_ = nullptr;
 
@@ -220,13 +214,6 @@ private:
     float propellerAngle_ = 0.0f;
     int destroyedThrusterCount_ = 0;
 
-    // 狙い
-    bool wasLocked_ = false;
-    float beepTimer_ = 0.0f;
-
-    // 撃ったとき
-    float muzzleFlashTimer_ = 0.0f;
-
     // 今のライトの色と絞り
     FS::Vector4 currentSpotColor_ = { 0.0f, 0.0f, 0.0f, 1.0f };
     float currentSpotAngleDeg_ = 0.0f;
@@ -243,11 +230,9 @@ private:
     FS::ParticleEmitter* moveFireEmitterPtr_ = nullptr;
     FS::ParticleEmitter* explosionEmitterPtr_ = nullptr;
     FS::ParticleEmitter* deathSparkEmitterPtr_ = nullptr;
-    FS::ParticleEmitter* thrusterBreakEmitterPtr_ = nullptr;
-    FS::ParticleEmitter* muzzleFlashEmitterPtr_ = nullptr;
-    FS::ParticleEmitter* muzzleSparkEmitterPtr_ = nullptr;
+    // 壊れたスラスターから上がり続ける火
+    FS::ParticleEmitter* thrusterFireEmitterPtrs_[kThrusterCount] = {};
     FS::ParticleEmitter* tracerEmitterPtr_ = nullptr;
-    FS::ParticleEmitter* impactEmitterPtr_ = nullptr;
     // ためている間に銃口へ吸い込まれる粒
     FS::ParticleEmitter* chargeEmitterPtr_ = nullptr;
     FS::WorldTransform chargeTarget_;

@@ -34,8 +34,8 @@ constexpr float kArrivalTargetMaxDistance = 70.0f;
 
 using namespace FS;
 
-EnemyManager::EnemyManager(Engine* engine, const std::string& groupName, const Terrain* terrain, CoinManager* coinManager)
-    : engine_(engine), managerGroupName_(groupName), terrain_(terrain), coinManager_(coinManager)
+EnemyManager::EnemyManager(Engine* engine, const std::string& groupName, const Terrain* terrain, const TreeField* treeField, CoinManager* coinManager)
+    : engine_(engine), managerGroupName_(groupName), terrain_(terrain), treeField_(treeField), coinManager_(coinManager)
 {}
 
 void EnemyManager::Initialize()
@@ -232,7 +232,7 @@ void EnemyManager::SpawnFloating(const Vector3& position, const Vector3& firstWa
         ++slot;
     }
 
-    auto behavior = std::make_unique<FloatingBehavior>(floatingConfig_, terrain_, thrusterModel_.get(), position, firstWanderTarget);
+    auto behavior = std::make_unique<FloatingBehavior>(floatingConfig_, terrain_, treeField_, thrusterModel_.get(), position, firstWanderTarget);
     auto enemy = std::make_unique<Enemy>(engine_, slot, EnemyType::Floating, std::move(behavior), managerGroupName_);
     enemy->AttachToManager(GetManager(), 0);
     enemy->Initialize();

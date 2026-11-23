@@ -1,6 +1,6 @@
 {
     "EmitterConfig": {
-        "amount": 3,
+        "amount": 1,
         "duration": -0.10000000149011612,
         "followOffset": [
             0.0,
@@ -41,7 +41,7 @@
             "startColor": 1179647,
             "startColor2": 4294967295
         },
-        "intensity": 6.0,
+        "intensity": 13.300000190734863,
         "noiseModule": {
             "enabled": false,
             "frequency": 1.0,
@@ -105,15 +105,15 @@
         "sizeOverLifetimeModule": {
             "enabled": true,
             "endScale": [
-                0.029999999329447746,
-                0.029999999329447746,
+                0.20000000298023224,
+                0.20000000298023224,
                 0.0
             ],
             "frequency": 1.0,
             "oscillate": false,
             "startScale": [
-                0.11999999731779099,
-                0.11999999731779099,
+                0.20000000298023224,
+                0.20000000298023224,
                 1.0
             ]
         },

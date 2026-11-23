@@ -46,6 +46,11 @@ public:
         float muzzleFlashVolumetricIntensity = 1.0f;
         FS::Vector3 muzzleOffset = { 0.0f, 0.05f, 0.35f };
 
+        // 銃声
+        float shotSoundVolume = 0.2f;        
+        float shotBoomVolume = 0.8f;        
+        float shotTrailVolume = 0.15f;       
+
         int baseDamage = 20;
         float maxDistance = 150.0f;
 

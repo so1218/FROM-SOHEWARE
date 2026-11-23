@@ -10,12 +10,13 @@
 #include "Terrain.h"
 #include "CollisionConfig.h"
 #include "RendererManager.h"
+#include "TreeField.h"
 
 using namespace FS;
 
-FloatingBehavior::FloatingBehavior(const FloatingEnemyConfig& config, const Terrain* terrain, const Model* thrusterSourceModel,
+FloatingBehavior::FloatingBehavior(const FloatingEnemyConfig& config, const Terrain* terrain, const TreeField* treeField, const Model* thrusterSourceModel,
     const Vector3& spawnPosition, const Vector3& firstWanderTarget)
-    : config_(config), thrusterSourceModel_(thrusterSourceModel), terrain_(terrain), random_(std::random_device{}()),
+    : config_(config), thrusterSourceModel_(thrusterSourceModel), terrain_(terrain), treeField_(treeField), random_(std::random_device{}()),
     spawnPosition_(spawnPosition), wanderTarget_(firstWanderTarget), hasWanderTarget_(true)
 {
 }
@@ -59,12 +60,15 @@ void FloatingBehavior::Initialize(Enemy* owner)
     moveFireEmitterPtr_->SetTargetToFollow(&owner->GetModel()->GetTransform());
     explosionEmitterPtr_ = particleSystem->SpawnEmitter("floatingEnemyExplosion");
     deathSparkEmitterPtr_ = particleSystem->SpawnEmitter("enemyDeathSpark");
-    thrusterBreakEmitterPtr_ = particleSystem->SpawnEmitter("floatingDamage");
-    // 撃ったときの演出は、プレイヤーの銃と同じものを使う
-    muzzleFlashEmitterPtr_ = particleSystem->SpawnEmitter("floatingMuzzleFlash");
-    muzzleSparkEmitterPtr_ = particleSystem->SpawnEmitter("floatingShotSpark");
+    for (int thrusterIndex = 0; thrusterIndex < kThrusterCount; ++thrusterIndex)
+    {
+        thrusterFireEmitterPtrs_[thrusterIndex] = particleSystem->SpawnEmitter("floatingThrusterFire");
+        if (thrusterFireEmitterPtrs_[thrusterIndex])
+        {
+            thrusterFireEmitterPtrs_[thrusterIndex]->SetTargetToFollow(&thrusterModels_[thrusterIndex]->GetTransform());
+        }
+    }
     tracerEmitterPtr_ = particleSystem->SpawnEmitter("floatingTracer");
-    impactEmitterPtr_ = particleSystem->SpawnEmitter("floatingImpact");
     chargeEmitterPtr_ = particleSystem->SpawnEmitter("floatingCharge");
     if (chargeEmitterPtr_)
     {
@@ -175,15 +179,6 @@ void FloatingBehavior::Update(Enemy* owner)
         {
             rendererManager->SubmitLine(muzzle - axis * kMarkerSize, muzzle + axis * kMarkerSize, markerColor);
         }
-    }
-
-    // 撃った瞬間に銃口を光らせ、すぐ消す
-    if (muzzleFlashTimer_ > 0.0f)
-    {
-        muzzleFlashTimer_ -= deltaTime;
-        const float flashRatio = std::clamp(muzzleFlashTimer_ / std::max(config_.muzzleFlashTime, 0.001f), 0.0f, 1.0f);
-        engine_->GetLightManager()->SubmitPointLight(GetMuzzlePosition(owner), config_.muzzleFlashColor,
-            config_.muzzleFlashIntensity * flashRatio, config_.muzzleFlashRadius, flashRatio);
     }
 }
 
@@ -369,19 +364,6 @@ void FloatingBehavior::UpdateLockOn(Enemy* owner, float deltaTime)
     }
     FaceDirection(owner, aimDirection_, deltaTime);
 
-    // 狙いを止めた瞬間に音の間隔を詰め、「今避けろ」と伝える
-    if (isLocked && !wasLocked_)
-    {
-        beepTimer_ = 0.0f;
-    }
-    wasLocked_ = isLocked;
-    beepTimer_ -= deltaTime;
-    if (beepTimer_ <= 0.0f)
-    {
-        PlayIfLoaded3D("floatingBeep", muzzle, config_.beepSoundVolume);
-        beepTimer_ = isLocked ? config_.lockBeepInterval : config_.beepInterval;
-    }
-
     if (stateTimer_ >= lockOnTime)
     {
         ChangeState(State::Fire);
@@ -396,8 +378,6 @@ void FloatingBehavior::StartLockOn(Enemy* owner)
     const Vector3 forward = owner->GetTransform().rotation_.RotateVector({ 0.0f, 0.0f, -1.0f });
     aimDirection_ = (forward.LengthSq() > 0.0001f) ? forward.Normalize() : toPlayer.Normalize();
 
-    wasLocked_ = false;
-    beepTimer_ = config_.beepInterval;
     PlayIfLoaded3D("floatingLockOn", muzzle, config_.lockOnSoundVolume);
     ChangeState(State::LockOn);
 
@@ -596,7 +576,15 @@ void FloatingBehavior::FireShot(Enemy* owner)
     // プレイヤーの銃と聞き分けられるよう、敵専用の銃声にする
     AudioPlayer::GetInstance().Play3D("floatingEnemyShot", muzzle, { .volume = config_.shotSoundVolume, .maxDistance = 150.0f });
 
-    Vector3 shotEnd = muzzle + shotDirection * config_.maxFireDistance;
+    // 木に当たれば弾はそこで止まり、奥のプレイヤーには当たらない
+    float shotDistance = config_.maxFireDistance;
+    TreeRaycastHit treeHit;
+    if (treeField_ && treeField_->Raycast(muzzle, shotDirection, config_.maxFireDistance, &treeHit))
+    {
+        shotDistance = treeHit.distance;
+    }
+
+    Vector3 shotEnd = muzzle + shotDirection * shotDistance;
     bool hasHitPlayer = false;
 
     // プレイヤーの当たり判定 (箱) を、縦は高さ、横は円として扱う
@@ -604,7 +592,7 @@ void FloatingBehavior::FireShot(Enemy* owner)
     const Vector3 playerHalfSize = player_->GetColliderHalfSize();
     const float distanceAlongShot = (playerCenter - muzzle).Dot(shotDirection);
 
-    if (distanceAlongShot > 0.0f && distanceAlongShot <= config_.maxFireDistance)
+    if (distanceAlongShot > 0.0f && distanceAlongShot <= shotDistance)
     {
         const Vector3 closestPoint = muzzle + shotDirection * distanceAlongShot;
         const Vector3 offset = playerCenter - closestPoint;
@@ -619,33 +607,15 @@ void FloatingBehavior::FireShot(Enemy* owner)
         }
     }
 
-    // 外れた弾は地面で止め、火花を散らす
+    // 外れた弾は地面で止める
     Vector3 groundHit;
-    if (!hasHitPlayer && FindGroundHit(muzzle, shotDirection, config_.maxFireDistance, groundHit))
+    if (!hasHitPlayer && FindGroundHit(muzzle, shotDirection, shotDistance, groundHit))
     {
         shotEnd = groundHit;
-        if (impactEmitterPtr_)
-        {
-            impactEmitterPtr_->SetPosition(groundHit);
-            impactEmitterPtr_->SetRotation(Quaternion::LookRotation({ 0.0f, 1.0f, 0.0f }, { 0.0f, 0.0f, 1.0f }));
-            impactEmitterPtr_->Play();
-        }
     }
-
-    // 銃口の火と火花、一瞬の光
-    const Quaternion shotRotation = Quaternion::LookRotation(shotDirection, { 0.0f, 1.0f, 0.0f });
-    for (ParticleEmitter* emitter : { muzzleFlashEmitterPtr_, muzzleSparkEmitterPtr_ })
-    {
-        if (emitter)
-        {
-            emitter->SetPosition(muzzle);
-            emitter->SetRotation(shotRotation);
-            emitter->Play();
-        }
-    }
-    muzzleFlashTimer_ = config_.muzzleFlashTime;
 
     // 光る弾の筋。弾が止まる所で消えるよう寿命を決める
+    const Quaternion shotRotation = Quaternion::LookRotation(shotDirection, { 0.0f, 1.0f, 0.0f });
     if (tracerEmitterPtr_)
     {
         const float tracerDistance = (shotEnd - muzzle).Length();
@@ -698,12 +668,14 @@ void FloatingBehavior::DestroyThruster(Enemy* owner, int thrusterIndex)
     thrusterColliders_[thrusterIndex]->SetEnable(false);   // 同じフレームの次の弾が当たらないよう、すぐ外す
     ++destroyedThrusterCount_;
 
-    if (thrusterBreakEmitterPtr_)
+    if (thrusterFireEmitterPtrs_[thrusterIndex])
     {
-        thrusterBreakEmitterPtr_->SetPosition(thrusterModels_[thrusterIndex]->GetTransform().translation_);
-        thrusterBreakEmitterPtr_->Play();
+        thrusterFireEmitterPtrs_[thrusterIndex]->Play();
     }
-    AudioPlayer::GetInstance().Play3D("floatingEnemyDamaged", owner->GetTransform().translation_, { .volume = 0.6f, .maxDistance = 100.0f });
+    AudioPlayer& audioPlayer = AudioPlayer::GetInstance();
+    const Vector3& thrusterPosition = thrusterModels_[thrusterIndex]->GetTransform().translation_;
+    audioPlayer.Play3D("floatingEnemyDamaged", owner->GetTransform().translation_, { .volume = 0.6f, .maxDistance = 100.0f });
+    audioPlayer.Play3D("floatingEnemyExplosion", thrusterPosition, { .volume = config_.thrusterExplosionVolume, .maxDistance = 150.0f });
 
     if (destroyedThrusterCount_ >= config_.thrustersToCrash)
     {
@@ -841,14 +813,8 @@ void FloatingBehavior::OnDespawn(Enemy* owner)
         deathSparkEmitterPtr_ = nullptr;
     }
 
-    if (thrusterBreakEmitterPtr_)
-    {
-        thrusterBreakEmitterPtr_->Destroy();
-        thrusterBreakEmitterPtr_ = nullptr;
-    }
-
     // 撃った演出は飛んでいる途中の粒が消えるまで残したいので、倒れたときではなく片付けるときに消す
-    for (ParticleEmitter** emitter : { &muzzleFlashEmitterPtr_, &muzzleSparkEmitterPtr_, &tracerEmitterPtr_, &impactEmitterPtr_, &chargeEmitterPtr_ })
+    for (ParticleEmitter** emitter : { &tracerEmitterPtr_, &chargeEmitterPtr_ })
     {
         if (*emitter)
         {
@@ -872,6 +838,16 @@ void FloatingBehavior::ReleaseEffects()
         moveFireEmitterPtr_->Destroy();
         moveFireEmitterPtr_ = nullptr;
     }
+
+    // 倒れたら火も消す
+    for (ParticleEmitter*& emitter : thrusterFireEmitterPtrs_)
+    {
+        if (emitter)
+        {
+            emitter->Destroy();
+            emitter = nullptr;
+        }
+    }
 }
 
 void FloatingBehavior::RepairThrusters()
@@ -881,6 +857,14 @@ void FloatingBehavior::RepairThrusters()
         hp = config_.thrusterMaxHP;
     }
     destroyedThrusterCount_ = 0;
+
+    for (ParticleEmitter* emitter : thrusterFireEmitterPtrs_)
+    {
+        if (emitter)
+        {
+            emitter->Stop();
+        }
+    }
 }
 
 void FloatingBehavior::DebugGui(Enemy* owner)
@@ -948,19 +932,13 @@ void FloatingEnemyConfig::Bind(PropertyBinder& binder)
     binder.Bind("AimTrackSharpness", &aimTrackSharpness, 6.0f, 0.1f, 0.1f, 100.0f);
     binder.Bind("LockFreezeTime", &lockFreezeTime, 0.3f, 0.01f, 0.0f, 5.0f);
 
-    binder.BindColor("MuzzleFlashColor", &muzzleFlashColor, { 1.0f, 0.7f, 0.35f, 1.0f });
-    binder.Bind("MuzzleFlashIntensity", &muzzleFlashIntensity, 30.0f, 0.5f, 0.0f, 500.0f);
-    binder.Bind("MuzzleFlashRadius", &muzzleFlashRadius, 12.0f, 0.1f, 0.0f, 100.0f);
     binder.Bind("ChargeRateStart", &chargeRateStart, 0.3f, 0.01f, 0.0f, 20.0f);
     binder.Bind("ChargeRateEnd", &chargeRateEnd, 2.0f, 0.01f, 0.0f, 20.0f);
-    binder.Bind("MuzzleFlashTime", &muzzleFlashTime, 0.06f, 0.005f, 0.0f, 1.0f);
     binder.Bind("ShowMuzzleMarker", &showMuzzleMarker, false);
 
     binder.Bind("ShotSoundVolume", &shotSoundVolume, 0.5f, 0.01f, 0.0f, 2.0f);
     binder.Bind("LockOnSoundVolume", &lockOnSoundVolume, 0.5f, 0.01f, 0.0f, 2.0f);
-    binder.Bind("BeepSoundVolume", &beepSoundVolume, 0.4f, 0.01f, 0.0f, 2.0f);
-    binder.Bind("BeepInterval", &beepInterval, 0.25f, 0.005f, 0.01f, 2.0f);
-    binder.Bind("LockBeepInterval", &lockBeepInterval, 0.07f, 0.005f, 0.01f, 2.0f);
+    binder.Bind("ThrusterExplosionVolume", &thrusterExplosionVolume, 0.3f, 0.01f, 0.0f, 2.0f);
 
     binder.Bind("ThrusterOffset", &thrusterOffset, { 1.0f, 1.0f, 1.0f });
     binder.Bind("ThrusterScale", &thrusterScale, { 0.5f, 0.5f, 0.5f });
@@ -1068,17 +1046,10 @@ void FloatingEnemyConfig::Draw(PropertyBinder& binder)
         ImGui::SeparatorText("ため (floatingCharge)");
         binder.Draw("ChargeRateStart", "狙い始めの吸い込む量 (倍)");
         binder.Draw("ChargeRateEnd", "撃つ直前の吸い込む量 (倍)");
-        ImGui::SeparatorText("撃ったとき");
-        binder.Draw("MuzzleFlashColor", "銃口の光の色");
-        binder.Draw("MuzzleFlashIntensity", "銃口の光の強さ");
-        binder.Draw("MuzzleFlashRadius", "銃口の光が届く距離");
-        binder.Draw("MuzzleFlashTime", "銃口の光が消えるまで (秒)");
         ImGui::SeparatorText("音 (置いたときだけ鳴る)");
         binder.Draw("ShotSoundVolume", "銃声 (floatingEnemyShot) の大きさ");
         binder.Draw("LockOnSoundVolume", "狙い始めの音 (floatingLockOn) の大きさ");
-        binder.Draw("BeepSoundVolume", "狙っている間の電子音 (floatingBeep) の大きさ");
-        binder.Draw("BeepInterval", "電子音の間隔 (秒)");
-        binder.Draw("LockBeepInterval", "狙いを止めてからの電子音の間隔 (秒)");
+        binder.Draw("ThrusterExplosionVolume", "スラスターが壊れたときの爆発音 (floatingEnemyExplosion) の大きさ");
         ImGui::TreePop();
     }
 

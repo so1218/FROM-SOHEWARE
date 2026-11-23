@@ -59,7 +59,7 @@ PlayScene::PlayScene(Engine* engine)
 
     objectManager_.Create<WeatherEffectManager>(engine_, camera_.get(), cameraManager_.get(), player, terrain);
     coinManager_ = objectManager_.Create<CoinManager>(engine_, player, terrain);
-    enemyManager_ = objectManager_.Create<EnemyManager>(engine_, "GameEnemy", terrain, coinManager_);
+    enemyManager_ = objectManager_.Create<EnemyManager>(engine_, "GameEnemy", terrain, treeField, coinManager_);
     objectManager_.Create<EnvironmentPropManager>(engine_, stage.GetGroupName("EnvironmentProps"));
     objectManager_.Create<FoliageField>(engine_, terrain, stage.GetGroupName("FoliageField"));
     gameUI_ = objectManager_.Create<GameUI>(engine_);
