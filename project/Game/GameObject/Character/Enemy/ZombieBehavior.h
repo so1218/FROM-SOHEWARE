@@ -178,6 +178,7 @@ private:
     FS::ParticleEmitter* dustEmitterPtr_ = nullptr;
     FS::ParticleEmitter* explosionEmitterPtr_ = nullptr;
     FS::ParticleEmitter* deathSparkEmitterPtr_ = nullptr;
+    FS::ParticleEmitter* headshotZapEmitterPtr_ = nullptr;
     FS::ParticleEmitter* burnEmbersEmitterPtr_ = nullptr;
     bool isBurnEffectPlaying_ = false;
     BurnStatus burn_;

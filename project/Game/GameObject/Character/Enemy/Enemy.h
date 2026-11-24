@@ -29,6 +29,8 @@ public:
     void TakeDamage(int damage, const FS::Vector3& hitPoint, const FS::Vector3& hitNormal, const FS::Collider* hitCollider = nullptr);
     // 燃えているときなどの継続ダメージ
     void TakeDamageOverTime(int damage);
+    // 倒れていく間など、弾もプレイヤーも当たらないようにする
+    void DisableCollider() { collider_->SetEnable(false); }
     void Die();
     void Despawn();
     // 倒されて消えたか

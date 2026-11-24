@@ -61,9 +61,8 @@ void ZombieBehavior::Initialize(Enemy* owner)
     headCollider_->SetCollisionLayer(CollisionLayer::EnemyWeakPoint);
     headCollider_->SetRaycastOnly(true);
     headCollider_->SetRotateCenterOffset(false);
-    headCollider_->SetColor({ 1.0f, 0.2f, 0.2f, 1.0f });   // 体と見分けやすいよう赤で描く
+    headCollider_->SetColor({ 1.0f, 0.2f, 0.2f, 1.0f });  
 
-    // Mixamo のモデルは、書き出し方で骨の名前の頭が変わる
     for (const char* jointName : { "mixamorig1:Head", "mixamorig:Head" })
     {
         if (animationModel_->GetSkeleton().jointMap.contains(jointName))
@@ -93,6 +92,7 @@ void ZombieBehavior::Initialize(Enemy* owner)
 
     explosionEmitterPtr_ = owner->GetEngine()->GetParticleSystem()->SpawnEmitter("floatingEnemyExplosion");
     deathSparkEmitterPtr_ = owner->GetEngine()->GetParticleSystem()->SpawnEmitter("enemyDeathSpark");
+    headshotZapEmitterPtr_ = owner->GetEngine()->GetParticleSystem()->SpawnEmitter("zombieHeadshotZap");
 
     PlayAnimation(kEmergeAnimation, false, config_.emergeAnimSpeed);
     ChangeState(State::Emerge);
@@ -546,18 +546,26 @@ void ZombieBehavior::OnDespawn(Enemy* owner)
         deathSparkEmitterPtr_->Destroy();
         deathSparkEmitterPtr_ = nullptr;
     }
+
+    if (headshotZapEmitterPtr_)
+    {
+        headshotZapEmitterPtr_->Destroy();
+        headshotZapEmitterPtr_ = nullptr;
+    }
 }
 
 void ZombieBehavior::UpdateBurning(Enemy* owner, float deltaTime)
 {
-    // 倒れている最中は、もう燃えても HP は減らさない。まとっている炎はそのまま残す
-    if (state_ != State::Dying)
+    // 倒れている最中は燃えない
+    if (state_ == State::Dying)
     {
-        const int damage = burn_.Update(owner->GetEngine()->GetRendererManager(), owner->GetTransform().translation_, config_.burn, deltaTime);
-        if (damage > 0)
-        {
-            owner->TakeDamageOverTime(damage);
-        }
+        return;
+    }
+
+    const int damage = burn_.Update(owner->GetEngine()->GetRendererManager(), owner->GetTransform().translation_, config_.burn, deltaTime);
+    if (damage > 0)
+    {
+        owner->TakeDamageOverTime(damage);
     }
     UpdateBurnEffects(owner);
 
@@ -568,7 +576,7 @@ void ZombieBehavior::UpdateBurning(Enemy* owner, float deltaTime)
         return;
     }
 
-    // 回路が焼ける音を、間を置いて鳴らす。遠いゾンビほど小さく、遠すぎれば鳴らさない
+    // 回路が焼ける音を、間を置いて鳴らす
     burnSparkTimer_ -= deltaTime;
     if (burnSparkTimer_ > 0.0f)
     {
@@ -640,12 +648,18 @@ bool ZombieBehavior::OnHealthDepleted(Enemy* owner)
         ChangeState(State::Dying);
     }
 
-    // 倒れていく間はオーラを出さない
-    if (auraEmitterPtr_)
+    // 倒れていく間は当たらず、オーラも炎も出さない
+    owner->DisableCollider();
+    burn_.Extinguish();
+    isBurnEffectPlaying_ = false;
+    for (FS::ParticleEmitter** emitter : { &auraEmitterPtr_, &burnEmbersEmitterPtr_ })
     {
-        auraEmitterPtr_->Stop();
-        auraEmitterPtr_->Destroy();
-        auraEmitterPtr_ = nullptr;
+        if (*emitter)
+        {
+            (*emitter)->Stop();
+            (*emitter)->Destroy();
+            *emitter = nullptr;
+        }
     }
     return true;
 }
@@ -696,7 +710,15 @@ void ZombieBehavior::OnTakeDamage(Enemy* owner, int damage, const Vector3& hitPo
         audioPlayer.Play("zombieHeadshot", config_.headshotSoundVolume);
     }
 
-    // 這い出ている途中はひるませない。倒れるときは、このあとで倒れる方に切り替わる
+    // 頭の真ん中で、電撃を一瞬だけ走らせる
+    const Vector3 headPosition = headCollider_ ? headCollider_->GetWorldPosition() : hitPoint;
+    if (headshotZapEmitterPtr_)
+    {
+        headshotZapEmitterPtr_->SetPosition(headPosition);
+        headshotZapEmitterPtr_->Play();
+    }
+
+    // 這い出ている途中はひるませない
     if (state_ != State::Emerge)
     {
         ChangeState(State::Flinch);
