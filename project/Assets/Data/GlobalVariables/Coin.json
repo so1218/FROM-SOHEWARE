@@ -95,7 +95,7 @@
         ],
         "CoinsPerBurst": 10,
         "CollectRadius": 0.800000011920929,
-        "EjectSpeed": 25.0,
+        "EjectSpeed": 30.0,
         "Gravity": 64.5,
         "LifeTime": 30.0,
         "MagnetAcceleration": 70.0,

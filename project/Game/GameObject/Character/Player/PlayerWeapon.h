@@ -55,8 +55,8 @@ public:
         float maxDistance = 150.0f;
 
         // 焼夷弾
-        float incendiaryRadius = 2.0f;        // 火をつける範囲
-        float incendiaryGroundReach = 4.0f;   // 地面からこの高さまでに当たれば、真下の草に火をつける
+        float incendiaryRadius = 2.0f;        
+        float incendiaryGroundReach = 4.0f;  
 
         int magazineSize = 10;
         float fireInterval = 0.35f;   
@@ -111,6 +111,8 @@ public:
     bool IsReloading() const { return reloadTimer_ > 0.0f; }
     float GetReloadProgress() const { return 1.0f - reloadTimer_ / config_.reloadTime; }
     int GetReloadCount() const { return reloadCount_; }
+    // 焼夷弾で草に火をつけた回数
+    int GetIgniteCount() const { return igniteCount_; }
 
 
 private:
@@ -164,4 +166,5 @@ private:
     float fireCooldown_ = 0.0f;
     float reloadTimer_ = 0.0f;   
     int reloadCount_ = 0;      
+    int igniteCount_ = 0;
 };

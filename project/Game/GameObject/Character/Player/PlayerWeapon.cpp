@@ -256,6 +256,7 @@ void PlayerWeapon::IgniteAt(const Terrain* terrain, const Vector3& hitPoint)
         return;
     }
     engine_->GetRendererManager()->SubmitGrassIgnition({ hitPoint.x, groundHeight, hitPoint.z }, config_.incendiaryRadius);
+    ++igniteCount_;
 }
 
 bool PlayerWeapon::Fire(Camera* camera, float focusRatio, float maxDamageMultiplier, float maxBulletSpread, CollisionManager* colManager,

@@ -36,8 +36,8 @@
         "EmergeSoundMaxDistance": 60.0,
         "EmergeSoundVolume": 0.699999988079071,
         "EmergeTime": 2.5,
-        "FlinchAnimSpeed": 1.0,
-        "FlinchEndTime": 0.6000000238418579,
+        "FlinchAnimSpeed": 0.699999988079071,
+        "FlinchEndTime": 0.8999999761581421,
         "HP": 60,
         "HeadDamageRate": 2.0,
         "HeadOffset": [

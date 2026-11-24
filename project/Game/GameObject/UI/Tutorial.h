@@ -28,9 +28,13 @@ private:
         Sprint,
         Dodge,
         Jump,
+        Crawl,
+        Hide,         
         Aim,
         Shoot,
         Reload,
+        SwitchAmmo,
+        Ignite,      
         Complete,
         Finished,
     };
@@ -48,6 +52,7 @@ private:
     // 説明 1 つ分の文章と、キー・ボタンの画像
     struct StepContent
     {
+        std::string saveKey;   
         std::string message;
         std::string keyboardIcons;
         std::string controllerIcons;
@@ -78,6 +83,8 @@ private:
     float heldTime_ = 0.0f;       
     int shotCountAtStart_ = 0;
     int reloadCountAtStart_ = 0;
+    int igniteCountAtStart_ = 0;
+    int ammoTypeAtStart_ = 0;
     bool isUsingController_ = false;
 
     // パラメータ

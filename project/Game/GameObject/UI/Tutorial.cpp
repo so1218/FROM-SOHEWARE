@@ -9,21 +9,26 @@
 #include "TextureLoader.h"
 #include "TimeManager.h"
 #include "GameInput.h"
+#include "TextureManager.h"
 
 using namespace FS;
 
 namespace
 {
-    const char* const kDefaultStepContents[][3] =
+    const char* const kDefaultStepContents[][4] =
     {
-        { "移動", "keyboard_w,keyboard_a,keyboard_s,keyboard_d", "xbox_stick_l" },
-        { "ダッシュ", "keyboard_shift", "xbox_stick_l_press" },
-        { "回避", "keyboard_ctrl", "xbox_button_b" },
-        { "ジャンプ", "keyboard_space", "xbox_button_a" },
-        { "エイム", "keyboard_k", "xbox_lt" },
-        { "エイム中に射撃", "keyboard_j", "xbox_rt" },
-        { "リロード", "keyboard_r", "xbox_button_x" },
-        { "チュートリアル完了", "", "" },
+        { "Step0", "移動", "keyboard_w,keyboard_a,keyboard_s,keyboard_d", "xbox_stick_l" },
+        { "Step1", "ダッシュ", "keyboard_shift", "xbox_stick_l_press" },
+        { "Step2", "回避", "keyboard_ctrl", "xbox_button_b" },
+        { "Step3", "ジャンプ", "keyboard_space", "xbox_button_a" },
+        { "StepCrawl", "這う", "keyboard_c", "xbox_stick_r_press" },
+        { "StepHide", "草むらで這うか霧の中に入ると、敵に見つかりにくくなる", "", "" },
+        { "Step4", "エイム", "keyboard_k", "xbox_lt" },
+        { "Step5", "エイム中に射撃", "keyboard_j", "xbox_rt" },
+        { "Step6", "リロード", "keyboard_r", "xbox_button_x" },
+        { "StepSwitchAmmo", "弾を切り替える", "keyboard_q", "xbox_button_y" },
+        { "StepIgnite", "焼夷弾で草を撃つと燃やせる", "keyboard_j", "xbox_rt" },
+        { "Step7", "チュートリアル完了", "", "" },
     };
 
     std::vector<std::string> SplitByComma(const std::string& text)
@@ -51,7 +56,7 @@ Tutorial::Tutorial(Engine* engine, Player* player)
 
     for (const auto& defaultContent : kDefaultStepContents)
     {
-        stepContents_.push_back({ defaultContent[0], defaultContent[1], defaultContent[2] });
+        stepContents_.push_back({ defaultContent[0], defaultContent[1], defaultContent[2], defaultContent[3] });
     }
 }
 
@@ -83,7 +88,7 @@ void Tutorial::Initialize()
     for (size_t stepIndex = 0; stepIndex < stepContents_.size(); ++stepIndex)
     {
         StepContent& content = stepContents_[stepIndex];
-        const std::string prefix = std::format("Step{}_", stepIndex);
+        const std::string prefix = content.saveKey + "_";
 
         binder_->BindString(prefix + "Message", content.message,
             [this, &content](const std::string& message) { content.message = message; StartStep(currentStep_); });
@@ -157,6 +162,8 @@ void Tutorial::StartStep(Step step)
         heldTime_ = 0.0f;
         shotCountAtStart_ = player_->GetShotCount();
         reloadCountAtStart_ = player_->GetWeapon()->GetReloadCount();
+        igniteCountAtStart_ = player_->GetWeapon()->GetIgniteCount();
+        ammoTypeAtStart_ = static_cast<int>(player_->GetWeapon()->GetAmmoType());
     }
     currentStep_ = step;
 
@@ -188,8 +195,15 @@ void Tutorial::ApplyIcons()
     }
 
     const StepContent& content = stepContents_[static_cast<size_t>(currentStep_)];
-    const std::vector<std::string> iconNames =
-        SplitByComma(isUsingController_ ? content.controllerIcons : content.keyboardIcons);
+    // 画像が置かれていないボタンは出さない
+    std::vector<std::string> iconNames;
+    for (const std::string& iconName : SplitByComma(isUsingController_ ? content.controllerIcons : content.keyboardIcons))
+    {
+        if (TextureManager::GetInstance().GetMetaData(iconName))
+        {
+            iconNames.push_back(iconName);
+        }
+    }
 
     while (iconSprites_.size() < iconNames.size())
     {
@@ -234,6 +248,20 @@ bool Tutorial::IsStepCleared()
     case Step::Jump:
         return playerStateMachine->IsCurrentState<PlayerStateJump>();
 
+    case Step::Crawl:
+        if (player_->IsCrawling())
+        {
+            heldTime_ += deltaTime;
+        }
+        return heldTime_ >= requiredHoldTime_;
+
+    case Step::Hide:
+        if (player_->IsHidden())
+        {
+            heldTime_ += deltaTime;
+        }
+        return heldTime_ >= requiredHoldTime_;
+
     case Step::Aim:
         if (playerStateMachine->IsCurrentState<PlayerStateAiming>())
         {
@@ -251,6 +279,12 @@ bool Tutorial::IsStepCleared()
         const bool isFull = weapon->GetAmmo() == weapon->GetMagazineSize() && !weapon->IsReloading();
         return weapon->GetReloadCount() > reloadCountAtStart_ || isFull;
     }
+
+    case Step::SwitchAmmo:
+        return static_cast<int>(player_->GetWeapon()->GetAmmoType()) != ammoTypeAtStart_;
+
+    case Step::Ignite:
+        return player_->GetWeapon()->GetIgniteCount() > igniteCountAtStart_;
 
     case Step::Complete:
         heldTime_ += deltaTime;

@@ -761,8 +761,8 @@ void ZombieConfig::Bind(PropertyBinder& binder)
     binder.Bind("HeadRadius", &headRadius, 1.2f, 0.01f, 0.01f, 20.0f);
     binder.Bind("HeadOffset", &headOffset, { 0.0f, 0.6f, 0.0f });
     binder.Bind("HeadDamageRate", &headDamageRate, 2.0f, 0.1f, 0.0f, 20.0f);
-    binder.Bind("FlinchAnimSpeed", &flinchAnimSpeed, 1.0f, 0.01f, 0.1f, 5.0f);
-    binder.Bind("FlinchEndTime", &flinchEndTime, 0.6f, 0.01f, 0.05f, 1.0f);
+    binder.Bind("FlinchAnimSpeed", &flinchAnimSpeed, 0.7f, 0.01f, 0.1f, 5.0f);
+    binder.Bind("FlinchEndTime", &flinchEndTime, 0.9f, 0.01f, 0.05f, 1.0f);
     binder.Bind("HeadshotSoundVolume", &headshotSoundVolume, 0.8f, 0.01f, 0.0f, 2.0f);
 
     burn.Bind(binder, "Burn", ZombieConfig().burn);

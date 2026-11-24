@@ -11,13 +11,14 @@
             1.0,
             0.20000000298023224
         ],
-        "Ammo_FontSize": 56.0,
+        "Ammo_FontSize": 61.0,
         "Ammo_IncendiaryColor": [
             1.0,
             0.550000011920929,
             0.15000000596046448,
             0.949999988079071
         ],
+        "Ammo_LabelFont": "Shippori",
         "Ammo_LowColor": [
             1.0,
             0.3499999940395355,
@@ -25,10 +26,10 @@
             0.949999988079071
         ],
         "Ammo_LowRatio": 0.30000001192092896,
-        "Ammo_MagazineFontSize": 26.0,
+        "Ammo_MagazineFontSize": 31.5,
         "Ammo_MagazineTextOffset": [
             -40.0,
-            -44.0
+            -22.0
         ],
         "Ammo_NormalColor": [
             1.0,
@@ -36,12 +37,14 @@
             1.0,
             0.949999988079071
         ],
-        "Ammo_PromptFontSize": 24.0,
-        "Ammo_PromptIconSize": 36.0,
-        "Ammo_PromptOffset": [
-            -40.0,
-            -150.0
+        "Ammo_NumberFont": "Title",
+        "Ammo_PromptCenterOffset": [
+            0.0,
+            -21.0
         ],
+        "Ammo_PromptFontSize": 31.0,
+        "Ammo_PromptIconGap": 8.0,
+        "Ammo_PromptIconSize": 36.0,
         "Ammo_ReloadBarOffset": [
             0.0,
             80.0
@@ -59,19 +62,19 @@
             6.0,
             18.0
         ],
-        "Ammo_RoundSpacing": 4.0,
+        "Ammo_RoundSpacing": 6.5,
         "Ammo_RoundsOffset": [
             -40.0,
-            -110.0
+            -88.0
         ],
         "Ammo_TextOffset": [
-            -110.0,
-            -36.0
+            -96.0,
+            -15.0
         ],
-        "Ammo_TypeFontSize": 22.0,
+        "Ammo_TypeFontSize": 37.5,
         "Ammo_TypeTextOffset": [
-            -200.0,
-            -44.0
+            -169.0,
+            -22.0
         ],
         "Burn_AfterburnTime": 2.0,
         "Burn_CameraShake": 0.012000000104308128,
@@ -196,6 +199,7 @@
             1.0,
             0.949999988079071
         ],
+        "Money_Font": "Title",
         "Money_FontSize": 36.0,
         "Money_GainColor": [
             1.0,
@@ -206,7 +210,7 @@
         "Money_GainFontSize": 28.0,
         "Money_GainOffset": [
             -38.0,
-            140.0
+            125.0
         ],
         "Money_GainRise": 12.0,
         "Money_GainShowTime": 1.2000000476837158,
@@ -216,13 +220,13 @@
             0.11490684747695923,
             0.949999988079071
         ],
-        "Money_IconGap": 10.0,
-        "Money_IconOffsetY": 0.0,
+        "Money_IconGap": 3.5,
+        "Money_IconOffsetY": -2.5,
         "Money_IconScale": 1.0,
         "Money_IconTexture": "pouch",
         "Money_Offset": [
             -38.0,
-            88.0
+            87.0
         ],
         "Muzzle Flash Color": [
             1.0,

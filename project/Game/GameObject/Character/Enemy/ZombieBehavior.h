@@ -66,8 +66,8 @@ struct ZombieConfig
     float headRadius = 1.2f;
     FS::Vector3 headOffset = { 0.0f, 0.6f, 0.0f };   
     float headDamageRate = 2.0f;
-    float flinchAnimSpeed = 1.0f;
-    float flinchEndTime = 0.6f;     // ひるむアニメーションをどこで切り上げるか (0 ~ 1)
+    float flinchAnimSpeed = 0.7f;
+    float flinchEndTime = 0.9f;   
     float headshotSoundVolume = 0.8f;
 
     // 燃えている草の上での継続ダメージ
@@ -86,7 +86,7 @@ struct ZombieConfig
     float roarMinInterval = 6.0f;
     float roarMaxInterval = 14.0f;
 
-    // 倒されて爆発したときに、足元の草に火がつく半径。0 でつかない
+    // 倒されて爆発したときに、足元の草に火がつく半径
     float deathIgniteRadius = 4.0f;
 };
 

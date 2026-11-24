@@ -43,9 +43,11 @@ private:
     FS::Vector2 roundSize_ = { 6.0f, 18.0f };
     float roundSpacing_ = 4.0f;
 
-    FS::Vector2 promptOffset_ = { -40.0f, -150.0f };
+    // 弾切れの表示は、リロードのゲージと同じ画面中央の下に出す
+    FS::Vector2 promptOffset_ = { 0.0f, 90.0f };
     float promptFontSize_ = 24.0f;
     float promptIconSize_ = 36.0f;
+    float promptIconGap_ = 8.0f;
 
     // リロードの進み具合
     FS::Vector2 reloadBarOffset_ = { 0.0f, 90.0f };

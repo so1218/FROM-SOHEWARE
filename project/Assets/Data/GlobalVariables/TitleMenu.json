@@ -5,25 +5,25 @@
         "FadeInTime": 2.0,
         "FadeOutTime": 0.6000000238418579,
         "PadHintIconPos": [
-            -200.0,
-            53.0
+            -1165.0,
+            123.0
         ],
         "PadHintIconSize": [
-            85.0,
-            85.0
+            100.0,
+            100.0
         ],
         "PadHintText_Align": 2,
         "PadHintText_CharSpacing": 3.0,
         "PadHintText_Color": [
-            1.0,
-            1.0,
-            1.0,
+            0.5268402099609375,
+            0.9875776171684265,
+            0.45391765236854553,
             1.0
         ],
         "PadHintText_Content": "パッド推奨",
         "PadHintText_Direction": 0,
         "PadHintText_Font": "Shippori",
-        "PadHintText_FontSize": 37.5,
+        "PadHintText_FontSize": 44.5,
         "PadHintText_Layer": 31,
         "PadHintText_LineSpacing": 1.0,
         "PadHintText_OutlineColor": [
@@ -34,15 +34,15 @@
         ],
         "PadHintText_OutlineWidth": 0.0,
         "PadHintText_Pivot": [
-            1.0,
-            0.5
+            0.0,
+            0.0
         ],
         "PadHintText_Pos": [
-            -58.0,
-            50.0
+            117.0,
+            94.0
         ],
         "PadHintText_ScreenAnchor": [
-            1.0,
+            0.0,
             0.0
         ],
         "PadHintText_ShadowColor": [
@@ -74,7 +74,7 @@
         ],
         "StageLabelText_Content": "STAGE",
         "StageLabelText_Direction": 0,
-        "StageLabelText_Font": "Shippori",
+        "StageLabelText_Font": "Title",
         "StageLabelText_FontSize": 27.0,
         "StageLabelText_Layer": 31,
         "StageLabelText_LineSpacing": 1.0,
@@ -169,7 +169,7 @@
         ],
         "StartText_Content": "START GAME",
         "StartText_Direction": 0,
-        "StartText_Font": "Main",
+        "StartText_Font": "Shippori",
         "StartText_FontSize": 32.5,
         "StartText_Layer": 31,
         "StartText_LineSpacing": 1.0,

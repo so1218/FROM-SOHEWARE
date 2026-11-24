@@ -34,6 +34,10 @@
         "Step5_Message": "エイム中に射撃",
         "Step6_Message": "リロード",
         "Step7_Message": "チュートリアル完了",
+        "StepCrawl_Message": "這う",
+        "StepHide_Message": "草むらで這うか霧の中に入ると、敵に見つかりにくくなる",
+        "StepIgnite_Message": "焼夷弾で草を撃つと燃やせる",
+        "StepSwitchAmmo_Message": "弾を切り替える",
         "TextColor": [
             1.0,
             1.0,

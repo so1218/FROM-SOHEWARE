@@ -20,8 +20,8 @@ PlayerAmmoDisplay::PlayerAmmoDisplay(Engine* engine)
     magazineText_->SetLayerOrder(12);
 
     promptText_ = std::make_unique<Text>(engine_);
-    promptText_->SetAnchor(UIAnchor::BottomRight);
-    promptText_->SetAlign(TextAlign::Right);
+    promptText_->SetAnchor(UIAnchor::Center);
+    promptText_->SetAlign(TextAlign::Center);
     promptText_->SetLayerOrder(12);
 
     ammoTypeText_ = std::make_unique<Text>(engine_);
@@ -40,8 +40,8 @@ PlayerAmmoDisplay::PlayerAmmoDisplay(Engine* engine)
     roundSprite_->SetLayerOrder(12);
 
     promptIcon_ = std::make_unique<Sprite>(engine_);
-    promptIcon_->SetScreenAnchor({ 1.0f, 1.0f });
-    promptIcon_->SetAnchorPoint({ 1.0f, 1.0f });
+    promptIcon_->SetScreenAnchor({ 0.5f, 0.5f });
+    promptIcon_->SetAnchorPoint({ 0.5f, 0.5f });
     promptIcon_->SetLayerOrder(12);
 
     // ゲージは左端から伸ばすので、左端を基準にする
@@ -65,9 +65,10 @@ void PlayerAmmoDisplay::BindProperties(PropertyBinder& binder)
     binder.Bind("Ammo_RoundsOffset", &roundsOffset_, { -40.0f, -110.0f }, 1.0f);
     binder.Bind("Ammo_RoundSize", &roundSize_, { 6.0f, 18.0f }, 0.5f, 1.0f, 100.0f);
     binder.Bind("Ammo_RoundSpacing", &roundSpacing_, 4.0f, 0.5f, 0.0f, 50.0f);
-    binder.Bind("Ammo_PromptOffset", &promptOffset_, { -40.0f, -150.0f }, 1.0f);
+    binder.Bind("Ammo_PromptCenterOffset", &promptOffset_, { 0.0f, 90.0f }, 1.0f);
     binder.Bind("Ammo_PromptFontSize", &promptFontSize_, 24.0f, 0.5f, 4.0f, 200.0f);
     binder.Bind("Ammo_PromptIconSize", &promptIconSize_, 36.0f, 0.5f, 4.0f, 200.0f);
+    binder.Bind("Ammo_PromptIconGap", &promptIconGap_, 8.0f, 0.5f, -100.0f, 200.0f);
     binder.Bind("Ammo_ReloadBarOffset", &reloadBarOffset_, { 0.0f, 90.0f }, 1.0f);
     binder.Bind("Ammo_ReloadBarSize", &reloadBarSize_, { 70.0f, 3.0f }, 0.5f, 1.0f, 1000.0f);
     binder.Bind("Ammo_ReloadTextOffset", &reloadTextOffset_, { 0.0f, 100.0f }, 1.0f);
@@ -79,6 +80,18 @@ void PlayerAmmoDisplay::BindProperties(PropertyBinder& binder)
     binder.Bind("Ammo_TypeFontSize", &ammoTypeFontSize_, 22.0f, 0.5f, 4.0f, 200.0f);
     binder.BindColor("Ammo_IncendiaryColor", &incendiaryColor_, { 1.0f, 0.55f, 0.15f, 0.95f });
     binder.Bind("Ammo_LowRatio", &lowAmmoRatio_, 0.3f, 0.01f, 0.0f, 1.0f);
+
+    binder.BindFontName("Ammo_NumberFont", ammoText_->GetFontName(), [this](const std::string& fontName)
+        {
+            ammoText_->SetFont(fontName);
+            magazineText_->SetFont(fontName);
+        });
+    binder.BindFontName("Ammo_LabelFont", ammoTypeText_->GetFontName(), [this](const std::string& fontName)
+        {
+            ammoTypeText_->SetFont(fontName);
+            promptText_->SetFont(fontName);
+            reloadText_->SetFont(fontName);
+        });
 }
 
 void PlayerAmmoDisplay::DrawProperties(PropertyBinder& binder)
@@ -90,9 +103,10 @@ void PlayerAmmoDisplay::DrawProperties(PropertyBinder& binder)
     binder.Draw("Ammo_RoundsOffset", "弾の列の位置 (右端)");
     binder.Draw("Ammo_RoundSize", "弾 1 発の大きさ");
     binder.Draw("Ammo_RoundSpacing", "弾の間隔");
-    binder.Draw("Ammo_PromptOffset", "弾切れの表示の位置 (右端)");
+    binder.Draw("Ammo_PromptCenterOffset", "弾切れの表示の位置 (画面中央から)");
     binder.Draw("Ammo_PromptFontSize", "弾切れの表示の文字の大きさ");
     binder.Draw("Ammo_PromptIconSize", "ボタン画像の大きさ");
+    binder.Draw("Ammo_PromptIconGap", "ボタン画像と文字の間");
     binder.Draw("Ammo_ReloadBarOffset", "リロードのゲージの位置 (画面中央から)");
     binder.Draw("Ammo_ReloadBarSize", "リロードのゲージの大きさ");
     binder.Draw("Ammo_ReloadTextOffset", "「リロード中」の位置 (画面中央から)");
@@ -104,6 +118,8 @@ void PlayerAmmoDisplay::DrawProperties(PropertyBinder& binder)
     binder.Draw("Ammo_TypeFontSize", "弾の種類の文字の大きさ");
     binder.Draw("Ammo_IncendiaryColor", "焼夷弾の色");
     binder.Draw("Ammo_LowRatio", "残り少ないとみなす割合");
+    binder.Draw("Ammo_NumberFont", "数字 (残弾と装弾数) のフォント");
+    binder.Draw("Ammo_LabelFont", "文字 (弾の種類とリロードの表示) のフォント。Title は日本語が出ない");
 }
 
 void PlayerAmmoDisplay::Draw(const PlayerWeapon& weapon)
@@ -202,15 +218,18 @@ void PlayerAmmoDisplay::DrawReloadPrompt(const PlayerWeapon& weapon)
     color.w *= 0.6f + 0.4f * (std::cos(elapsedTime_ * 6.0f) * 0.5f + 0.5f);
 
     promptText_->SetText("リロード");
-    promptText_->SetPosition(promptOffset_);
     promptText_->SetFontSize(promptFontSize_);
     promptText_->SetColor(color);
+
+    // ボタンの絵と文字をひとまとまりにして、真ん中を位置に合わせる
+    const float textWidth = promptText_->MeasureSize().x;
+    const float groupLeft = promptOffset_.x - (promptIconSize_ + promptIconGap_ + textWidth) * 0.5f;
+    promptText_->SetPosition({ groupLeft + promptIconSize_ + promptIconGap_ + textWidth * 0.5f, promptOffset_.y });
     promptText_->Draw();
 
     const bool isUsingController = GameInput::IsUsingController();
-    const float textWidth = promptText_->MeasureSize().x;
     promptIcon_->SetTexture(isUsingController ? "xbox_button_x" : "keyboard_r");
-    promptIcon_->SetPosition({ promptOffset_.x - textWidth - 8.0f, promptOffset_.y + (promptIconSize_ - promptFontSize_) * 0.5f });
+    promptIcon_->SetPosition({ groupLeft + promptIconSize_ * 0.5f, promptOffset_.y });
     promptIcon_->SetSize({ promptIconSize_, promptIconSize_ });
     promptIcon_->Draw();
 }

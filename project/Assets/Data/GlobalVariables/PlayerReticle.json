@@ -1,11 +1,11 @@
 {
     "PlayerReticle": {
-        "CenterDotSize": 4.0,
+        "CenterDotSize": 2.5,
         "ExpandSpeed": 8.0,
         "FinalExponent": 3.4000000953674316,
         "FocusTime": 0.699999988079071,
         "LineLength": 11.0,
-        "LineThickness": 2.5,
+        "LineThickness": 2.299999952316284,
         "MaxGap": 80.19999694824219,
         "MidRatio": 0.6000000238418579,
         "MinGap": 10.0,

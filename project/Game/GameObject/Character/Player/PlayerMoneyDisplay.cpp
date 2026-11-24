@@ -34,6 +34,11 @@ void PlayerMoneyDisplay::BindProperties(PropertyBinder& binder)
     binder.Bind("Money_GainRise", &gainRiseDistance_, gainRiseDistance_, 0.5f, 0.0f, 200.0f);
     binder.BindColor("Money_Color", &moneyColor_, moneyColor_);
     binder.BindColor("Money_GainColor", &gainColor_, gainColor_);
+    binder.BindFontName("Money_Font", moneyText_->GetFontName(), [this](const std::string& fontName)
+        {
+            moneyText_->SetFont(fontName);
+            gainText_->SetFont(fontName);
+        });
 
     binder.BindTexture("Money_IconTexture", &iconTextureName_, &iconTextureHandle_, "pouch", TextureType::UI);
     binder.Bind("Money_IconScale", &iconScale_, iconScale_, 0.01f, 0.1f, 5.0f);
@@ -52,6 +57,7 @@ void PlayerMoneyDisplay::DrawProperties(PropertyBinder& binder)
     binder.Draw("Money_GainRise", "「+」が上に動く量");
     binder.Draw("Money_Color", "所持金の色");
     binder.Draw("Money_GainColor", "「+」の色");
+    binder.Draw("Money_Font", "所持金と「+」のフォント");
 
     ImGui::SeparatorText("アイコン");
     binder.Draw("Money_IconTexture", "画像");
