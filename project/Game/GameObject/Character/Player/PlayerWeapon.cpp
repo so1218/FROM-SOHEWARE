@@ -49,6 +49,8 @@ void PlayerWeapon::Initialize()
     shotSmokeEmitterPtr_ = particleSystem->SpawnEmitter("shotSmokeParticle");
     shotSparkEmitterPtr_ = particleSystem->SpawnEmitter("shotSparkParticle");
     bulletTracerEmitterPtr_ = particleSystem->SpawnEmitter("bulletTracer");
+    incendiaryTracerEmitterPtr_ = particleSystem->SpawnEmitter("incendiaryTracer");
+    incendiaryMuzzleBurstEmitterPtr_ = particleSystem->SpawnEmitter("incendiaryMuzzleBurst");
     woodHitBulletEmitterPtr_ = particleSystem->SpawnEmitter("woodHitBullet");
 
     // Binderへ登録
@@ -62,11 +64,13 @@ void PlayerWeapon::Initialize()
     binder_->Bind("Shot Sound Volume", &config_.shotSoundVolume, 0.2f, 0.01f, 0.0f, 2.0f);
     binder_->Bind("Shot Boom Volume", &config_.shotBoomVolume, 0.8f, 0.01f, 0.0f, 2.0f);
     binder_->Bind("Shot Trail Volume", &config_.shotTrailVolume, 0.15f, 0.01f, 0.0f, 2.0f);
+    binder_->Bind("Shot Incendiary Volume", &config_.shotIncendiaryVolume, 0.6f, 0.01f, 0.0f, 2.0f);
     binder_->Bind("BaseDamage", &config_.baseDamage, 1);
     binder_->Bind("MaxDistance", &config_.maxDistance, 5.0f);
     binder_->Bind("IncendiaryRadius", &config_.incendiaryRadius, 2.0f, 0.1f, 0.1f, 20.0f);
     binder_->Bind("IncendiaryGroundReach", &config_.incendiaryGroundReach, 4.0f, 0.1f, 0.0f, 50.0f);
     binder_->Bind("MagazineSize", &config_.magazineSize, 10, 1.0f, 1, 200);
+    binder_->Bind("IncendiaryMagazineSize", &config_.incendiaryMagazineSize, 2, 1.0f, 1, 200);
     binder_->Bind("FireInterval", &config_.fireInterval, 0.35f, 0.01f, 0.0f, 5.0f);
     binder_->Bind("ReloadTime", &config_.reloadTime, 1.6f, 0.05f, 0.05f, 10.0f);
 
@@ -84,7 +88,7 @@ void PlayerWeapon::Initialize()
 
 void PlayerWeapon::StartReload()
 {
-    if (IsReloading() || ammoInMagazine_ >= config_.magazineSize)
+    if (IsReloading() || GetAmmo() >= GetMagazineSize())
     {
         return;
     }
@@ -95,6 +99,7 @@ void PlayerWeapon::StartReload()
 void PlayerWeapon::Refill()
 {
     ammoInMagazine_ = config_.magazineSize;
+    incendiaryAmmoInMagazine_ = config_.incendiaryMagazineSize;
     reloadTimer_ = 0.0f;
     fireCooldown_ = 0.0f;
 }
@@ -110,7 +115,7 @@ void PlayerWeapon::Update(const Matrix4x4& handWorldMatrix, Camera* camera)
         if (reloadTimer_ <= 0.0f)
         {
             reloadTimer_ = 0.0f;
-            ammoInMagazine_ = config_.magazineSize;
+            GetCurrentAmmo() = GetMagazineSize();
             ++reloadCount_;
         }
     }
@@ -147,6 +152,11 @@ void PlayerWeapon::Update(const Matrix4x4& handWorldMatrix, Camera* camera)
             Quaternion rot = Quaternion::LookRotation(forward, { 0.0f, 1.0f, 0.0f });
             muzzleFlashEmitterPtr_->SetRotation(rot);
         }
+    }
+
+    if (incendiaryMuzzleBurstEmitterPtr_)
+    {
+        incendiaryMuzzleBurstEmitterPtr_->SetPosition(muzzlePos);
     }
 
     if (shotSmokeEmitterPtr_)
@@ -201,6 +211,8 @@ Vector3 PlayerWeapon::GetMuzzleWorldPosition() const
 
 void PlayerWeapon::ToggleAmmoType()
 {
+    // 弾倉は弾の種類ごとに分かれているので、リロードの途中で切り替えたらやめる
+    CancelReload();
     ammoType_ = (ammoType_ == AmmoType::Normal) ? AmmoType::Incendiary : AmmoType::Normal;
 }
 
@@ -264,7 +276,7 @@ bool PlayerWeapon::Fire(Camera* camera, float focusRatio, float maxDamageMultipl
 {
     if (!camera || !colManager || !CanFire()) return false;
 
-    --ammoInMagazine_;
+    --GetCurrentAmmo();
     fireCooldown_ = config_.fireInterval;
 
     AudioPlayer& audioPlayer = AudioPlayer::GetInstance();
@@ -272,8 +284,20 @@ bool PlayerWeapon::Fire(Camera* camera, float focusRatio, float maxDamageMultipl
     audioPlayer.Play("gunShotBoom", config_.shotBoomVolume);
     audioPlayer.Play("gunShotTrail", config_.shotTrailVolume);
 
+    // 焼夷弾は燃える音を重ねる
+    const bool isIncendiary = ammoType_ == AmmoType::Incendiary;
+    if (isIncendiary && audioPlayer.HasSound("gunShotIncendiary"))
+    {
+        audioPlayer.Play("gunShotIncendiary", config_.shotIncendiaryVolume);
+    }
+
     muzzleFlashTimer_ = config_.muzzleFlashDuration;
     if (muzzleFlashEmitterPtr_) muzzleFlashEmitterPtr_->Play();
+    if (isIncendiary && incendiaryMuzzleBurstEmitterPtr_)
+    {
+        incendiaryMuzzleBurstEmitterPtr_->SetPosition(GetMuzzleWorldPosition());
+        incendiaryMuzzleBurstEmitterPtr_->Play();
+    }
     if (shotSmokeEmitterPtr_)   shotSmokeEmitterPtr_->Play();
     if (shotSparkEmitterPtr_)   shotSparkEmitterPtr_->Play();
     Eject(config_.casing, "bullet", casingModel_.get());
@@ -358,7 +382,8 @@ bool PlayerWeapon::Fire(Camera* camera, float focusRatio, float maxDamageMultipl
     }
 
     // 銃口から着弾点に向けた弾道の生成
-    if (bulletTracerEmitterPtr_)
+    ParticleEmitter* tracerEmitter = isIncendiary ? incendiaryTracerEmitterPtr_ : bulletTracerEmitterPtr_;
+    if (tracerEmitter)
     {
         Vector3 muzzlePos = GetMuzzleWorldPosition();
         Vector3 bulletDir = (targetPoint - muzzlePos);
@@ -367,10 +392,10 @@ bool PlayerWeapon::Fire(Camera* camera, float focusRatio, float maxDamageMultipl
         {
             // 着弾点に届いたところで消えるよう寿命を決める
             const float tracerDistance = bulletDir.Length();
-            const float tracerSpeed = engine_->GetParticleSystem()->GetConfig("bulletTracer").velocity.speed;
+            const float tracerSpeed = engine_->GetParticleSystem()->GetConfig(isIncendiary ? "incendiaryTracer" : "bulletTracer").velocity.speed;
             if (tracerSpeed > 0.0f)
             {
-                bulletTracerEmitterPtr_->lifetime_ = tracerDistance / tracerSpeed;
+                tracerEmitter->lifetime_ = tracerDistance / tracerSpeed;
             }
 
             bulletDir = bulletDir.Normalize();
@@ -379,11 +404,11 @@ bool PlayerWeapon::Fire(Camera* camera, float focusRatio, float maxDamageMultipl
             Quaternion tracerRot = Quaternion::LookRotation(bulletDir, { 0.0f, 1.0f, 0.0f });
 
             // エミッターの位置と向きをセット
-            bulletTracerEmitterPtr_->SetPosition(muzzlePos);
-            bulletTracerEmitterPtr_->SetRotation(tracerRot);
+            tracerEmitter->SetPosition(muzzlePos);
+            tracerEmitter->SetRotation(tracerRot);
 
             // 発射
-            bulletTracerEmitterPtr_->Play();
+            tracerEmitter->Play();
         }
     }
 
@@ -521,6 +546,7 @@ void PlayerWeapon::DebugGui()
         binder_->Draw("Shot Sound Volume", "本体の破裂音 (gunShot) の大きさ");
         binder_->Draw("Shot Boom Volume", "低い音 (gunShotBoom) の大きさ");
         binder_->Draw("Shot Trail Volume", "遠くへ響く音 (gunShotTrail) の大きさ");
+        binder_->Draw("Shot Incendiary Volume", "焼夷弾のときに重ねる燃える音 (gunShotIncendiary) の大きさ");
 
         ImGui::Spacing();
         ImGui::TextDisabled("性能設定");
@@ -529,9 +555,10 @@ void PlayerWeapon::DebugGui()
         binder_->Draw("IncendiaryRadius", "焼夷弾で火をつける範囲");
         binder_->Draw("IncendiaryGroundReach", "焼夷弾が地面に火をつける高さ");
         binder_->Draw("MagazineSize", "装弾数");
+        binder_->Draw("IncendiaryMagazineSize", "焼夷弾の装弾数");
         binder_->Draw("FireInterval", "1 発ごとの間隔 (秒)");
         binder_->Draw("ReloadTime", "リロード時間 (秒)");
-        ImGui::Text("残り: %d / %d %s", ammoInMagazine_, config_.magazineSize, IsReloading() ? "(リロード中)" : "");
+        ImGui::Text("残り: %d / %d %s", GetAmmo(), GetMagazineSize(), IsReloading() ? "(リロード中)" : "");
 
         ImGui::Spacing();
         ImGui::TextDisabled("リロードの演出");

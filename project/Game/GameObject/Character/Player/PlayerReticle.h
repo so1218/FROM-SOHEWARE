@@ -19,6 +19,10 @@ public:
         float threshold = 0.8f;     
         float midRatio = 0.35f;     
         float finalExponent = 3.0f; 
+
+        // 弾の種類で色を変える
+        FS::Vector4 normalColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+        FS::Vector4 incendiaryColor = { 1.0f, 0.6f, 0.25f, 1.0f };
     };
 
     PlayerReticle(FS::Engine* engine);
@@ -26,7 +30,7 @@ public:
 
     void Initialize();
     void Update(bool isMoving, bool isAiming);
-    void Draw();
+    void Draw(bool isIncendiary);
     void DebugGui();
 
     void OnShootRecoil();

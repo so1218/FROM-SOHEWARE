@@ -342,8 +342,8 @@ void ZombieBehavior::UpdateFlinch(Enemy* owner, float deltaTime)
     const bool hasFlinchAnimation = HasAnimation(kFlinchAnimation);
     PlayAnimation(hasFlinchAnimation ? kFlinchAnimation : kIdleAnimation, false, config_.flinchAnimSpeed);
 
+    // 一番のけぞった所まで流したら、止めずにそのまま追いかけに戻す
     constexpr float kFlinchFallbackTime = 0.5f;
-    // 最後まで流すと長いので、途中で切り上げて追いかけに戻る
     const bool isFinished = hasFlinchAnimation
         ? animationModel_->IsFinished() || animationModel_->GetNormalizedTime() >= config_.flinchEndTime
         : stateTimer_ >= kFlinchFallbackTime;
@@ -761,8 +761,8 @@ void ZombieConfig::Bind(PropertyBinder& binder)
     binder.Bind("HeadRadius", &headRadius, 1.2f, 0.01f, 0.01f, 20.0f);
     binder.Bind("HeadOffset", &headOffset, { 0.0f, 0.6f, 0.0f });
     binder.Bind("HeadDamageRate", &headDamageRate, 2.0f, 0.1f, 0.0f, 20.0f);
-    binder.Bind("FlinchAnimSpeed", &flinchAnimSpeed, 0.7f, 0.01f, 0.1f, 5.0f);
-    binder.Bind("FlinchEndTime", &flinchEndTime, 0.9f, 0.01f, 0.05f, 1.0f);
+    binder.Bind("FlinchAnimSpeed", &flinchAnimSpeed, 0.5f, 0.01f, 0.1f, 5.0f);
+    binder.Bind("FlinchEndTime", &flinchEndTime, 0.6f, 0.01f, 0.05f, 1.0f);
     binder.Bind("HeadshotSoundVolume", &headshotSoundVolume, 0.8f, 0.01f, 0.0f, 2.0f);
 
     burn.Bind(binder, "Burn", ZombieConfig().burn);
@@ -857,8 +857,8 @@ void ZombieConfig::Draw(PropertyBinder& binder)
         binder.Draw("HeadRadius", "頭の当たり判定の半径");
         binder.Draw("HeadOffset", "頭の骨からのずれ");
         binder.Draw("HeadDamageRate", "頭に当たったときのダメージ (倍)");
-        binder.Draw("FlinchAnimSpeed", "ひるむ速さ (humanHit)");
-        binder.Draw("FlinchEndTime", "ひるむアニメーションを切り上げる所 (0 ~ 1)");
+        binder.Draw("FlinchAnimSpeed", "ひるむ速さ (humanHit)。遅いほど長くひるむ");
+        binder.Draw("FlinchEndTime", "ひるむアニメーションをどこまで流すか (0 ~ 1)");
         binder.Draw("HeadshotSoundVolume", "頭に当たったときの音 (zombieHeadshot) の大きさ");
         ImGui::TreePop();
     }

@@ -1,0 +1,164 @@
+{
+    "EmitterConfig": {
+        "amount": 8,
+        "duration": 0.05,
+        "followOffset": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "lifetime": 0.18,
+        "looping": false,
+        "playOnAwake": false,
+        "position": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "spawnInterval": 1.0
+    },
+    "ParticleConfig": {
+        "attractionModule": {
+            "enabled": false,
+            "offset": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "strength": 1.0,
+            "target": [
+                0.0,
+                0.0,
+                0.0
+            ]
+        },
+        "blendMode": 2,
+        "colorOverLifetimeModule": {
+            "enabled": true,
+            "endColor": 4279828480,
+            "endColor2": 4294967040,
+            "mode": 0,
+            "startColor": 4279828735,
+            "startColor2": 4294967295
+        },
+        "intensity": 3.200000047683716,
+        "noiseModule": {
+            "enabled": false,
+            "frequency": 1.5299999713897705,
+            "scrollSpeed": 1.0,
+            "separateAxes": false,
+            "strength": 15.199999809265137,
+            "type": 0
+        },
+        "physicsModule": {
+            "affectedByWind": false,
+            "drag": 0.0,
+            "enabled": true,
+            "gravity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "windInfluence": 1.0
+        },
+        "rotationModule": {
+            "enabled": true,
+            "isBillboard": true,
+            "maxAngularVelocity2D": 324.0,
+            "maxAngularVelocity3D": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "maxStartRotation": [
+                0.0,
+                0.0,
+                360.0
+            ],
+            "minAngularVelocity2D": -357.0,
+            "minAngularVelocity3D": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "minStartRotation": [
+                0.0,
+                0.0,
+                0.0
+            ]
+        },
+        "shapeModule": {
+            "boxSize": [
+                20.0,
+                20.0,
+                20.0
+            ],
+            "emitFromEdge": false,
+            "enabled": true,
+            "radius": [
+                0.08,
+                0.08,
+                0.08
+            ],
+            "type": 2
+        },
+        "sizeOverLifetimeModule": {
+            "enabled": true,
+            "endScale": [
+                1.0,
+                1.0,
+                0.0
+            ],
+            "frequency": 1.0,
+            "oscillate": false,
+            "startScale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "textureSheetModule": {
+            "enabled": false,
+            "textureName": "fire_02"
+        },
+        "trailModule": {
+            "alignment": 0,
+            "emissiveIntensity": 1.2000000476837158,
+            "enabled": false,
+            "endColor": [
+                0.852320671081543,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "headWidthScale": 0.23000000417232513,
+            "jitterFrequency": 10.0,
+            "jitterMode": 0,
+            "jitterPhase": 0.0,
+            "jitterSpeed": 0.0,
+            "jitterStrength": 0.0,
+            "lifetime": 0.20000000298023224,
+            "minVertexDistance": 0.10000000149011612,
+            "startColor": [
+                1.0,
+                0.46162474155426025,
+                0.054852306842803955,
+                1.0
+            ],
+            "tailWidthScale": 0.09000000357627869,
+            "textureName": "light_01",
+            "width": 1.0
+        },
+        "velocityModule": {
+            "angleRange": 360.0,
+            "direction": [
+                0.0,
+                1.0,
+                0.0
+            ],
+            "enabled": true,
+            "randomDirection": true,
+            "speed": 2.5
+        }
+    }
+}

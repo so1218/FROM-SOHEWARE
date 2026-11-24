@@ -4,11 +4,23 @@
         "ExpandSpeed": 8.0,
         "FinalExponent": 3.4000000953674316,
         "FocusTime": 0.699999988079071,
+        "IncendiaryColor": [
+            1.0,
+            0.6000000238418579,
+            0.25,
+            1.0
+        ],
         "LineLength": 11.0,
-        "LineThickness": 2.299999952316284,
+        "LineThickness": 2.5,
         "MaxGap": 80.19999694824219,
         "MidRatio": 0.6000000238418579,
         "MinGap": 10.0,
+        "NormalColor": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
         "Threshold": 0.800000011920929
     }
 }

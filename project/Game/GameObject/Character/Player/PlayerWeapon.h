@@ -50,6 +50,7 @@ public:
         float shotSoundVolume = 0.2f;        
         float shotBoomVolume = 0.8f;        
         float shotTrailVolume = 0.15f;       
+        float shotIncendiaryVolume = 0.6f;  
 
         int baseDamage = 20;
         float maxDistance = 150.0f;
@@ -59,6 +60,7 @@ public:
         float incendiaryGroundReach = 4.0f;  
 
         int magazineSize = 10;
+        int incendiaryMagazineSize = 2;   
         float fireInterval = 0.35f;   
         float reloadTime = 1.6f;
 
@@ -97,7 +99,7 @@ public:
     FS::Vector3 GetMuzzleWorldPosition() const;
 
     // 撃てる状態か 
-    bool CanFire() const { return !IsReloading() && fireCooldown_ <= 0.0f && ammoInMagazine_ > 0; }
+    bool CanFire() const { return !IsReloading() && fireCooldown_ <= 0.0f && GetAmmo() > 0; }
     // 弾が満タンでなく、リロード中でもなければリロードを始める
     void StartReload();
     // リロードを途中でやめる
@@ -105,9 +107,12 @@ public:
     void Refill();
     // 弾の種類を普通の弾に戻す
     void ResetAmmoType() { ammoType_ = AmmoType::Normal; }
+    // 今の弾の種類の弾倉
+    int& GetCurrentAmmo() { return ammoType_ == AmmoType::Incendiary ? incendiaryAmmoInMagazine_ : ammoInMagazine_; }
 
-    int GetAmmo() const { return ammoInMagazine_; }
-    int GetMagazineSize() const { return config_.magazineSize; }
+    // 今の弾の種類の残弾と装弾数
+    int GetAmmo() const { return ammoType_ == AmmoType::Incendiary ? incendiaryAmmoInMagazine_ : ammoInMagazine_; }
+    int GetMagazineSize() const { return ammoType_ == AmmoType::Incendiary ? config_.incendiaryMagazineSize : config_.magazineSize; }
     bool IsReloading() const { return reloadTimer_ > 0.0f; }
     float GetReloadProgress() const { return 1.0f - reloadTimer_ / config_.reloadTime; }
     int GetReloadCount() const { return reloadCount_; }
@@ -146,6 +151,8 @@ private:
     FS::ParticleEmitter* shotSmokeEmitterPtr_ = nullptr;
     FS::ParticleEmitter* shotSparkEmitterPtr_ = nullptr;
     FS::ParticleEmitter* bulletTracerEmitterPtr_ = nullptr;
+    FS::ParticleEmitter* incendiaryTracerEmitterPtr_ = nullptr;
+    FS::ParticleEmitter* incendiaryMuzzleBurstEmitterPtr_ = nullptr;
     FS::ParticleEmitter* woodHitBulletEmitterPtr_ = nullptr;
 
     FS::WorldTransform handTransform_;
@@ -162,6 +169,7 @@ private:
     float muzzleFlashTimer_ = 0.0f;
 
     int ammoInMagazine_ = 10;
+    int incendiaryAmmoInMagazine_ = 2;
     AmmoType ammoType_ = AmmoType::Normal;
     float fireCooldown_ = 0.0f;
     float reloadTimer_ = 0.0f;   

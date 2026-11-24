@@ -28,6 +28,8 @@ void PlayerReticle::Initialize()
     binder_->Bind("Threshold", &config_.threshold, 0.8f, 0.05f, 0.5f, 0.95f);
     binder_->Bind("MidRatio", &config_.midRatio, 0.35f, 0.05f, 0.1f, 0.8f);
     binder_->Bind("FinalExponent", &config_.finalExponent, 3.0f, 0.5f, 1.0f, 8.0f);
+    binder_->BindColor("NormalColor", &config_.normalColor, { 1.0f, 1.0f, 1.0f, 1.0f });
+    binder_->BindColor("IncendiaryColor", &config_.incendiaryColor, { 1.0f, 0.6f, 0.25f, 1.0f });
 }
 
 void PlayerReticle::Update(bool isMoving, bool isAiming)
@@ -68,9 +70,11 @@ void PlayerReticle::OnShootRecoil()
     focusTimer_ *= 0.2f;
 }
 
-void PlayerReticle::Draw()
+void PlayerReticle::Draw(bool isIncendiary)
 {
     if (!sprite_ || reticleAlpha_ <= 0.001f) return;
+
+    sprite_->SetColor(isIncendiary ? config_.incendiaryColor : config_.normalColor);
 
     float centerX = Engine::GetUIWidth() * 0.5f;
     float centerY = Engine::GetUIHeight() * 0.5f;
@@ -147,6 +151,8 @@ void PlayerReticle::DebugGui()
         binder_->Draw("Threshold", "加速開始タイミング");
         binder_->Draw("MidRatio", "加速開始時点の収束率");
         binder_->Draw("FinalExponent", "ラストスパートの急速度");
+        binder_->Draw("NormalColor", "通常弾のときの色");
+        binder_->Draw("IncendiaryColor", "焼夷弾のときの色");
 
         ImGui::Unindent();
     }

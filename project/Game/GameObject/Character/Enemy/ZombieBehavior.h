@@ -66,8 +66,8 @@ struct ZombieConfig
     float headRadius = 1.2f;
     FS::Vector3 headOffset = { 0.0f, 0.6f, 0.0f };   
     float headDamageRate = 2.0f;
-    float flinchAnimSpeed = 0.7f;
-    float flinchEndTime = 0.9f;   
+    float flinchAnimSpeed = 0.5f;
+    float flinchEndTime = 0.6f;    
     float headshotSoundVolume = 0.8f;
 
     // 燃えている草の上での継続ダメージ
@@ -174,14 +174,10 @@ private:
     std::string headJointName_;
     // ModifyDamage で頭に当たったかを覚え、OnTakeDamage で使う
     bool wasHeadHit_ = false;
-    // 体にまとわせ、生きている間ずっと出すパーティクル
     FS::ParticleEmitter* auraEmitterPtr_ = nullptr;
-    // 這い出ている間だけ出す土煙
     FS::ParticleEmitter* dustEmitterPtr_ = nullptr;
-    // 倒されて消えるときの爆発
     FS::ParticleEmitter* explosionEmitterPtr_ = nullptr;
     FS::ParticleEmitter* deathSparkEmitterPtr_ = nullptr;
-    // 燃えている間だけ出す火の粉
     FS::ParticleEmitter* burnEmbersEmitterPtr_ = nullptr;
     bool isBurnEffectPlaying_ = false;
     BurnStatus burn_;

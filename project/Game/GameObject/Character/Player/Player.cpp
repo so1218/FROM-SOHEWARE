@@ -766,7 +766,7 @@ void Player::Draw()
 
 	if (isControllable_)
 	{
-		reticle_->Draw();
+		reticle_->Draw(weapon_->GetAmmoType() == PlayerWeapon::AmmoType::Incendiary);
 		ammoDisplay_->Draw(*weapon_);
 		moneyDisplay_->Draw(money_);
 		stamina_->DrawGauge();

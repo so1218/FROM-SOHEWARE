@@ -687,7 +687,8 @@ void FloatingBehavior::DestroyThruster(Enemy* owner, int thrusterIndex)
     AudioPlayer& audioPlayer = AudioPlayer::GetInstance();
     const Vector3& thrusterPosition = thrusterModels_[thrusterIndex]->GetTransform().translation_;
     audioPlayer.Play3D("floatingEnemyDamaged", owner->GetTransform().translation_, { .volume = 0.6f, .maxDistance = 100.0f });
-    audioPlayer.Play3D("floatingEnemyExplosion", thrusterPosition, { .volume = config_.thrusterExplosionVolume, .maxDistance = 150.0f });
+    const char* thrusterExplosionSound = audioPlayer.HasSound("floatingThrusterExplosion") ? "floatingThrusterExplosion" : "floatingEnemyExplosion";
+    audioPlayer.Play3D(thrusterExplosionSound, thrusterPosition, { .volume = config_.thrusterExplosionVolume, .maxDistance = 150.0f });
 
     if (destroyedThrusterCount_ >= config_.thrustersToCrash)
     {
@@ -1061,7 +1062,7 @@ void FloatingEnemyConfig::Draw(PropertyBinder& binder)
         ImGui::SeparatorText("音 (置いたときだけ鳴る)");
         binder.Draw("ShotSoundVolume", "銃声 (floatingEnemyShot) の大きさ");
         binder.Draw("LockOnSoundVolume", "狙い始めの音 (floatingLockOn) の大きさ");
-        binder.Draw("ThrusterExplosionVolume", "スラスターが壊れたときの爆発音 (floatingEnemyExplosion) の大きさ");
+        binder.Draw("ThrusterExplosionVolume", "スラスターが壊れたときの爆発音 (floatingThrusterExplosion。無ければ floatingEnemyExplosion) の大きさ");
         ImGui::TreePop();
     }
 

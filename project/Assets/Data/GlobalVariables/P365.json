@@ -228,6 +228,7 @@
         ],
         "FireInterval": 0.3499999940395355,
         "IncendiaryGroundReach": 4.0,
+        "IncendiaryMagazineSize": 2,
         "IncendiaryRadius": 2.0,
         "Magazine Direction": [
             0.33000001311302185,
@@ -759,8 +760,9 @@
         ],
         "Reload Tilt In Time": 0.6000000238418579,
         "Reload Tilt Out Time": 0.4000000059604645,
-        "ReloadTime": 1.600000023841858,
+        "ReloadTime": 2.0,
         "Shot Boom Volume": 1.0,
+        "Shot Incendiary Volume": 0.6000000238418579,
         "Shot Sound Volume": 0.25,
         "Shot Trail Volume": 0.25
     }
