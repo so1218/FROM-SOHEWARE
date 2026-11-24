@@ -62,7 +62,7 @@ private:
     float thunderShakeDuration_ = 0.5f;
     float thunderShakeIntensity_ = 2.0f;
     float thunderShakeMaxDistance_ = 300.0f;
-    // 落ちた所の草に火がつく半径。0 でつかない
+    // 落ちた所の草に火がつく半径
     float thunderIgniteRadius_ = 4.0f;
     // 1 本の雷が火をつける割合 (0 ~ 1)
     float thunderIgniteChance_ = 0.3f;

@@ -273,7 +273,7 @@ void GameOverScreen::Draw()
 
     const Vector2 screenSize = { Engine::GetUIWidth(), Engine::GetUIHeight() };
 
-    // 倒れてからだんだん暗くする。明けていく間は暗いまま消していく
+    // 倒れてからだんだん暗くする
     float dimRatio = SmoothStep01(deathTimer_ / std::max(dimTime_, 0.001f));
     float blackoutRatio = 0.0f;
     float contentOpacity = 1.0f;

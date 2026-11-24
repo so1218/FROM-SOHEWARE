@@ -4,6 +4,115 @@
         "BlinkSpeed": 2.5,
         "FadeInTime": 2.0,
         "FadeOutTime": 0.6000000238418579,
+        "PadHintIconPos": [
+            -200.0,
+            53.0
+        ],
+        "PadHintIconSize": [
+            85.0,
+            85.0
+        ],
+        "PadHintText_Align": 2,
+        "PadHintText_CharSpacing": 3.0,
+        "PadHintText_Color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "PadHintText_Content": "パッド推奨",
+        "PadHintText_Direction": 0,
+        "PadHintText_Font": "Shippori",
+        "PadHintText_FontSize": 37.5,
+        "PadHintText_Layer": 31,
+        "PadHintText_LineSpacing": 1.0,
+        "PadHintText_OutlineColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+        ],
+        "PadHintText_OutlineWidth": 0.0,
+        "PadHintText_Pivot": [
+            1.0,
+            0.5
+        ],
+        "PadHintText_Pos": [
+            -58.0,
+            50.0
+        ],
+        "PadHintText_ScreenAnchor": [
+            1.0,
+            0.0
+        ],
+        "PadHintText_ShadowColor": [
+            0.0,
+            0.0,
+            0.0,
+            0.6000000238418579
+        ],
+        "PadHintText_ShadowOffset": [
+            2.0,
+            2.0
+        ],
+        "PadHintText_ShadowSoftness": 3.0,
+        "PadHintText_ShadowSpread": 1.0,
+        "PadHintText_Visible": true,
+        "PadHintText_WrapLength": 0.0,
+        "StageArrowBobDistance": 5.0,
+        "StageArrowBobSpeed": 3.0,
+        "StageArrowGap": 28.0,
+        "StageArrowSize": 36.0,
+        "StageLabelOpacity": 1.0,
+        "StageLabelText_Align": 1,
+        "StageLabelText_CharSpacing": 6.0,
+        "StageLabelText_Color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "StageLabelText_Content": "STAGE",
+        "StageLabelText_Direction": 0,
+        "StageLabelText_Font": "Shippori",
+        "StageLabelText_FontSize": 27.0,
+        "StageLabelText_Layer": 31,
+        "StageLabelText_LineSpacing": 1.0,
+        "StageLabelText_OutlineColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+        ],
+        "StageLabelText_OutlineWidth": 0.0,
+        "StageLabelText_Pivot": [
+            0.5,
+            0.5
+        ],
+        "StageLabelText_Pos": [
+            0.0,
+            80.0
+        ],
+        "StageLabelText_ScreenAnchor": [
+            0.5,
+            0.5
+        ],
+        "StageLabelText_ShadowColor": [
+            0.0,
+            0.0,
+            0.0,
+            0.6000000238418579
+        ],
+        "StageLabelText_ShadowOffset": [
+            2.0,
+            2.0
+        ],
+        "StageLabelText_ShadowSoftness": 3.0,
+        "StageLabelText_ShadowSpread": 1.0,
+        "StageLabelText_Visible": true,
+        "StageLabelText_WrapLength": 0.0,
+        "StageName_Stage1": "カマタ森林",
+        "StageName_Stage2": "マツヤ",
         "StageText_Align": 1,
         "StageText_CharSpacing": 4.0,
         "StageText_Color": [
@@ -13,8 +122,8 @@
             1.0
         ],
         "StageText_Direction": 0,
-        "StageText_Font": "Main",
-        "StageText_FontSize": 24.0,
+        "StageText_Font": "Shippori",
+        "StageText_FontSize": 32.0,
         "StageText_Layer": 31,
         "StageText_LineSpacing": 1.0,
         "StageText_OutlineColor": [
@@ -30,7 +139,7 @@
         ],
         "StageText_Pos": [
             0.0,
-            250.0
+            112.0
         ],
         "StageText_ScreenAnchor": [
             0.5,
@@ -40,7 +149,7 @@
             0.0,
             0.0,
             0.0,
-            0.6000000238418579
+            0.45490196347236633
         ],
         "StageText_ShadowOffset": [
             2.5,
@@ -87,7 +196,7 @@
             0.0,
             0.0,
             0.0,
-            0.0
+            0.6235294342041016
         ],
         "StartText_ShadowOffset": [
             2.5,
@@ -100,9 +209,9 @@
         "SubtitleText_Align": 1,
         "SubtitleText_CharSpacing": 8.0,
         "SubtitleText_Color": [
-            1.0,
-            1.0,
-            1.0,
+            0.7843137383460999,
+            0.7843137383460999,
+            0.09803921729326248,
             1.0
         ],
         "SubtitleText_Content": "A War Alone",
@@ -149,9 +258,9 @@
         "TitleText_Align": 1,
         "TitleText_CharSpacing": 12.0,
         "TitleText_Color": [
-            1.0,
-            1.0,
-            1.0,
+            0.7843137383460999,
+            0.7843137383460999,
+            0.09803921729326248,
             1.0
         ],
         "TitleText_Content": "Last Blood",

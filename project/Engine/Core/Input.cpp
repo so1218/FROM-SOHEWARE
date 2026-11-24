@@ -168,8 +168,16 @@ void Input::UpdateLastUsedDevice()
     }
 
     // マウスの移動は机に当たっただけでも起きるので、キーとボタンだけで判定する
-    if (std::any_of(std::begin(keys_), std::end(keys_), IsDown) ||
-        std::any_of(std::begin(mouseState_.rgbButtons), std::end(mouseState_.rgbButtons), IsDown))
+    bool isKeyboardMouseTriggered = false;
+    for (size_t keyIndex = 0; keyIndex < std::size(keys_); ++keyIndex)
+    {
+        isKeyboardMouseTriggered |= IsDown(keys_[keyIndex]) && !IsDown(prevKeys_[keyIndex]);
+    }
+    for (size_t buttonIndex = 0; buttonIndex < std::size(mouseState_.rgbButtons); ++buttonIndex)
+    {
+        isKeyboardMouseTriggered |= IsDown(mouseState_.rgbButtons[buttonIndex]) && !IsDown(prevMouseState_.rgbButtons[buttonIndex]);
+    }
+    if (isKeyboardMouseTriggered)
     {
         lastUsedDevice_ = Device::KeyboardMouse;
     }

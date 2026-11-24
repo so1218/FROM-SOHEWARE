@@ -210,11 +210,11 @@ void WeatherEffectManager::Update()
                 // 3Dサウンドの再生
                 AudioPlayer::GetInstance().Play3D("lightningStrike", endPos, { .volume = 0.3f, .maxDistance = 500.0f });
 
-                // 落雷パーティクルの再生。1本ごとに別のエミッターを使う
+                // 落雷パーティクルの再生
                 thunderStrikeEmitters_[i]->SetPosition(endPos);
                 thunderStrikeEmitters_[i]->Play();
 
-                // 落ちた所の草に火がつく。雨で濡れているので、燃え広がる距離は短い
+                // 落ちた所の草に火がつく
                 std::uniform_real_distribution<float> distIgnite(0.0f, 1.0f);
                 if (thunderIgniteRadius_ > 0.0f && distIgnite(randomEngine_) < thunderIgniteChance_)
                 {
@@ -222,7 +222,7 @@ void WeatherEffectManager::Update()
                 }
             }
 
-            // カメラシェイク (一番近い雷の距離を使って1回だけ揺らす)
+            // カメラシェイク
             if (cameraManager_ && closestRadius < thunderShakeMaxDistance_)
             {
                 float distanceAttenuation = 1.0f - (closestRadius / thunderShakeMaxDistance_);

@@ -16,7 +16,7 @@ public:
     void Draw() override;
     void DebugGui() override;
 
-    // まだ終えていない説明から始める。最後まで終えていれば何もしない
+    // まだ終えていない説明から始める
     void Begin();
     void Stop() { StartStep(Step::Finished); }
 
@@ -38,10 +38,10 @@ private:
     // 1 つの説明の表示の流れ
     enum class Phase
     {
-        Delay,     // 出す前の待ち
+        Delay,     
         FadeIn,
-        Waiting,   // 操作を待っている
-        Cleared,   // できたので少し残す
+        Waiting,  
+        Cleared,  
         FadeOut,
     };
 
@@ -70,7 +70,7 @@ private:
 
     std::vector<StepContent> stepContents_;
     Step currentStep_ = Step::Move;
-  // 次に始める説明
+    // 次に始める説明
     Step resumeStep_ = Step::Move;
     Phase phase_ = Phase::Delay;
     float phaseTimer_ = 0.0f;

@@ -67,6 +67,7 @@ struct ZombieConfig
     FS::Vector3 headOffset = { 0.0f, 0.6f, 0.0f };   
     float headDamageRate = 2.0f;
     float flinchAnimSpeed = 1.0f;
+    float flinchEndTime = 0.6f;     // ひるむアニメーションをどこで切り上げるか (0 ~ 1)
     float headshotSoundVolume = 0.8f;
 
     // 燃えている草の上での継続ダメージ
@@ -76,11 +77,14 @@ struct ZombieConfig
     float burnSparkVolume = 0.35f;
     float burnSparkHearingDistance = 30.0f; 
 
-    // 足音
-    float footstepVolume = 0.5f;
-    float footstepMaxDistance = 25.0f;
-    float footstepLeftTime = 0.1f;
-    float footstepRightTime = 0.6f;
+    // 這い出るときの音
+    float emergeSoundVolume = 0.7f;
+    float emergeSoundMaxDistance = 60.0f;
+    // 吠える
+    float roarVolume = 0.6f;
+    float roarMaxDistance = 60.0f;
+    float roarMinInterval = 6.0f;
+    float roarMaxInterval = 14.0f;
 
     // 倒されて爆発したときに、足元の草に火がつく半径。0 でつかない
     float deathIgniteRadius = 4.0f;
@@ -156,8 +160,8 @@ private:
     // 足元の炎で燃え、継続ダメージを受ける
     void UpdateBurning(Enemy* owner, float deltaTime);
     void UpdateBurnEffects(Enemy* owner);
-    // 歩いている間、足が着いた瞬間に足音を鳴らす
-    void UpdateFootsteps(Enemy* owner);
+    // 生きて動いている間、ときどき吠える
+    void UpdateRoar(Enemy* owner, float deltaTime);
     // 本体と同じ大きさで立たせたときの、足元から頭までの高さ
     float MeasureHeadHeight();
 
@@ -182,9 +186,8 @@ private:
     bool isBurnEffectPlaying_ = false;
     BurnStatus burn_;
     float burnSparkTimer_ = 0.0f;
-    // 今流しているアニメーションと、足音を判定するための前のフレームの進み具合
-    const char* currentAnimation_ = nullptr;
-    float previousFootstepTime_ = 0.0f;
+    // 次に吠えるまでの時間
+    float roarTimer_ = 0.0f;
     // 這い出る前に埋まっている深さ
     float buriedDepth_ = 0.0f;
 

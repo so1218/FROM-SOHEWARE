@@ -36,6 +36,8 @@ private:
     };
 
     bool IsConfirmTriggered() const;
+    // 見出しとステージ名と、左右のボタンの絵を出す
+    void DrawStageSelect(float opacity);
     // 決定を待つ間の左右の入力で、選ぶステージを変える
     void UpdateStageSelect(float deltaTime);
 
@@ -45,7 +47,18 @@ private:
     std::unique_ptr<FS::Text> subtitleText_;
     std::unique_ptr<FS::Text> startText_;
     std::unique_ptr<FS::Text> stageText_;
+    // ステージ名の上の見出しSTAGE
+    std::unique_ptr<FS::Text> stageLabelText_;
+    // ステージ名の左右で、選び直せることを見せるボタンの絵
+    std::unique_ptr<FS::Sprite> stageLeftIcon_;
+    std::unique_ptr<FS::Sprite> stageRightIcon_;
+    // ステージごとの名前
+    std::vector<std::string> stageNames_;
+    float arrowTimer_ = 0.0f;
     std::unique_ptr<FS::Sprite> blackScreen_;
+    // 右上のパッド推奨
+    std::unique_ptr<FS::Sprite> padHintIcon_;
+    std::unique_ptr<FS::Text> padHintText_;
 
     Phase phase_ = Phase::FadeIn;
     float phaseTimer_ = 0.0f;
@@ -61,4 +74,9 @@ private:
     float fadeOutTime_ = 0.6f;      
     float blinkSpeed_ = 2.5f;       
     float blinkMinOpacity_ = 0.35f;
+    float stageLabelOpacity_ = 0.6f;      
+    float stageArrowSize_ = 36.0f;
+    float stageArrowGap_ = 28.0f;          
+    float stageArrowBobDistance_ = 5.0f;  
+    float stageArrowBobSpeed_ = 3.0f;
 };

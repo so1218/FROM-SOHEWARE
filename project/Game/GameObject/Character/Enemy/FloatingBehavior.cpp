@@ -482,7 +482,7 @@ void FloatingBehavior::ChangeState(State state)
     stateTimer_ = 0.0f;
     shotsFired_ = 0;
 
-    // ためるのは狙っている間だけ。撃ち始めたら、残りの粒は銃口へ吸い込まれて消える
+    // ためるのは狙っている間だけ
     if (state != State::LockOn && chargeEmitterPtr_)
     {
         chargeEmitterPtr_->Stop();

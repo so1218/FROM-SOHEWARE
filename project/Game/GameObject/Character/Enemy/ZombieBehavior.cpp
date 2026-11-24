@@ -96,6 +96,11 @@ void ZombieBehavior::Initialize(Enemy* owner)
 
     PlayAnimation(kEmergeAnimation, false, config_.emergeAnimSpeed);
     ChangeState(State::Emerge);
+
+    AudioPlayer::GetInstance().Play3D("zombieEmerge", spawnPosition_,
+        { .volume = config_.emergeSoundVolume, .maxDistance = config_.emergeSoundMaxDistance });
+    // 出てきてすぐ吠えないよう、最初も間を空ける
+    roarTimer_ = RandomRange(config_.roarMinInterval, std::max(config_.roarMinInterval, config_.roarMaxInterval));
 }
 
 float ZombieBehavior::MeasureHeadHeight()
@@ -171,7 +176,7 @@ void ZombieBehavior::Update(Enemy* owner)
     animationModel_->Update();
     UpdateHeadCollider(owner);
 
-    UpdateFootsteps(owner);
+    UpdateRoar(owner, deltaTime);
 }
 
 void ZombieBehavior::UpdateEmerge(Enemy* owner, float deltaTime)
@@ -338,7 +343,10 @@ void ZombieBehavior::UpdateFlinch(Enemy* owner, float deltaTime)
     PlayAnimation(hasFlinchAnimation ? kFlinchAnimation : kIdleAnimation, false, config_.flinchAnimSpeed);
 
     constexpr float kFlinchFallbackTime = 0.5f;
-    const bool isFinished = hasFlinchAnimation ? animationModel_->IsFinished() : stateTimer_ >= kFlinchFallbackTime;
+    // 最後まで流すと長いので、途中で切り上げて追いかけに戻る
+    const bool isFinished = hasFlinchAnimation
+        ? animationModel_->IsFinished() || animationModel_->GetNormalizedTime() >= config_.flinchEndTime
+        : stateTimer_ >= kFlinchFallbackTime;
     if (isFinished || stateTimer_ >= kAnimationFallbackTime)
     {
         if (player_)
@@ -469,53 +477,25 @@ void ZombieBehavior::PlayAnimation(const char* name, bool isLoop, float speed)
     // 用意していないアニメーションは、歩きで代わりにする
     const char* animation = HasAnimation(name) ? name : kWalkAnimation;
     animationModel_->Play(animation, isLoop, speed, config_.animBlendTime);
-
-    // 切り替えた直後に足音が鳴らないよう、今の進み具合から数え直す
-    if (currentAnimation_ != animation)
-    {
-        currentAnimation_ = animation;
-        previousFootstepTime_ = animationModel_->GetNormalizedTime();
-    }
 }
 
-void ZombieBehavior::UpdateFootsteps(Enemy* owner)
+void ZombieBehavior::UpdateRoar(Enemy* owner, float deltaTime)
 {
-    // 歩いて移動している状態だけ。攻撃のアニメーションが無くて歩きで代わりにしているときは鳴らさない
-    const bool isMovingState = state_ == State::Chase || state_ == State::Search || state_ == State::Wander;
-    if (!isMovingState || currentAnimation_ != kWalkAnimation)
+    // 這い出ている間と倒れていく間は吠えない
+    if (state_ == State::Emerge || state_ == State::Dying)
     {
         return;
     }
 
-    const float currentTime = animationModel_->GetNormalizedTime();
-    // 1 周して頭に戻ったときは、前の値を 1 周分戻して比べる
-    float previousTime = previousFootstepTime_;
-    if (currentTime < previousTime)
-    {
-        previousTime -= 1.0f;
-    }
-    previousFootstepTime_ = currentTime;
-
-    int stepCount = 0;
-    for (float stepTime : { config_.footstepLeftTime, config_.footstepRightTime })
-    {
-        // 1 周前の分も見て、頭に戻ったフレームで跨いだ足も拾う
-        for (float cycleOffset : { -1.0f, 0.0f })
-        {
-            const float time = stepTime + cycleOffset;
-            if (previousTime < time && time <= currentTime)
-            {
-                ++stepCount;
-            }
-        }
-    }
-    if (stepCount == 0)
+    roarTimer_ -= deltaTime;
+    if (roarTimer_ > 0.0f)
     {
         return;
     }
+    roarTimer_ = RandomRange(config_.roarMinInterval, std::max(config_.roarMinInterval, config_.roarMaxInterval));
 
-    AudioPlayer::GetInstance().Play3D("zombieFootstep", owner->GetTransform().translation_,
-        { .volume = config_.footstepVolume, .maxDistance = config_.footstepMaxDistance });
+    AudioPlayer::GetInstance().Play3D("zombieRoar", owner->GetTransform().translation_,
+        { .volume = config_.roarVolume, .maxDistance = config_.roarMaxDistance });
 }
 
 float ZombieBehavior::RandomRange(float min, float max)
@@ -782,6 +762,7 @@ void ZombieConfig::Bind(PropertyBinder& binder)
     binder.Bind("HeadOffset", &headOffset, { 0.0f, 0.6f, 0.0f });
     binder.Bind("HeadDamageRate", &headDamageRate, 2.0f, 0.1f, 0.0f, 20.0f);
     binder.Bind("FlinchAnimSpeed", &flinchAnimSpeed, 1.0f, 0.01f, 0.1f, 5.0f);
+    binder.Bind("FlinchEndTime", &flinchEndTime, 0.6f, 0.01f, 0.05f, 1.0f);
     binder.Bind("HeadshotSoundVolume", &headshotSoundVolume, 0.8f, 0.01f, 0.0f, 2.0f);
 
     burn.Bind(binder, "Burn", ZombieConfig().burn);
@@ -789,10 +770,12 @@ void ZombieConfig::Bind(PropertyBinder& binder)
     binder.Bind("BurnSparkVolume", &burnSparkVolume, 0.35f, 0.01f, 0.0f, 2.0f);
     binder.Bind("BurnSparkHearingDistance", &burnSparkHearingDistance, 30.0f, 0.5f, 0.0f, 500.0f);
 
-    binder.Bind("FootstepVolume", &footstepVolume, 0.5f, 0.01f, 0.0f, 2.0f);
-    binder.Bind("FootstepMaxDistance", &footstepMaxDistance, 25.0f, 0.5f, 1.0f, 200.0f);
-    binder.Bind("FootstepLeftTime", &footstepLeftTime, 0.1f, 0.01f, 0.0f, 1.0f);
-    binder.Bind("FootstepRightTime", &footstepRightTime, 0.6f, 0.01f, 0.0f, 1.0f);
+    binder.Bind("EmergeSoundVolume", &emergeSoundVolume, 0.7f, 0.01f, 0.0f, 2.0f);
+    binder.Bind("EmergeSoundMaxDistance", &emergeSoundMaxDistance, 60.0f, 0.5f, 1.0f, 500.0f);
+    binder.Bind("RoarVolume", &roarVolume, 0.6f, 0.01f, 0.0f, 2.0f);
+    binder.Bind("RoarMaxDistance", &roarMaxDistance, 60.0f, 0.5f, 1.0f, 500.0f);
+    binder.Bind("RoarMinInterval", &roarMinInterval, 6.0f, 0.1f, 0.5f, 120.0f);
+    binder.Bind("RoarMaxInterval", &roarMaxInterval, 14.0f, 0.1f, 0.5f, 120.0f);
 
     binder.Bind("DeathIgniteRadius", &deathIgniteRadius, 4.0f, 0.1f, 0.0f, 50.0f);
 }
@@ -875,6 +858,7 @@ void ZombieConfig::Draw(PropertyBinder& binder)
         binder.Draw("HeadOffset", "頭の骨からのずれ");
         binder.Draw("HeadDamageRate", "頭に当たったときのダメージ (倍)");
         binder.Draw("FlinchAnimSpeed", "ひるむ速さ (humanHit)");
+        binder.Draw("FlinchEndTime", "ひるむアニメーションを切り上げる所 (0 ~ 1)");
         binder.Draw("HeadshotSoundVolume", "頭に当たったときの音 (zombieHeadshot) の大きさ");
         ImGui::TreePop();
     }
@@ -889,12 +873,14 @@ void ZombieConfig::Draw(PropertyBinder& binder)
         ImGui::TreePop();
     }
 
-    if (ImGui::TreeNode("足音"))
+    if (ImGui::TreeNode("声"))
     {
-        binder.Draw("FootstepVolume", "足音 (zombieFootstep) の大きさ");
-        binder.Draw("FootstepMaxDistance", "足音が聞こえる距離 (m)");
-        binder.Draw("FootstepLeftTime", "左足が着く位置 (歩きのアニメーションの 0 ~ 1)");
-        binder.Draw("FootstepRightTime", "右足が着く位置 (歩きのアニメーションの 0 ~ 1)");
+        binder.Draw("EmergeSoundVolume", "這い出る音 (zombieEmerge) の大きさ");
+        binder.Draw("EmergeSoundMaxDistance", "這い出る音が聞こえる距離 (m)");
+        binder.Draw("RoarVolume", "吠える声 (zombieRoar) の大きさ");
+        binder.Draw("RoarMaxDistance", "吠える声が聞こえる距離 (m)");
+        binder.Draw("RoarMinInterval", "次に吠えるまでの最短 (秒)");
+        binder.Draw("RoarMaxInterval", "次に吠えるまでの最長 (秒)");
         ImGui::TreePop();
     }
 }

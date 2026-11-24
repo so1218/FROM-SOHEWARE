@@ -15,7 +15,7 @@ struct Entry
     int count = 0;
 };
 
-// 画面に出している一覧。クリアすると空になる
+// 画面に出している一覧
 std::vector<Entry> entries;
 // これまでに報告されたもの
 std::unordered_set<std::string> reportedKeys;
