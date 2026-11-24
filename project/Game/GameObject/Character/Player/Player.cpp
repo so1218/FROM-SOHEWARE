@@ -103,6 +103,7 @@ void Player::Initialize()
 	binder_->Bind("HitKnockbackTime", &config.hitKnockbackTime, 0.25f, 0.01f, 0.01f, 2.0f);
 	binder_->Bind("HitStunTime", &config.hitStunTime, 0.4f, 0.01f, 0.0f, 3.0f);
 	binder_->Bind("HitInvulnerableTime", &config.hitInvulnerableTime, 0.8f, 0.01f, 0.0f, 5.0f);
+	binder_->Bind("DamagedSoundVolume", &config.damagedSoundVolume, 0.6f, 0.01f, 0.0f, 2.0f);
 	binder_->Bind("HitCameraShake", &config.hitCameraShake, 0.04f, 0.001f, 0.0f, 0.5f);
 	binder_->Bind("HitStopTime", &config.hitStopTime, 0.05f, 0.005f, 0.0f, 0.5f);
 	binder_->Bind("HitStopTimeScale", &config.hitStopTimeScale, 0.05f, 0.01f, 0.0f, 1.0f);
@@ -409,6 +410,18 @@ void Player::TakeDamage(int damage)
 	if (health_->IsDead())
 	{
 		StartDeath();
+		return;
+	}
+	PlayDamagedSound();
+}
+
+void Player::PlayDamagedSound()
+{
+	// 倒れたときは倒れたときの音だけを鳴らす
+	AudioPlayer& audioPlayer = AudioPlayer::GetInstance();
+	if (audioPlayer.HasSound("playerDamaged"))
+	{
+		audioPlayer.Play("playerDamaged", config.damagedSoundVolume);
 	}
 }
 
@@ -454,6 +467,7 @@ void Player::TakeHit(int damage, const Vector3& knockbackDirection)
 		StartDeath();
 		return;
 	}
+	PlayDamagedSound();
 
 	invulnerableTimer_ = config.hitInvulnerableTime;
 	weapon_->CancelReload();
@@ -717,6 +731,14 @@ bool Player::IsCrawling() const
 	return stateMachine_ && stateMachine_->IsCurrentState<PlayerStateCrawl>();
 }
 
+void Player::StandUp()
+{
+	if (IsCrawling())
+	{
+		stateMachine_->ChangeState<PlayerStateNormal>();
+	}
+}
+
 bool Player::IsHidden() const
 {
 	return concealment_->IsHidden();
@@ -840,6 +862,7 @@ void Player::DebugGui()
 		binder_->Draw("HitKnockbackTime", "押し飛ばされる時間 (秒)");
 		binder_->Draw("HitStunTime", "操作できない時間 (秒)");
 		binder_->Draw("HitInvulnerableTime", "次に殴られても効かない時間 (秒)");
+		binder_->Draw("DamagedSoundVolume", "殴られたり撃たれたりしたときの音の大きさ");
 		binder_->Draw("HitCameraShake", "カメラの揺れ (ラジアン)");
 		binder_->Draw("HitStopTime", "当たった瞬間に止める時間 (秒)");
 		binder_->Draw("HitStopTimeScale", "止めている間の時間の速さ");

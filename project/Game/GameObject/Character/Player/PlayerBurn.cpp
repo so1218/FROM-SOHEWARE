@@ -76,7 +76,7 @@ void PlayerBurn::DrawProperties(PropertyBinder& binder)
     binder.Draw("Burn_VibrationStrength", "振動の強さ");
     binder.Draw("Burn_VibrationTime", "振動の長さ (秒)");
     binder.Draw("Burn_CameraShake", "カメラの揺れ");
-    binder.Draw("Burn_SoundVolume", "燃える音 (playerBurn) の大きさ");
+    binder.Draw("Burn_SoundVolume", "燃えてダメージを受けたときの音の大きさ");
     binder.Draw("Burn_VoiceVolume", "うめき声 (playerBurnVoice) の大きさ");
 }
 
@@ -103,7 +103,7 @@ int PlayerBurn::Update(const Vector3& footPosition, const AnimationModel* bodyMo
 void PlayerBurn::OnDamaged()
 {
     flashTimer_ = flashTime_;
-    PlayIfLoaded("playerBurn", burnSoundVolume_);
+    PlayIfLoaded("playerBurning", burnSoundVolume_);
     PlayIfLoaded("playerBurnVoice", voiceVolume_);
 }
 

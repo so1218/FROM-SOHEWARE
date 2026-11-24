@@ -32,6 +32,8 @@ void WeatherEffectManager::Initialize()
 
     lightningSystem_->Initialize();
 
+    binder_->Bind("SunnyBgmVolume", &sunnyBgmVolume_, 0.5f, 0.01f, 0.0f, 2.0f);
+    binder_->Bind("RainBgmVolume", &rainBgmVolume_, 0.8f, 0.01f, 0.0f, 2.0f);
     binder_->Bind("ThunderMinInterval", &thunderMinInterval_, 3.0f, 0.1f, 0.5f, 30.0f);
     binder_->Bind("ThunderMaxInterval", &thunderMaxInterval_, 8.0f, 0.1f, 1.0f, 60.0f);
     binder_->Bind("MinStrikeCount", &minStrikeCount_, 1, 1, 1, 10);
@@ -130,22 +132,22 @@ void WeatherEffectManager::Update()
         thunderRainParticleEmitterPtr_->Stop();
     }
 
+    // 雷雨も雨と同じ音にする。雨から雷雨に変わっても、音は途切れずに続く
     std::string nextBgm = "";
+    float nextBgmVolume = 0.0f;
     if (current == WeatherState::Sunny)
     {
         nextBgm = "sunnyBGM";
+        nextBgmVolume = sunnyBgmVolume_;
     }
-    if (current == WeatherState::Rain)
+    if (current == WeatherState::Rain || current == WeatherState::Thunderstorm)
     {
         nextBgm = "rainBGM";
-    }
-    if (current == WeatherState::Thunderstorm)
-    {
-        nextBgm = "thunderStormBGM";
+        nextBgmVolume = rainBgmVolume_;
     }
 
-    // 再生すべきBGMが、現在鳴っているものと違ったら切り替える
-    if (currentBgmName_ != nextBgm)
+    // 再生すべきBGMか音量が、現在のものと違ったら鳴らし直す。音量は鳴らし始めにしか決められない
+    if (currentBgmName_ != nextBgm || currentBgmVolume_ != nextBgmVolume)
     {
         if (!currentBgmName_.empty())
         {
@@ -154,10 +156,11 @@ void WeatherEffectManager::Update()
 
         if (!nextBgm.empty()) 
         {
-            AudioPlayer::GetInstance().PlayBgm(nextBgm, 0.5f);
+            AudioPlayer::GetInstance().PlayBgm(nextBgm, nextBgmVolume);
         }
 
         currentBgmName_ = nextBgm;
+        currentBgmVolume_ = nextBgmVolume;
     }
 
     // 落雷の制御
@@ -247,6 +250,12 @@ void WeatherEffectManager::DebugGui()
     if (!FS::BeginEnvironmentTab("雷"))
     {
         return;
+    }
+
+    if (ImGui::CollapsingHeader("天気の音"))
+    {
+        binder_->Draw("SunnyBgmVolume", "晴れの音の大きさ");
+        binder_->Draw("RainBgmVolume", "雨と雷雨の音の大きさ");
     }
 
     if (ImGui::CollapsingHeader("落雷の発生", ImGuiTreeNodeFlags_DefaultOpen))

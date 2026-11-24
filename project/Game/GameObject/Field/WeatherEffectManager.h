@@ -69,6 +69,11 @@ private:
 
     FS::CameraManager* cameraManager_ = nullptr;
 
-    // 現在再生中のBGMの名前
+    // 現在再生中のBGMの名前と、鳴らし始めたときの音量
     std::string currentBgmName_ = "";
+    float currentBgmVolume_ = 0.0f;
+
+    // 天気ごとの BGM の音量
+    float sunnyBgmVolume_ = 0.5f;
+    float rainBgmVolume_ = 0.8f;
 };

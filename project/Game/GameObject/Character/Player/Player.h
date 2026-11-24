@@ -66,6 +66,7 @@ public:
 		float hitKnockbackTime = 0.25f;     
 		float hitStunTime = 0.4f;           
 		float hitInvulnerableTime = 0.8f;   
+		float damagedSoundVolume = 0.6f;	
 		float hitCameraShake = 0.04f;       
 		float hitStopTime = 0.05f;          
 		float hitStopTimeScale = 0.05f;     
@@ -170,6 +171,8 @@ public:
 
 	// 這うと隠れる
 	bool IsCrawling() const;
+	// 這っていれば立ち上がらせる
+	void StandUp();
 	// 敵から見つかりにくい
 	bool IsHidden() const;
 	void SetGrassField(const GrassField* grassField);
@@ -189,6 +192,8 @@ private:
 	static constexpr float kMovingThreshold = 0.1f;
 
 	FS::Vector3 ReadMoveInput() const;
+	// 殴られたり撃たれたりしたときの音
+	void PlayDamagedSound();
 
 	FS::Engine* engine_;
 	FS::Camera* camera_ = nullptr;

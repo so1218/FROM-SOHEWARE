@@ -22,7 +22,7 @@ namespace
         { "Step2", "回避", "keyboard_ctrl", "xbox_button_b" },
         { "Step3", "ジャンプ", "keyboard_space", "xbox_button_a" },
         { "StepCrawl", "這う", "keyboard_c", "xbox_stick_r_press" },
-        { "StepHide", "草むらで這うか霧の中に入ると、敵に見つかりにくくなる", "", "" },
+        { "StepHide", "草むらで這うか霧の中に入ると、敵から隠れられる", "", "" },
         { "Step4", "エイム", "keyboard_k", "xbox_lt" },
         { "Step5", "エイム中に射撃", "keyboard_j", "xbox_rt" },
         { "Step6", "リロード", "keyboard_r", "xbox_button_x" },
@@ -333,6 +333,12 @@ void Tutorial::Update()
             phase_ = Phase::Cleared;
             phaseTimer_ = 0.0f;
             resumeStep_ = static_cast<Step>(static_cast<int>(currentStep_) + 1);
+
+            // 這えたら立たせて、次の説明を立った姿勢から始める
+            if (currentStep_ == Step::Crawl)
+            {
+                player_->StandUp();
+            }
         }
         break;
 
