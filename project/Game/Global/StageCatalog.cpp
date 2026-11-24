@@ -16,6 +16,20 @@ const std::vector<StageDefinition> kStages =
 int selectedIndex = 0;
 bool isJustSwitched = false;
 
+std::vector<StageAppearance>& GetAppearances()
+{
+    static std::vector<StageAppearance> appearances = []()
+        {
+            std::vector<StageAppearance> result;
+            for (const StageDefinition& stage : kStages)
+            {
+                result.push_back({ stage.displayName });
+            }
+            return result;
+        }();
+    return appearances;
+}
+
 }
 
 const std::vector<StageDefinition>& GetStages()
@@ -43,6 +57,16 @@ void Select(int index)
     }
     selectedIndex = wrappedIndex;
     isJustSwitched = true;
+}
+
+StageAppearance& GetAppearance(int index)
+{
+    return GetAppearances()[static_cast<size_t>(index)];
+}
+
+const StageAppearance& GetSelectedAppearance()
+{
+    return GetAppearance(selectedIndex);
 }
 
 bool TakeJustSwitched()

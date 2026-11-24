@@ -512,7 +512,6 @@
             0.6173446774482727,
             1.0
         ],
-        "StageNameText_Content": "カマタ森林",
         "StageNameText_Direction": 0,
         "StageNameText_Font": "Shippori",
         "StageNameText_FontSize": 63.0,
@@ -526,16 +525,16 @@
         ],
         "StageNameText_OutlineWidth": 0.0,
         "StageNameText_Pivot": [
-            1.0,
+            0.0,
             0.5
         ],
         "StageNameText_Pos": [
-            -30.0,
+            0.0,
             0.0
         ],
         "StageNameText_ScreenAnchor": [
-            0.23000000417232513,
-            0.17000000178813934
+            0.03,
+            0.17
         ],
         "StageNameText_ShadowColor": [
             0.0,

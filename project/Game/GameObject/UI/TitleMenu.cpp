@@ -84,13 +84,15 @@ void TitleMenu::Initialize()
     binder_->Bind("StageArrowBobDistance", &stageArrowBobDistance_, 5.0f, 0.1f, 0.0f, 100.0f);
     binder_->Bind("StageArrowBobSpeed", &stageArrowBobSpeed_, 3.0f, 0.05f, 0.0f, 20.0f);
 
-    // ステージごとの名前は ImGui で書く
+    // ステージごとの名前と色は ImGui で決める
     const std::vector<StageDefinition>& stages = StageCatalog::GetStages();
-    stageNames_.resize(stages.size());
-    for (size_t stageIndex = 0; stageIndex < stages.size(); ++stageIndex)
+    for (int stageIndex = 0; stageIndex < static_cast<int>(stages.size()); ++stageIndex)
     {
-        binder_->BindString("StageName_" + stages[stageIndex].settingsName, stages[stageIndex].displayName,
-            [this, stageIndex](const std::string& name) { stageNames_[stageIndex] = name; });
+        const std::string& settingsName = stages[stageIndex].settingsName;
+        StageAppearance& appearance = StageCatalog::GetAppearance(stageIndex);
+        binder_->BindString("StageName_" + settingsName, stages[stageIndex].displayName,
+            [&appearance](const std::string& name) { appearance.name = name; });
+        binder_->BindColor("StageColor_" + settingsName, &appearance.color, { 1.0f, 1.0f, 1.0f, 1.0f });
     }
     binder_->BindTextElement("PadHintText", padHintText_.get());
     binder_->Bind("PadHintIconPos", &padHintIcon_->GetPosition(), { -40.0f, 50.0f }, 1.0f);
@@ -247,12 +249,13 @@ void TitleMenu::Draw()
 
 void TitleMenu::DrawStageSelect(float opacity)
 {
-    const size_t stageIndex = static_cast<size_t>(StageCatalog::GetSelectedIndex());
 
     stageLabelText_->SetOpacity(opacity * stageLabelOpacity_);
     stageLabelText_->Draw();
 
-    stageText_->SetText(stageNames_[stageIndex]);
+    const StageAppearance& appearance = StageCatalog::GetSelectedAppearance();
+    stageText_->SetText(appearance.name);
+    stageText_->SetColor(appearance.color);
     stageText_->SetOpacity(opacity);
     stageText_->Draw();
 
@@ -290,6 +293,7 @@ void TitleMenu::DebugGui()
         for (const StageDefinition& stage : StageCatalog::GetStages())
         {
             binder_->Draw("StageName_" + stage.settingsName, stage.settingsName + " の名前");
+            binder_->Draw("StageColor_" + stage.settingsName, stage.settingsName + " の名前の色");
         }
         binder_->Draw("StageArrowSize", "左右のボタンの絵の大きさ");
         binder_->Draw("StageArrowGap", "ステージ名から絵までの間");

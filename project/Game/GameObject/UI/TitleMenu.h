@@ -52,8 +52,6 @@ private:
     // ステージ名の左右で、選び直せることを見せるボタンの絵
     std::unique_ptr<FS::Sprite> stageLeftIcon_;
     std::unique_ptr<FS::Sprite> stageRightIcon_;
-    // ステージごとの名前
-    std::vector<std::string> stageNames_;
     float arrowTimer_ = 0.0f;
     std::unique_ptr<FS::Sprite> blackScreen_;
     // 右上のパッド推奨

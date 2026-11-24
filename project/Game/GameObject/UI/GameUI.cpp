@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "GameUI.h"
+#include "StageCatalog.h"
 #include "ImGuiManager.h"
 #include "EnvironmentManager.h"
 
@@ -23,7 +24,8 @@ void GameUI::Initialize()
     binder_->Bind("IsVisible", &isVisible_, true);
 
     binder_->BindTextElement("MessageText", messageText_.get());
-    binder_->BindTextElement("StageNameText", stageNameText_.get());
+    // 中身と色はタイトルで選んだステージのものを使うので、保存しない
+    binder_->BindTextElement("StageNameText", stageNameText_.get(), false);
 
     // 配置と見た目だけ登録
     binder_->BindTextElement("TimeText", timeText_.get(), false);
@@ -65,6 +67,10 @@ void GameUI::Draw()
     if (!isGameplayVisible_) return;
 
     timeText_->Draw();
+
+    const StageAppearance& stageAppearance = StageCatalog::GetSelectedAppearance();
+    stageNameText_->SetText(stageAppearance.name);
+    stageNameText_->SetColor(stageAppearance.color);
     stageNameText_->Draw();
 }
 
@@ -75,7 +81,7 @@ void GameUI::DebugGui()
 
     ImGui::SeparatorText("テキスト");
     binder_->DrawTextElement("MessageText", "メッセージ");
-    binder_->DrawTextElement("StageNameText", "ステージ名");
+    binder_->DrawTextElement("StageNameText", "ステージ名 (名前と色はタイトルの「ステージ選択」で決める)");
     binder_->DrawTextElement("TimeText", "時刻");
     binder_->Draw("TimeFormat", "時刻の書式 ({} に時、分の順で入る)");
     binder_->Draw("TimeMinuteStep", "分の刻み (分)");

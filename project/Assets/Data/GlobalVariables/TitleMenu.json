@@ -63,6 +63,18 @@
         "StageArrowBobSpeed": 3.0,
         "StageArrowGap": 28.0,
         "StageArrowSize": 36.0,
+        "StageColor_Stage1": [
+            0.2510126829147339,
+            0.888198733329773,
+            0.42515042424201965,
+            1.0
+        ],
+        "StageColor_Stage2": [
+            1.0,
+            0.3198757767677307,
+            0.3198757767677307,
+            1.0
+        ],
         "StageLabelOpacity": 1.0,
         "StageLabelText_Align": 1,
         "StageLabelText_CharSpacing": 6.0,
@@ -111,8 +123,8 @@
         "StageLabelText_ShadowSpread": 1.0,
         "StageLabelText_Visible": true,
         "StageLabelText_WrapLength": 0.0,
-        "StageName_Stage1": "カマタ森林",
-        "StageName_Stage2": "マツヤ",
+        "StageName_Stage1": "カマター森林",
+        "StageName_Stage2": "ネリマ紅葉樹林",
         "StageText_Align": 1,
         "StageText_CharSpacing": 4.0,
         "StageText_Color": [
