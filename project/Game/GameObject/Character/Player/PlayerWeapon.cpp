@@ -296,7 +296,16 @@ bool PlayerWeapon::Fire(Camera* camera, float focusRatio, float maxDamageMultipl
 
     RaycastHit hitInfo;
     uint32_t targetMask = CollisionLayer::Enemy | CollisionLayer::Prop;
-    const bool hasColliderHit = colManager->Raycast(rayStart, finalRayDir, config_.maxDistance, &hitInfo, targetMask);
+    bool hasColliderHit = colManager->Raycast(rayStart, finalRayDir, config_.maxDistance, &hitInfo, targetMask);
+
+    // 弱点は体の当たり判定の中に入っているので、同じ敵の体に当たったときも弱点を優先する
+    RaycastHit weakPointHit;
+    if (colManager->Raycast(rayStart, finalRayDir, config_.maxDistance, &weakPointHit, CollisionLayer::EnemyWeakPoint) &&
+        (!hasColliderHit || weakPointHit.hitObject == hitInfo.hitObject || weakPointHit.distance < hitInfo.distance))
+    {
+        hitInfo = weakPointHit;
+        hasColliderHit = true;
+    }
 
     // レイはカメラから飛ばすので、カメラとプレイヤーの間にある木は無視する
     const float muzzleDistance = (GetMuzzleWorldPosition() - rayStart).Dot(finalRayDir);

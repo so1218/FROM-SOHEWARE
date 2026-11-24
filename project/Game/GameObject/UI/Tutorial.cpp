@@ -104,10 +104,15 @@ void Tutorial::Initialize()
 
 void Tutorial::Begin()
 {
-    if (isEnabled_)
+    if (!isEnabled_ || resumeStep_ == Step::Finished)
     {
-        StartStep(Step::Move);
+        return;
     }
+
+    // 途中から始めるときも、ゲームが始まってから少し待って出す
+    currentStep_ = Step::Finished;
+    StartStep(resumeStep_);
+    phase_ = Phase::Delay;
 }
 
 void Tutorial::CreatePanelTexture()
@@ -293,6 +298,7 @@ void Tutorial::Update()
         {
             phase_ = Phase::Cleared;
             phaseTimer_ = 0.0f;
+            resumeStep_ = static_cast<Step>(static_cast<int>(currentStep_) + 1);
         }
         break;
 
@@ -363,13 +369,15 @@ void Tutorial::DebugGui()
 
     if (ImGui::Button("最初から"))
     {
+        resumeStep_ = Step::Move;
         currentStep_ = Step::Finished;
         StartStep(Step::Move);
     }
     ImGui::SameLine();
     if (ImGui::Button("次へ飛ばす") && currentStep_ != Step::Finished)
     {
-        StartStep(static_cast<Step>(static_cast<int>(currentStep_) + 1));
+        resumeStep_ = static_cast<Step>(static_cast<int>(currentStep_) + 1);
+        StartStep(resumeStep_);
     }
 
     binder_->Draw("IsEnabled", "ゲーム開始時に表示する");

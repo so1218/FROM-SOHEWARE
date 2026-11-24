@@ -10,6 +10,7 @@
 #include "Terrain.h"
 #include "AudioPlayer.h"
 #include "RendererManager.h"
+#include "CollisionConfig.h"
 
 using namespace FS;
 
@@ -53,6 +54,23 @@ void ZombieBehavior::Initialize(Enemy* owner)
     {
         auraEmitterPtr_->SetTargetAnimationModel(animationModel_.get());
         auraEmitterPtr_->Play();
+    }
+
+    // 頭は弾のレイだけが当たる球にする
+    headCollider_ = owner->AddSphereCollider(config_.headRadius);
+    headCollider_->SetCollisionLayer(CollisionLayer::EnemyWeakPoint);
+    headCollider_->SetRaycastOnly(true);
+    headCollider_->SetRotateCenterOffset(false);
+    headCollider_->SetColor({ 1.0f, 0.2f, 0.2f, 1.0f });   // 体と見分けやすいよう赤で描く
+
+    // Mixamo のモデルは、書き出し方で骨の名前の頭が変わる
+    for (const char* jointName : { "mixamorig1:Head", "mixamorig:Head" })
+    {
+        if (animationModel_->GetSkeleton().jointMap.contains(jointName))
+        {
+            headJointName_ = jointName;
+            break;
+        }
     }
 
     // 頭のてっぺんまで地面の下に埋まった所から始める
@@ -123,6 +141,7 @@ void ZombieBehavior::Update(Enemy* owner)
     case State::Search: UpdateSearch(owner, deltaTime); break;
     case State::Wander: UpdateWander(owner, deltaTime); break;
     case State::Dying:  UpdateDying(owner, deltaTime);  break;
+    case State::Flinch: UpdateFlinch(owner, deltaTime); break;
     }
 
     // Dying の中で Die() されたときはここで終わる
@@ -150,6 +169,7 @@ void ZombieBehavior::Update(Enemy* owner)
     // テクスチャを変えたときも反映されるよう、毎フレーム写す
     animationModel_->ShareMaterialsFrom(materialSource_);
     animationModel_->Update();
+    UpdateHeadCollider(owner);
 
     UpdateFootsteps(owner);
 }
@@ -309,6 +329,44 @@ void ZombieBehavior::UpdateDying(Enemy* owner, float deltaTime)
     {
         owner->Die();
     }
+}
+
+void ZombieBehavior::UpdateFlinch(Enemy* owner, float deltaTime)
+{
+    // ひるむアニメーションが無いときは、その場で立ち止まる
+    const bool hasFlinchAnimation = HasAnimation(kFlinchAnimation);
+    PlayAnimation(hasFlinchAnimation ? kFlinchAnimation : kIdleAnimation, false, config_.flinchAnimSpeed);
+
+    constexpr float kFlinchFallbackTime = 0.5f;
+    const bool isFinished = hasFlinchAnimation ? animationModel_->IsFinished() : stateTimer_ >= kFlinchFallbackTime;
+    if (isFinished || stateTimer_ >= kAnimationFallbackTime)
+    {
+        if (player_)
+        {
+            lastKnownPlayerPosition_ = player_->GetTransform().translation_;
+        }
+        ChangeState(State::Chase);
+    }
+}
+
+void ZombieBehavior::UpdateHeadCollider(Enemy* owner)
+{
+    if (!headCollider_)
+    {
+        return;
+    }
+
+    const bool isEnabled = !headJointName_.empty() && state_ != State::Dying;
+    headCollider_->SetEnable(isEnabled);
+    if (!isEnabled)
+    {
+        return;
+    }
+
+    const Matrix4x4 headMatrix = animationModel_->GetJointWorldMatrix(headJointName_);
+    const Vector3 headPosition = Vector3(headMatrix.m[3][0], headMatrix.m[3][1], headMatrix.m[3][2]) + config_.headOffset;
+    headCollider_->SetCenterOffset(headPosition - owner->GetTransform().GetWorldPosition());
+    headCollider_->SetRadius(config_.headRadius);
 }
 
 void ZombieBehavior::ChangeState(State state)
@@ -601,6 +659,14 @@ bool ZombieBehavior::OnHealthDepleted(Enemy* owner)
     {
         ChangeState(State::Dying);
     }
+
+    // 倒れていく間はオーラを出さない
+    if (auraEmitterPtr_)
+    {
+        auraEmitterPtr_->Stop();
+        auraEmitterPtr_->Destroy();
+        auraEmitterPtr_ = nullptr;
+    }
     return true;
 }
 
@@ -609,6 +675,12 @@ int ZombieBehavior::ModifyDamage(Enemy* owner, int damage, const Collider* hitCo
     if (state_ == State::Dying)
     {
         return 0;
+    }
+
+    wasHeadHit_ = hitCollider && hitCollider == headCollider_;
+    if (wasHeadHit_)
+    {
+        damage = static_cast<int>(static_cast<float>(damage) * config_.headDamageRate);
     }
 
     // 撃たれたら、隠れていてもそちらへ向かう
@@ -632,6 +704,23 @@ void ZombieBehavior::OnTakeDamage(Enemy* owner, int damage, const Vector3& hitPo
     AudioPlayer& audioPlayer = AudioPlayer::GetInstance();
     audioPlayer.Play("zombieDamaged", config_.damagedSoundVolume);
     audioPlayer.Play("zombieSpark", config_.sparkSoundVolume);
+
+    if (!wasHeadHit_)
+    {
+        return;
+    }
+    wasHeadHit_ = false;
+
+    if (audioPlayer.HasSound("zombieHeadshot"))
+    {
+        audioPlayer.Play("zombieHeadshot", config_.headshotSoundVolume);
+    }
+
+    // 這い出ている途中はひるませない。倒れるときは、このあとで倒れる方に切り替わる
+    if (state_ != State::Emerge)
+    {
+        ChangeState(State::Flinch);
+    }
 }
 
 void ZombieBehavior::Draw(Enemy* owner)
@@ -641,7 +730,7 @@ void ZombieBehavior::Draw(Enemy* owner)
 
 void ZombieBehavior::DebugGui(Enemy* owner)
 {
-    constexpr const char* kStateNames[] = { "這い出る", "追跡", "攻撃", "捜索", "うろつく", "倒れる" };
+    constexpr const char* kStateNames[] = { "這い出る", "追跡", "攻撃", "捜索", "うろつく", "倒れる", "ひるむ" };
     ImGui::Text("状態: %s", kStateNames[static_cast<int>(state_)]);
 }
 
@@ -688,6 +777,12 @@ void ZombieConfig::Bind(PropertyBinder& binder)
 
     binder.Bind("DamagedSoundVolume", &damagedSoundVolume, 0.6f, 0.01f, 0.0f, 2.0f);
     binder.Bind("SparkSoundVolume", &sparkSoundVolume, 0.5f, 0.01f, 0.0f, 2.0f);
+
+    binder.Bind("HeadRadius", &headRadius, 1.2f, 0.01f, 0.01f, 20.0f);
+    binder.Bind("HeadOffset", &headOffset, { 0.0f, 0.6f, 0.0f });
+    binder.Bind("HeadDamageRate", &headDamageRate, 2.0f, 0.1f, 0.0f, 20.0f);
+    binder.Bind("FlinchAnimSpeed", &flinchAnimSpeed, 1.0f, 0.01f, 0.1f, 5.0f);
+    binder.Bind("HeadshotSoundVolume", &headshotSoundVolume, 0.8f, 0.01f, 0.0f, 2.0f);
 
     burn.Bind(binder, "Burn", ZombieConfig().burn);
     binder.Bind("BurnSparkInterval", &burnSparkInterval, 0.8f, 0.01f, 0.05f, 10.0f);
@@ -771,6 +866,16 @@ void ZombieConfig::Draw(PropertyBinder& binder)
     {
         binder.Draw("DamagedSoundVolume", "当たる音の大きさ");
         binder.Draw("SparkSoundVolume", "ショートする音の大きさ");
+        ImGui::TreePop();
+    }
+
+    if (ImGui::TreeNode("頭"))
+    {
+        binder.Draw("HeadRadius", "頭の当たり判定の半径");
+        binder.Draw("HeadOffset", "頭の骨からのずれ");
+        binder.Draw("HeadDamageRate", "頭に当たったときのダメージ (倍)");
+        binder.Draw("FlinchAnimSpeed", "ひるむ速さ (humanHit)");
+        binder.Draw("HeadshotSoundVolume", "頭に当たったときの音 (zombieHeadshot) の大きさ");
         ImGui::TreePop();
     }
 

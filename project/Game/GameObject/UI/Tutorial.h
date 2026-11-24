@@ -16,7 +16,7 @@ public:
     void Draw() override;
     void DebugGui() override;
 
-    // 説明を最初から始める
+    // まだ終えていない説明から始める。最後まで終えていれば何もしない
     void Begin();
     void Stop() { StartStep(Step::Finished); }
 
@@ -70,6 +70,8 @@ private:
 
     std::vector<StepContent> stepContents_;
     Step currentStep_ = Step::Move;
+  // 次に始める説明
+    Step resumeStep_ = Step::Move;
     Phase phase_ = Phase::Delay;
     float phaseTimer_ = 0.0f;
     float visibility_ = 0.0f;      

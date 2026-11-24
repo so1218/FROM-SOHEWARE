@@ -62,6 +62,13 @@ struct ZombieConfig
     float damagedSoundVolume = 0.6f;
     float sparkSoundVolume = 0.5f;
 
+    // 頭の当たり判定
+    float headRadius = 1.2f;
+    FS::Vector3 headOffset = { 0.0f, 0.6f, 0.0f };   
+    float headDamageRate = 2.0f;
+    float flinchAnimSpeed = 1.0f;
+    float headshotSoundVolume = 0.8f;
+
     // 燃えている草の上での継続ダメージ
     BurnConfig burn = { 0.2f, 20.0f, 0.5f, 3.0f };
     // 燃えている間に、回路が焼ける音を鳴らす間隔と大きさ
@@ -89,6 +96,7 @@ public:
     static constexpr const char* kWalkAnimation = "zombieWalk";
     static constexpr const char* kAttackAnimation = "zombieAttack";
     static constexpr const char* kDeathAnimation = "zombieDeath";
+    static constexpr const char* kFlinchAnimation = "humanHit";
 
     // materialSource は全員で共有するマテリアルを持つモデル
     ZombieBehavior(const ZombieConfig& config, const FS::Terrain* terrain, const FS::AnimationModel* materialSource, const FS::Vector3& spawnPosition, float spawnYaw);
@@ -120,6 +128,7 @@ private:
         Search, 
         Wander, 
         Dying,  
+        Flinch,     
     };
 
     void UpdateEmerge(Enemy* owner, float deltaTime);
@@ -128,6 +137,9 @@ private:
     void UpdateSearch(Enemy* owner, float deltaTime);
     void UpdateWander(Enemy* owner, float deltaTime);
     void UpdateDying(Enemy* owner, float deltaTime);
+    void UpdateFlinch(Enemy* owner, float deltaTime);
+    // 頭の当たり判定を頭の骨の位置へ動かす
+    void UpdateHeadCollider(Enemy* owner);
     void ChangeState(State state);
 
     // 見えているか、銃声が聞こえたら、プレイヤーの位置を覚えて true
@@ -154,6 +166,10 @@ private:
     const FS::AnimationModel* materialSource_ = nullptr;
     Player* player_ = nullptr;
     std::unique_ptr<FS::AnimationModel> animationModel_;
+    FS::Collider* headCollider_ = nullptr;
+    std::string headJointName_;
+    // ModifyDamage で頭に当たったかを覚え、OnTakeDamage で使う
+    bool wasHeadHit_ = false;
     // 体にまとわせ、生きている間ずっと出すパーティクル
     FS::ParticleEmitter* auraEmitterPtr_ = nullptr;
     // 這い出ている間だけ出す土煙

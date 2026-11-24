@@ -493,6 +493,12 @@ void FloatingBehavior::ChangeState(State state)
     {
         hasWanderTarget_ = false;
         wanderPauseTimer_ = 0.0f;
+
+        // 追いかけている間の銃声は数えていないので、見失った直後に「聞こえた」ことにならないよう数え直す
+        if (player_)
+        {
+            lastPlayerShotCount_ = player_->GetShotCount();
+        }
     }
 }
 

@@ -23,7 +23,7 @@
         "DeathIgniteGroundReach": 5.0,
         "DeathIgniteRadius": 6.0,
         "HP": 100,
-        "HearingRange": 120.0,
+        "HearingRange": 60.0,
         "HiddenLoseTime": 4.0,
         "HiddenSightRange": 10.0,
         "InitialMinDistance": 80.0,
@@ -55,7 +55,7 @@
         "ShotSoundVolume": 1.0,
         "ShotSpread": 0.029999999329447746,
         "ShowMuzzleMarker": false,
-        "SightRange": 60.0,
+        "SightRange": 30.0,
         "SpawnHeight": 60.0,
         "SpawnInterval": 40.0,
         "SpawnMaxDistance": 160.0,
@@ -94,6 +94,7 @@
             0.6000000238418579,
             1.0
         ],
+        "ThrusterExplosionVolume": 0.30000001192092896,
         "ThrusterHP": 30,
         "ThrusterOffset": [
             1.0,
