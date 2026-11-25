@@ -1,0 +1,61 @@
+{
+    "ObjectiveBanner": {
+        "BandColor": [
+            0.0,
+            0.0,
+            0.0,
+            0.550000011920929
+        ],
+        "BandHeight": 230.0,
+        "EnterTime": 0.6000000238418579,
+        "FadeInTime": 0.800000011920929,
+        "FadeOutTime": 0.800000011920929,
+        "Font": "Shippori",
+        "HoldTime": 0.5,
+        "LeaveTime": 0.5,
+        "LineColor": [
+            0.8500000238418579,
+            0.15000000596046448,
+            0.10000000149011612,
+            0.8999999761581421
+        ],
+        "LineThickness": 2.0,
+        "LineWidth": 520.0,
+        "RepeatShowTime": 1.7999999523162842,
+        "ShowTime": 3.5,
+        "SkipDelay": 0.5,
+        "SubColor": [
+            1.0,
+            1.0,
+            1.0,
+            0.8999999761581421
+        ],
+        "SubDelay": 0.25,
+        "SubFontSize": 30.0,
+        "SubOffsetY": 35.0,
+        "TimeColor": [
+            1.0,
+            1.0,
+            1.0,
+            0.6000000238418579
+        ],
+        "TimeFontSize": 22.0,
+        "TimeOffsetY": 80.0,
+        "TitleColor": [
+            0.949999988079071,
+            0.8999999761581421,
+            0.800000011920929,
+            1.0
+        ],
+        "TitleFontSize": 64.0,
+        "TitleGlowColor": [
+            0.44999998807907104,
+            0.0,
+            0.0,
+            0.800000011920929
+        ],
+        "TitleGlowSoftness": 10.0,
+        "TitleOffsetY": -40.0,
+        "TitleStartScale": 1.2999999523162842
+    }
+}

@@ -26,6 +26,9 @@
 #include "PauseMenuHint.h"
 #include "PauseMenu.h"
 #include "GameOverScreen.h"
+#include "ResultScreen.h"
+#include "ObjectiveBanner.h"
+#include "EnvironmentManager.h"
 #include "PostEffectManager.h"
 #include "RendererManager.h"
 #include "SceneManager.h"
@@ -68,10 +71,22 @@ PlayScene::PlayScene(Engine* engine)
     objectManager_.Create<PauseMenuHint>(engine_);
     pauseMenu_ = objectManager_.Create<PauseMenu>(engine_);
     gameOverScreen_ = objectManager_.Create<GameOverScreen>(engine_);
+    resultScreen_ = objectManager_.Create<ResultScreen>(engine_);
+    objectiveBanner_ = objectManager_.Create<ObjectiveBanner>(engine_);
+
+    flowBinder_ = std::make_unique<PropertyBinder>(engine_, "GameFlow");
 }
 
 void PlayScene::OnInitialize()
 {
+    flowBinder_->Bind("StartHour", &startHour_, 17.0f, 0.1f, 0.0f, 24.0f);
+    flowBinder_->Bind("StormHour", &stormHour_, 19.0f, 0.1f, 0.0f, 24.0f);
+    flowBinder_->Bind("EndHour", &endHour_, 20.0f, 0.1f, 0.0f, 24.0f);
+    flowBinder_->Bind("CalmDuration", &calmDuration_, 120.0f, 1.0f, 1.0f, 3600.0f);
+    flowBinder_->Bind("StormDuration", &stormDuration_, 60.0f, 1.0f, 1.0f, 3600.0f);
+    flowBinder_->Bind("StormLeadTime", &stormLeadTime_, 10.0f, 0.1f, 0.0f, 60.0f);
+    flowBinder_->Bind("TutorialEndDelay", &tutorialEndDelay_, 2.0f, 0.1f, 0.0f, 10.0f);
+
     followCamera_->Initialize();
     titleCamera_->Initialize();
     EnterTitle();
@@ -86,6 +101,8 @@ void PlayScene::OnInitialize()
 void PlayScene::OnUpdate()
 {
     UpdatePauseMenu();
+    // 本番の時計が動いている間は、左上に目的と制限時間を出しておく
+    gameUI_->SetObjectiveVisible(isClockRunning_);
 
     switch (phase_)
     {
@@ -116,6 +133,27 @@ void PlayScene::OnUpdate()
             gameOverScreen_->Begin();
             followCamera_->SetDeathFocus(true);
             ChangePhase(Phase::GameOver);
+            break;
+        }
+        // チュートリアル中は時計を止めておき、終えたら少し待って本番の準備に移る
+        if (!isClockRunning_)
+        {
+            if (tutorial_->IsCompleted())
+            {
+                // 長押しで飛ばしたときは、待たずにすぐ暗転する
+                tutorialEndTimer_ += TimeManager::GetInstance()->GetDeltaTime();
+                if (tutorialEndTimer_ >= tutorialEndDelay_ || tutorial_->IsSkipped())
+                {
+                    BeginObjective(true);
+                }
+            }
+            break;
+        }
+        UpdateGameClock();
+        if (playTimer_ >= GetTotalPlayTime())
+        {
+            resultScreen_->Begin(player_->GetMoney());
+            ChangePhase(Phase::Result);
         }
         break;
 
@@ -123,16 +161,103 @@ void PlayScene::OnUpdate()
         if (gameOverScreen_->TakeRestartRequest())
         {
             RestartFromSpawn();
+            BeginPlayingOrObjective();
+        }
+        break;
+
+    case Phase::Intro:
+        // 真っ暗な間に、敵・お金・燃えた草ごと最初の状態に戻す
+        if (objectiveBanner_->TakeResetRequest())
+        {
+            RestartFromSpawn();
+        }
+        if (objectiveBanner_->TakeFinished())
+        {
+            isClockRunning_ = true;
             ChangePhase(Phase::Playing);
+            gameUI_->FlashClock();
+        }
+        break;
+
+    case Phase::Result:
+        if (std::optional<ResultScreen::Choice> choice = resultScreen_->TakeRequest())
+        {
+            if (*choice == ResultScreen::Choice::Retry)
+            {
+                RestartFromSpawn();
+                BeginPlayingOrObjective();
+            }
+            else
+            {
+                ReturnToTitle();
+            }
         }
         break;
     }
 }
 
+void PlayScene::ResetGameClock()
+{
+    playTimer_ = 0.0f;
+    isClockRunning_ = false;
+    isStormRequested_ = false;
+    tutorialEndTimer_ = 0.0f;
+
+    EnvironmentManager* environment = EnvironmentManager::GetInstance();
+    environment->SetTimeFlowEnabled(false);
+    environment->SetTimeOfDay(startHour_);
+    environment->SetWeatherImmediately(WeatherState::Sunny);
+}
+
+void PlayScene::BeginObjective(bool withFade)
+{
+    objectiveBanner_->Begin(withFade, !hasShownObjective_, static_cast<int>(startHour_), static_cast<int>(endHour_));
+    gameUI_->SetObjective(static_cast<int>(startHour_), static_cast<int>(stormHour_), static_cast<int>(endHour_));
+    hasShownObjective_ = true;
+    ChangePhase(Phase::Intro);
+}
+
+void PlayScene::BeginPlayingOrObjective()
+{
+    if (tutorial_->IsCompleted())
+    {
+        BeginObjective(false);
+    }
+    else
+    {
+        ChangePhase(Phase::Playing);
+    }
+}
+
+void PlayScene::UpdateGameClock()
+{
+    // ポーズ中は時間の速さが 0 なので、時計も止まる
+    playTimer_ += TimeManager::GetInstance()->GetDeltaTime();
+
+    EnvironmentManager* environment = EnvironmentManager::GetInstance();
+    environment->SetTimeOfDay(CalculateHour(playTimer_));
+
+    if (!isStormRequested_ && playTimer_ >= calmDuration_ - stormLeadTime_)
+    {
+        environment->RequestWeatherChange(WeatherState::Thunderstorm);
+        isStormRequested_ = true;
+    }
+}
+
+float PlayScene::CalculateHour(float elapsedTime) const
+{
+    if (elapsedTime < calmDuration_)
+    {
+        return startHour_ + (stormHour_ - startHour_) * (elapsedTime / calmDuration_);
+    }
+    const float stormRatio = std::min((elapsedTime - calmDuration_) / stormDuration_, 1.0f);
+    return stormHour_ + (endHour_ - stormHour_) * stormRatio;
+}
+
 void PlayScene::UpdatePauseMenu()
 {
     // 倒れている間は時間の流れを演出で変えているので、ポーズさせない
-    pauseMenu_->SetCanOpen(phase_ != Phase::CameraMove && phase_ != Phase::GameOver);
+    pauseMenu_->SetCanOpen(phase_ != Phase::CameraMove && phase_ != Phase::GameOver && phase_ != Phase::Result && phase_ != Phase::Intro);
     pauseMenu_->SetCanReturnToTitle(phase_ == Phase::Playing);
 
     if (std::optional<PauseMenu::Item> item = pauseMenu_->TakeSelectedItem())
@@ -175,6 +300,17 @@ void PlayScene::UpdatePauseMenu()
 
 void PlayScene::ChangePhase(Phase phase)
 {
+    // 目的を見せている間とリザルトの間は敵に襲わせない。デバッグで切り替えていた状態は戻す
+    if (IsEnemyFreePhase(phase) && !IsEnemyFreePhase(phase_))
+    {
+        wasIgnoredByEnemies_ = player_->IsIgnoredByEnemies();
+        player_->SetIgnoredByEnemies(true);
+    }
+    else if (!IsEnemyFreePhase(phase) && IsEnemyFreePhase(phase_))
+    {
+        player_->SetIgnoredByEnemies(wasIgnoredByEnemies_);
+    }
+
     phase_ = phase;
     ApplyPhaseSettings();
 }
@@ -192,7 +328,7 @@ void PlayScene::ApplyPhaseSettings()
         // ポーズ中はカメラを止める
         cameraManager_->ChangeController(nullptr);
     }
-    else if (isPlaying || phase_ == Phase::GameOver)
+    else if (isPlaying || phase_ == Phase::GameOver || phase_ == Phase::Result || phase_ == Phase::Intro)
     {
         cameraManager_->ChangeController(followCamera_.get());
     }
@@ -206,13 +342,15 @@ void PlayScene::ApplyPhaseSettings()
 void PlayScene::StartPlaying()
 {
     tutorial_->Begin();
-    ChangePhase(Phase::Playing);
+    BeginPlayingOrObjective();
 }
 
 void PlayScene::EnterTitle()
 {
     titleCamera_->CancelTransition();
     titleMenu_->Restart();
+    // タイトルでは時刻を止めて、遊び始めの時刻と晴れにしておく
+    ResetGameClock();
     ChangePhase(Phase::Title);
 }
 
@@ -226,11 +364,15 @@ void PlayScene::RestartFromSpawn()
     followCamera_->SetDeathFocus(false);
     followCamera_->PlaceBehindTarget();
     followCamera_->Reset(camera_.get());
+    // 遊び直すときは時計も最初から
+    ResetGameClock();
 }
 
 void PlayScene::ReturnToTitle()
 {
     gameOverScreen_->Cancel();
+    resultScreen_->Cancel();
+    objectiveBanner_->Cancel();
     followCamera_->SetDeathFocus(false);
     player_->ResetToSpawn();
     enemyManager_->ResetEnemies();
@@ -262,6 +404,38 @@ void PlayScene::OnDebugGui()
         ReturnToTitle();
     }
     ImGui::End();
+
+    ImGui::Begin("ゲームの流れ");
+    flowBinder_->Draw("StartHour", "始まりの時刻");
+    flowBinder_->Draw("StormHour", "雷雨になる時刻");
+    flowBinder_->Draw("EndHour", "終わりの時刻");
+    flowBinder_->Draw("CalmDuration", "晴れの間の長さ (秒)");
+    flowBinder_->Draw("StormDuration", "雷雨の間の長さ (秒)");
+    flowBinder_->Draw("StormLeadTime", "雷雨に変え始める早さ (秒前)");
+    flowBinder_->Draw("TutorialEndDelay", "チュートリアルを終えてから暗転するまで (秒)");
+
+    ImGui::SeparatorText("確認用");
+    if (isClockRunning_)
+    {
+        ImGui::Text("経過 %.1f / %.1f 秒  (%.2f 時)", playTimer_, GetTotalPlayTime(), CalculateHour(playTimer_));
+    }
+    else
+    {
+        ImGui::TextUnformatted("時計は止まっています (タイトル・チュートリアル中・目的の表示中)");
+    }
+    if (phase_ == Phase::Playing && isClockRunning_)
+    {
+        if (ImGui::Button("雷雨の直前へ"))
+        {
+            playTimer_ = std::max(playTimer_, calmDuration_ - stormLeadTime_ - 1.0f);
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("終わりの直前へ"))
+        {
+            playTimer_ = std::max(playTimer_, GetTotalPlayTime() - 3.0f);
+        }
+    }
+    ImGui::End();
 }
 
 void PlayScene::OnFinalize()
@@ -275,6 +449,9 @@ void PlayScene::OnFinalize()
 
     // 倒れた直後のスローを次のシーンに残さない
     gameOverScreen_->Cancel();
+
+    // 時刻の自動の進みを止めたままにしない
+    EnvironmentManager::GetInstance()->SetTimeFlowEnabled(true);
 
     // 隠れているときのビネットは毎フレーム渡す値なので、次のシーンに残さない
     engine_->GetPostEffectManager()->SetOverlayVignette(0.0f, { 0.0f, 0.0f, 0.0f });

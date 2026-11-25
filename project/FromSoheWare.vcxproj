@@ -174,6 +174,8 @@
     <ClCompile Include="Game\GameObject\UI\PauseMenu.cpp" />
     <ClCompile Include="Game\GameObject\UI\UISound.cpp" />
     <ClCompile Include="Game\GameObject\UI\GameOverScreen.cpp" />
+    <ClCompile Include="Game\GameObject\UI\ResultScreen.cpp" />
+    <ClCompile Include="Game\GameObject\UI\ObjectiveBanner.cpp" />
     <ClCompile Include="Game\GameObject\Field\GrassField.cpp" />
     <ClCompile Include="Game\GameObject\Field\GrassFireEffects.cpp" />
     <ClCompile Include="Game\GameObject\Field\FireflyField.cpp" />
@@ -227,6 +229,8 @@
     <ClInclude Include="Game\GameObject\UI\PauseMenu.h" />
     <ClInclude Include="Game\GameObject\UI\UISound.h" />
     <ClInclude Include="Game\GameObject\UI\GameOverScreen.h" />
+    <ClInclude Include="Game\GameObject\UI\ResultScreen.h" />
+    <ClInclude Include="Game\GameObject\UI\ObjectiveBanner.h" />
     <ClInclude Include="Game\GameObject\Field\GrassField.h" />
     <ClInclude Include="Game\GameObject\Field\GrassFireEffects.h" />
     <ClInclude Include="Game\GameObject\Field\FireflyField.h" />

@@ -504,76 +504,38 @@
             0.0
         ],
         "SpriteMove_Visible": true,
-        "StageNameText_Align": 0,
-        "StageNameText_CharSpacing": 4.0,
-        "StageNameText_Color": [
-            0.6421071290969849,
-            0.9066147804260254,
-            0.6173446774482727,
+        "TimeFlashColor": [
+            1.0,
+            0.3499999940395355,
+            0.25,
             1.0
         ],
-        "StageNameText_Direction": 0,
-        "StageNameText_Font": "Shippori",
-        "StageNameText_FontSize": 63.0,
-        "StageNameText_Layer": 0,
-        "StageNameText_LineSpacing": 1.0,
-        "StageNameText_OutlineColor": [
-            0.061560362577438354,
-            0.0682763010263443,
-            0.14785993099212646,
-            1.0
-        ],
-        "StageNameText_OutlineWidth": 0.0,
-        "StageNameText_Pivot": [
-            0.0,
-            0.5
-        ],
-        "StageNameText_Pos": [
-            0.0,
-            0.0
-        ],
-        "StageNameText_ScreenAnchor": [
-            0.029999999329447746,
-            0.17000000178813934
-        ],
-        "StageNameText_ShadowColor": [
-            0.0,
-            0.0,
-            0.0,
-            0.8588235378265381
-        ],
-        "StageNameText_ShadowOffset": [
-            2.5999999046325684,
-            2.5
-        ],
-        "StageNameText_ShadowSoftness": 4.0,
-        "StageNameText_ShadowSpread": 0.6000000238418579,
-        "StageNameText_Visible": true,
-        "StageNameText_WrapLength": 0.0,
+        "TimeFlashScale": 1.5,
+        "TimeFlashTime": 1.2000000476837158,
         "TimeFormat": "{}:{:02}",
-        "TimeMinuteStep": 10,
+        "TimeMinuteStep": 1,
         "TimeText_Align": 0,
         "TimeText_CharSpacing": 4.400000095367432,
         "TimeText_Color": [
-            1.0,
-            1.0,
-            1.0,
+            0.7453416585922241,
+            0.28471124172210693,
+            0.49070748686790466,
             1.0
         ],
         "TimeText_Direction": 0,
         "TimeText_Font": "Title",
-        "TimeText_FontSize": 71.0,
+        "TimeText_FontSize": 56.5,
         "TimeText_Layer": 0,
         "TimeText_LineSpacing": 1.0,
         "TimeText_OutlineColor": [
-            0.0,
-            0.0,
-            0.0,
+            0.004224374424666166,
+            0.015279483050107956,
+            0.2267080545425415,
             1.0
         ],
         "TimeText_OutlineWidth": 0.0,
         "TimeText_Pivot": [
-            1.0,
+            0.5,
             0.0
         ],
         "TimeText_Pos": [
@@ -581,18 +543,18 @@
             0.0
         ],
         "TimeText_ScreenAnchor": [
-            0.9700000286102295,
+            0.5,
             0.019999999552965164
         ],
         "TimeText_ShadowColor": [
             0.0,
             0.0,
             0.0,
-            0.0
+            0.6235294342041016
         ],
         "TimeText_ShadowOffset": [
-            2.0,
-            2.0
+            1.0,
+            1.0
         ],
         "TimeText_ShadowSoftness": 0.0,
         "TimeText_ShadowSpread": 0.0,

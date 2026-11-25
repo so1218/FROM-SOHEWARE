@@ -31,6 +31,9 @@ void EnvironmentManager::LoadSettings(const std::string& groupName)
     // 時間進行パラメータ
     binder_->Bind("TimeOfDay", &timeOfDay_, 12.0f, 0.1f, 0.0f, 24.0f);
     binder_->Bind("TimeSpeedMultiplier", &timeSpeedMultiplier_, 24.0f, 1.0f, -100.0f, 1000.0f);
+    binder_->Bind("DuskStartHour", &duskStartHour_, 17.0f, 0.05f, 12.0f, 24.0f);
+    binder_->Bind("SunsetHour", &sunsetHour_, 18.0f, 0.05f, 12.0f, 24.0f);
+    binder_->Bind("NightHour", &nightHour_, 19.0f, 0.05f, 12.0f, 24.0f);
 
     // -------------------------------------------------------------
     // 時間帯プロファイル
@@ -209,16 +212,47 @@ inline WeatherVisualParams LerpVisualParams(const WeatherVisualParams& a, const 
     return res;
 }
 
+float EnvironmentManager::CalculateVisualTime(float time) const
+{
+    constexpr float kNoonHour = 12.0f;
+    constexpr float kMinimumGap = 0.01f;
+    if (time < kNoonHour)
+    {
+        return time;
+    }
+
+    const float duskStart = std::clamp(duskStartHour_, kNoonHour + kMinimumGap, 24.0f - kMinimumGap * 3.0f);
+    const float sunset = std::clamp(sunsetHour_, duskStart + kMinimumGap, 24.0f - kMinimumGap * 2.0f);
+    const float night = std::clamp(nightHour_, sunset + kMinimumGap, 24.0f - kMinimumGap);
+
+    const float settingHours[] = { kNoonHour, duskStart, sunset, night, 24.0f };
+    constexpr float kStandardHours[] = { kNoonHour, 17.0f, 18.0f, 19.0f, 24.0f };
+    for (size_t index = 0; index + 1 < std::size(settingHours); ++index)
+    {
+        if (time < settingHours[index + 1])
+        {
+            const float ratio = (time - settingHours[index]) / (settingHours[index + 1] - settingHours[index]);
+            return kStandardHours[index] + (kStandardHours[index + 1] - kStandardHours[index]) * ratio;
+        }
+    }
+    return time;
+}
+
 void EnvironmentManager::Update(LightManager* lightManager)
 {
     float deltaTime = TimeManager::GetInstance()->GetDeltaTime();
 
     // 時間の進行と太陽・月のベクトル計算、基本時間帯プロファイルのブレンド
-    timeOfDay_ += (deltaTime / 60.0f) * timeSpeedMultiplier_;
+    if (isTimeFlowEnabled_)
+    {
+        timeOfDay_ += (deltaTime / 60.0f) * timeSpeedMultiplier_;
+    }
     while (timeOfDay_ >= 24.0f) { timeOfDay_ -= 24.0f; }
     while (timeOfDay_ < 0.0f) { timeOfDay_ += 24.0f; }
 
-    float timeOffset = timeOfDay_ - 6.0f;
+    // 太陽の向き・時間帯の色・霧は、見た目の時刻で決める
+    const float visualTime = CalculateVisualTime(timeOfDay_);
+    float timeOffset = visualTime - 6.0f;
     float angle = (timeOffset / 24.0f) * (Math::PI * 2.0f);
 
     Vector3 sunDir;
@@ -228,24 +262,24 @@ void EnvironmentManager::Update(LightManager* lightManager)
     Vector3 moonDir = { -sunDir.x, -sunDir.y, -sunDir.z };
     sunDirection_ = sunDir;
 
-    // 時間帯ブレンド (現在の timeOfDay_ に応じて currentProfile_ を計算)
-    if (timeOfDay_ >= 5.0f && timeOfDay_ < 6.0f) {
-        float t = (timeOfDay_ - 5.0f) / 1.0f;
+    // 時間帯ブレンド (見た目の時刻に応じて currentProfile_ を計算)
+    if (visualTime >= 5.0f && visualTime < 6.0f) {
+        float t = (visualTime - 5.0f) / 1.0f;
         currentProfile_ = BlendProfiles(profileNight_, profileSunrise_, t);
     }
-    else if (timeOfDay_ >= 6.0f && timeOfDay_ < 7.0f) {
-        float t = (timeOfDay_ - 6.0f) / 1.0f;
+    else if (visualTime >= 6.0f && visualTime < 7.0f) {
+        float t = (visualTime - 6.0f) / 1.0f;
         currentProfile_ = BlendProfiles(profileSunrise_, profileDay_, t);
     }
-    else if (timeOfDay_ >= 7.0f && timeOfDay_ < 17.0f) {
+    else if (visualTime >= 7.0f && visualTime < 17.0f) {
         currentProfile_ = profileDay_;
     }
-    else if (timeOfDay_ >= 17.0f && timeOfDay_ < 18.0f) {
-        float t = (timeOfDay_ - 17.0f) / 1.0f;
+    else if (visualTime >= 17.0f && visualTime < 18.0f) {
+        float t = (visualTime - 17.0f) / 1.0f;
         currentProfile_ = BlendProfiles(profileDay_, profileSunset_, t);
     }
-    else if (timeOfDay_ >= 18.0f && timeOfDay_ < 19.0f) {
-        float t = (timeOfDay_ - 18.0f) / 1.0f;
+    else if (visualTime >= 18.0f && visualTime < 19.0f) {
+        float t = (visualTime - 18.0f) / 1.0f;
         currentProfile_ = BlendProfiles(profileSunset_, profileNight_, t);
     }
     else {
@@ -284,7 +318,7 @@ void EnvironmentManager::Update(LightManager* lightManager)
     currentVisualParams_ = LerpVisualParams(currentW.visual, targetW.visual, weatherTransitionT_);
 
     // 霧は、晴れなら昼と夜を時間で混ぜた値、雨と雷雨なら天候の値を使い、天候の移り変わりに合わせて混ぜる
-    const FogProfile timeOfDayFog = LerpFogProfile(fogNight_, fogDay_, CalculateDayFogRatio(timeOfDay_));
+    const FogProfile timeOfDayFog = LerpFogProfile(fogNight_, fogDay_, CalculateDayFogRatio(visualTime));
     auto GetWeatherFog = [&](WeatherState state, const WeatherProfile& profile) -> const FogProfile&
         {
             return (state == WeatherState::Sunny) ? timeOfDayFog : profile.visual.fog;
@@ -374,6 +408,14 @@ void EnvironmentManager::DebugGui()
         binder_->Draw("TimeOfDay", "時間 (0-24時)");
         binder_->Draw("TimeSpeedMultiplier", "進行スピード倍率");
 
+        ImGui::SeparatorText("夕方の移り変わり (標準は 17 / 18 / 19 時)");
+        binder_->Draw("DuskStartHour", "夕焼けになり始める時刻");
+        binder_->Draw("SunsetHour", "日が沈む時刻");
+        binder_->Draw("NightHour", "夜になりきる時刻");
+        const float visualTime = CalculateVisualTime(timeOfDay_);
+        const int visualHour = static_cast<int>(visualTime);
+        ImGui::Text("見た目の時刻: %02d:%02d", visualHour, static_cast<int>((visualTime - visualHour) * 60.0f));
+
         ImGui::Spacing();
         if (ImGui::BeginTabBar("TimeOfDayProfiles"))
         {
@@ -400,7 +442,7 @@ void EnvironmentManager::DebugGui()
 
         ImGui::SeparatorText("晴れのときの霧");
         ImGui::TextDisabled("5 ~ 7 時で夜から昼へ、17 ~ 19 時で昼から夜へ移る。雨と雷雨は天候タブの霧を使う");
-        ImGui::Text("今の昼の霧の割合: %.2f", CalculateDayFogRatio(timeOfDay_));
+        ImGui::Text("今の昼の霧の割合: %.2f", CalculateDayFogRatio(CalculateVisualTime(timeOfDay_)));
         if (ImGui::BeginTabBar("TimeOfDayFog"))
         {
             auto drawFogTab = [&](const char* label, const char* p) {
@@ -531,6 +573,13 @@ void EnvironmentManager::RequestWeatherChange(WeatherState nextWeather)
 {
     targetWeather_ = nextWeather;
     weatherTransitionT_ = 0.0f; // 遷移開始
+}
+
+void EnvironmentManager::SetWeatherImmediately(WeatherState weather)
+{
+    currentWeather_ = weather;
+    targetWeather_ = weather;
+    weatherTransitionT_ = 1.0f;
 }
 
 WeatherProfile EnvironmentManager::GetWeatherProfile(WeatherState state) const

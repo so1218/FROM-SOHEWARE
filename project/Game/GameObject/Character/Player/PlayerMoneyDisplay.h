@@ -12,29 +12,22 @@ public:
     void BindProperties(FS::PropertyBinder& binder);
     void DrawProperties(FS::PropertyBinder& binder);
 
-    // 続けて拾ったときは、表示中の+に足していく
+    // 拾ったときに画像を弾ませる
     void OnGain(int amount);
-    // 出ている +表示を消す
+    // 弾ませている途中なら止める
     void Reset();
     void Draw(int money);
 
 private:
     std::unique_ptr<FS::Text> moneyText_;
-    std::unique_ptr<FS::Text> gainText_;
     std::unique_ptr<FS::Sprite> iconSprite_;
 
-    int gainAmount_ = 0;
-    float gainTimer_ = 0.0f;   // 0 より大きい間+を出す
+    float popTimer_ = 1000.0f;
 
     // パラメータ
     FS::Vector2 moneyOffset_ = { -40.0f, 40.0f };
     float moneyFontSize_ = 40.0f;
-    FS::Vector2 gainOffset_ = { -40.0f, 90.0f };
-    float gainFontSize_ = 28.0f;
-    float gainShowTime_ = 1.2f;
-    float gainRiseDistance_ = 12.0f;   
     FS::Vector4 moneyColor_ = { 1.0f, 1.0f, 1.0f, 0.95f };
-    FS::Vector4 gainColor_ = { 1.0f, 0.85f, 0.35f, 1.0f };
 
     // アイコン
     std::string iconTextureName_ = "pouch";
@@ -43,4 +36,7 @@ private:
     float iconGap_ = 10.0f;    
     float iconOffsetY_ = 0.0f;  
     FS::Vector4 iconColor_ = { 1.0f, 1.0f, 1.0f, 0.95f };
+    // 拾ったときに一番大きくなる倍率と、元に戻るまでの時間
+    float iconPopScale_ = 1.6f;
+    float iconPopTime_ = 0.35f;
 };

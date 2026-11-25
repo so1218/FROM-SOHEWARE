@@ -22,12 +22,12 @@ PauseMenu::PauseMenu(Engine* engine)
     cursorBand_->SetAnchorPoint({ 0.5f, 0.5f });
     cursorBand_->SetLayerOrder(51);
 
-    headerText_ = std::make_unique<Text>(engine_);
+    headerText_ = std::make_unique<Text>(engine_, "Shippori");
     headerText_->SetText("PAUSE");
     headerText_->SetCharacterSpacing(10.0f);
-    itemText_ = std::make_unique<Text>(engine_);
-    descriptionText_ = std::make_unique<Text>(engine_);
-    questionText_ = std::make_unique<Text>(engine_);
+    itemText_ = std::make_unique<Text>(engine_, "Shippori");
+    descriptionText_ = std::make_unique<Text>(engine_, "Shippori");
+    questionText_ = std::make_unique<Text>(engine_, "Shippori");
     questionText_->SetText("本当に終了しますか？");
 
     for (Text* text : { headerText_.get(), itemText_.get(), descriptionText_.get(), questionText_.get() })

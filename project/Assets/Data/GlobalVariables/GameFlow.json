@@ -1,0 +1,11 @@
+{
+    "GameFlow": {
+        "CalmDuration": 120.0,
+        "EndHour": 20.0,
+        "StartHour": 17.0,
+        "StormDuration": 60.0,
+        "StormHour": 19.0,
+        "StormLeadTime": 10.0,
+        "TutorialEndDelay": 2.0
+    }
+}

@@ -1,0 +1,61 @@
+{
+    "ResultScreen": {
+        "ChoiceDelay": 0.6000000238418579,
+        "ChoiceFadeTime": 0.4000000059604645,
+        "ChoiceFontSize": 30.0,
+        "ChoiceOffsetY": 200.0,
+        "ChoiceSelectedColor": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "ChoiceSpacing": 260.0,
+        "ChoiceUnselectedColor": [
+            1.0,
+            1.0,
+            1.0,
+            0.3499999940395355
+        ],
+        "DimColor": [
+            0.0,
+            0.0,
+            0.0,
+            0.699999988079071
+        ],
+        "DimTime": 1.2000000476837158,
+        "FadeInTime": 1.0,
+        "FadeOutTime": 0.8999999761581421,
+        "Font": "Shippori",
+        "HoldTime": 0.4000000059604645,
+        "MoneyColor": [
+            1.0,
+            0.8500000238418579,
+            0.4000000059604645,
+            1.0
+        ],
+        "MoneyCountSoundVolume": 0.6000000238418579,
+        "MoneyCountTime": 1.2000000476837158,
+        "MoneyDelay": 1.399999976158142,
+        "MoneyFontSize": 80.0,
+        "MoneyLabelColor": [
+            1.0,
+            1.0,
+            1.0,
+            0.699999988079071
+        ],
+        "MoneyLabelFontSize": 28.0,
+        "MoneyLabelOffsetY": -40.0,
+        "MoneyOffsetY": 30.0,
+        "TitleColor": [
+            0.949999988079071,
+            0.8999999761581421,
+            0.800000011920929,
+            1.0
+        ],
+        "TitleDelay": 0.6000000238418579,
+        "TitleFadeTime": 0.800000011920929,
+        "TitleFontSize": 96.0,
+        "TitleOffsetY": -170.0
+    }
+}

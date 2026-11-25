@@ -114,13 +114,23 @@ public:
     void Finalize();
 
     float GetTimeOfDay() const { return timeOfDay_; }
+    // 空や光の見た目に使う時刻
+    float GetVisualTimeOfDay() const { return CalculateVisualTime(timeOfDay_); }
     void SetTimeOfDay(float time) { timeOfDay_ = time; }
+    // false の間は時刻を自動で進めない
+    void SetTimeFlowEnabled(bool isEnabled) { isTimeFlowEnabled_ = isEnabled; }
+    bool IsTimeFlowEnabled() const { return isTimeFlowEnabled_; }
     Vector3 GetSunDirection() const { return sunDirection_; }
 
     const TimeOfDayProfile& GetCurrentProfile() const { return currentProfile_; }
 
     // Skydome側から現在の天候プロファイルを取得するための関数
     const WeatherProfile& GetCurrentWeatherProfile() const { return currentWeatherProfile_; }
+
+    // 天候を切り替え始める
+    void RequestWeatherChange(WeatherState nextWeather);
+    // 切り替えの途中を飛ばして、すぐにその天候にする
+    void SetWeatherImmediately(WeatherState weather);
 
     WeatherState GetCurrentWeather() const { return currentWeather_; }
     WeatherState GetTargetWeather() const { return targetWeather_; }
@@ -145,7 +155,6 @@ private:
     EnvironmentManager(const EnvironmentManager&) = delete;
     EnvironmentManager& operator=(const EnvironmentManager&) = delete;
 
-    void RequestWeatherChange(WeatherState nextWeather);
     // 天候のEnumから対応するプロファイルを返すヘルパー関数
     WeatherProfile GetWeatherProfile(WeatherState state) const;
     // 霧の設定を ImGui に並べる。prefix は保存キーの頭 (Day, Night, Rain など)
@@ -158,6 +167,13 @@ private:
     // パラメータ
     float timeOfDay_ = 12.0f;
     float timeSpeedMultiplier_ = 24.0f;
+    // 夕方の移り変わりの時刻
+    float duskStartHour_ = 17.0f;
+    float sunsetHour_ = 18.0f;
+    float nightHour_ = 19.0f;
+    // 時刻を、夕方の移り変わりの時刻に合わせて見た目の時刻に変える
+    float CalculateVisualTime(float time) const;
+    bool isTimeFlowEnabled_ = true;
     Vector3 sunDirection_ = { 0.0f, -1.0f, 0.0f };
 
     TimeOfDayProfile profileNight_;   

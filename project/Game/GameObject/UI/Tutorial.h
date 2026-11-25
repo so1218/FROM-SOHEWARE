@@ -19,6 +19,10 @@ public:
     // まだ終えていない説明から始める
     void Begin();
     void Stop() { StartStep(Step::Finished); }
+    // 最後の説明まで終えたか
+    bool IsCompleted() const { return !isEnabled_ || resumeStep_ == Step::Finished; }
+    // 長押しで飛ばしたか
+    bool IsSkipped() const { return isSkipped_; }
 
 private:
     // 説明の順番
@@ -63,6 +67,10 @@ private:
     void UpdateInputDevice();
     void ApplyIcons();
     void CreatePanelTexture();
+    // 長押しで飛ばす
+    bool UpdateSkip(float deltaTime);
+    void ApplySkipIcon();
+    void DrawSkipHint();
 
     FS::Engine* engine_ = nullptr;
     Player* player_ = nullptr;
@@ -72,6 +80,16 @@ private:
     std::unique_ptr<FS::Text> messageText_;
     std::vector<std::unique_ptr<FS::Sprite>> iconSprites_;
     size_t iconCount_ = 0;
+
+    // 長押しで飛ばす案内
+    std::unique_ptr<FS::Sprite> skipIcon_;
+    std::unique_ptr<FS::Text> skipText_;
+    std::unique_ptr<FS::Sprite> skipBarBack_;
+    std::unique_ptr<FS::Sprite> skipBarFill_;
+    bool hasSkipIcon_ = false;
+    float skipHoldTimer_ = 0.0f;
+    float skipHintVisibility_ = 0.0f;
+    bool isSkipped_ = false;
 
     std::vector<StepContent> stepContents_;
     Step currentStep_ = Step::Move;
@@ -94,6 +112,16 @@ private:
     float clearedWaitTime_ = 0.6f;  
     float requiredHoldTime_ = 1.0f; 
     float completeShowTime_ = 2.0f; 
+    float skipHoldTime_ = 1.0f;
+    FS::Vector2 skipHintMargin_ = { 40.0f, 40.0f };
+    float skipHintFontSize_ = 22.0f;
+    float skipHintIconSize_ = 36.0f;
+    float skipHintSpacing_ = 8.0f;
+    FS::Vector4 skipHintColor_ = { 1.0f, 1.0f, 1.0f, 0.8f };
+    float skipBarHeight_ = 4.0f;
+    float skipBarOffsetY_ = 26.0f;
+    FS::Vector4 skipBarBackColor_ = { 1.0f, 1.0f, 1.0f, 0.2f };
+    FS::Vector4 skipBarFillColor_ = { 1.0f, 1.0f, 1.0f, 0.9f };
 
     FS::Vector2 panelOffset_ = { 0.0f, 200.0f };
     FS::Vector2 panelSize_ = { 1280.0f, 130.0f };

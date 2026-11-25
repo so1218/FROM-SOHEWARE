@@ -25,6 +25,34 @@
             145.0
         ],
         "RequiredHoldTime": 1.0,
+        "SkipBarBackColor": [
+            1.0,
+            1.0,
+            1.0,
+            0.20000000298023224
+        ],
+        "SkipBarFillColor": [
+            1.0,
+            1.0,
+            1.0,
+            0.8999999761581421
+        ],
+        "SkipBarHeight": 4.0,
+        "SkipBarOffsetY": 26.0,
+        "SkipHintColor": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "SkipHintFontSize": 22.0,
+        "SkipHintIconSize": 36.0,
+        "SkipHintMargin": [
+            560.0,
+            639.0
+        ],
+        "SkipHintSpacing": 8.0,
+        "SkipHoldTime": 1.0,
         "StartDelay": 1.0,
         "Step0_Message": "移動",
         "Step1_Message": "ダッシュ",
@@ -33,7 +61,7 @@
         "Step4_Message": "エイム",
         "Step5_Message": "エイム中に射撃",
         "Step6_Message": "リロード",
-        "Step7_Message": "チュートリアル完了",
+        "Step7_Message": "準備完了 まもなく本番",
         "StepCrawl_Message": "這う",
         "StepHide_Message": "草むらで這うか霧の中に入ると、敵に見つかりにくくなる",
         "StepIgnite_Message": "焼夷弾で草を撃つと燃やせる",

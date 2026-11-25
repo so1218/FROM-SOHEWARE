@@ -30,6 +30,7 @@ const std::vector<InputBinding>& GetBindings(GameAction action)
         { GameAction::Pause, { Key(DIK_ESCAPE), Pad(PadButton::Menu) } },
         { GameAction::Confirm, { Key(DIK_SPACE), Key(DIK_RETURN), Pad(PadButton::A) } },
         { GameAction::Cancel, { Pad(PadButton::B) } },
+        { GameAction::SkipTutorial, { Key(DIK_TAB), Pad(PadButton::View) } },
     };
 
     const auto it = kBindings.find(action);

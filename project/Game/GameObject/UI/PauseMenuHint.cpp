@@ -25,11 +25,11 @@ PauseMenuHint::PauseMenuHint(Engine* engine)
         icon->SetLayerOrder(41);
     }
 
-    separatorText_ = std::make_unique<Text>(engine_);
+    separatorText_ = std::make_unique<Text>(engine_, "Shippori");
     separatorText_->SetText("/");
-    labelText_ = std::make_unique<Text>(engine_);
+    labelText_ = std::make_unique<Text>(engine_, "Shippori");
     labelText_->SetText("メニュー");
-    editorText_ = std::make_unique<Text>(engine_);
+    editorText_ = std::make_unique<Text>(engine_, "Shippori");
     for (Text* text : { separatorText_.get(), labelText_.get(), editorText_.get() })
     {
         text->SetScreenAnchor({ 0.0f, 0.0f });

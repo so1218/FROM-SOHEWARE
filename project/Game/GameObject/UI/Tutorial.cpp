@@ -10,6 +10,7 @@
 #include "TimeManager.h"
 #include "GameInput.h"
 #include "TextureManager.h"
+#include "UISound.h"
 
 using namespace FS;
 
@@ -28,7 +29,7 @@ namespace
         { "Step6", "リロード", "keyboard_r", "xbox_button_x" },
         { "StepSwitchAmmo", "弾を切り替える", "keyboard_q", "xbox_button_y" },
         { "StepIgnite", "焼夷弾で草を撃つと燃やせる", "keyboard_j", "xbox_rt" },
-        { "Step7", "チュートリアル完了", "", "" },
+        { "Step7", "準備完了だ！！", "", "" },
     };
 
     std::vector<std::string> SplitByComma(const std::string& text)
@@ -54,6 +55,21 @@ Tutorial::Tutorial(Engine* engine, Player* player)
     panel_ = std::make_unique<Sprite>(engine_);
     messageText_ = std::make_unique<Text>(engine_);
 
+    // 右下に置く。右端から左へ、文字・画像の順に並べる
+    skipText_ = std::make_unique<Text>(engine_);
+    skipText_->SetScreenAnchor({ 1.0f, 1.0f });
+    skipText_->SetPivot({ 1.0f, 0.5f });
+    skipText_->SetLayerOrder(21);
+    skipIcon_ = std::make_unique<Sprite>(engine_);
+    skipBarBack_ = std::make_unique<Sprite>(engine_);
+    skipBarFill_ = std::make_unique<Sprite>(engine_);
+    for (Sprite* sprite : { skipIcon_.get(), skipBarBack_.get(), skipBarFill_.get() })
+    {
+        sprite->SetScreenAnchor({ 1.0f, 1.0f });
+        sprite->SetAnchorPoint({ 0.0f, 0.5f });
+        sprite->SetLayerOrder(21);
+    }
+
     for (const auto& defaultContent : kDefaultStepContents)
     {
         stepContents_.push_back({ defaultContent[0], defaultContent[1], defaultContent[2], defaultContent[3] });
@@ -68,6 +84,16 @@ void Tutorial::Initialize()
     binder_->Bind("ClearedWaitTime", &clearedWaitTime_, 0.6f, 0.01f, 0.0f, 5.0f);
     binder_->Bind("RequiredHoldTime", &requiredHoldTime_, 1.0f, 0.01f, 0.0f, 10.0f);
     binder_->Bind("CompleteShowTime", &completeShowTime_, 2.0f, 0.01f, 0.0f, 10.0f);
+    binder_->Bind("SkipHoldTime", &skipHoldTime_, 1.0f, 0.01f, 0.1f, 5.0f);
+    binder_->Bind("SkipHintMargin", &skipHintMargin_, { 40.0f, 40.0f }, 1.0f);
+    binder_->Bind("SkipHintFontSize", &skipHintFontSize_, 22.0f, 0.5f, 4.0f, 200.0f);
+    binder_->Bind("SkipHintIconSize", &skipHintIconSize_, 36.0f, 0.5f, 4.0f, 256.0f);
+    binder_->Bind("SkipHintSpacing", &skipHintSpacing_, 8.0f, 0.5f, 0.0f, 100.0f);
+    binder_->BindColor("SkipHintColor", &skipHintColor_, { 1.0f, 1.0f, 1.0f, 0.8f });
+    binder_->Bind("SkipBarHeight", &skipBarHeight_, 4.0f, 0.1f, 0.0f, 50.0f);
+    binder_->Bind("SkipBarOffsetY", &skipBarOffsetY_, 26.0f, 0.5f);
+    binder_->BindColor("SkipBarBackColor", &skipBarBackColor_, { 1.0f, 1.0f, 1.0f, 0.2f });
+    binder_->BindColor("SkipBarFillColor", &skipBarFillColor_, { 1.0f, 1.0f, 1.0f, 0.9f });
 
     binder_->Bind("PanelOffset", &panelOffset_, { 0.0f, 200.0f }, 1.0f);
     binder_->Bind("PanelSize", &panelSize_, { 1280.0f, 130.0f }, 1.0f, 1.0f, 4000.0f);
@@ -79,7 +105,7 @@ void Tutorial::Initialize()
     binder_->Bind("FontSize", &fontSize_, 28.0f, 0.5f, 4.0f, 200.0f);
     binder_->Bind("TextOffsetY", &textOffsetY_, -24.0f, 0.5f);
     binder_->BindFontName("Font", messageText_->GetFontName(),
-        [this](const std::string& fontName) { messageText_->SetFont(fontName); });
+        [this](const std::string& fontName) { messageText_->SetFont(fontName); skipText_->SetFont(fontName); });
 
     binder_->Bind("IconSize", &iconSize_, 48.0f, 0.5f, 4.0f, 256.0f);
     binder_->Bind("IconSpacing", &iconSpacing_, 8.0f, 0.5f, 0.0f, 100.0f);
@@ -104,6 +130,7 @@ void Tutorial::Initialize()
     messageText_->SetLayerOrder(21);
 
     isUsingController_ = GameInput::IsUsingController();
+    ApplySkipIcon();
     StartStep(Step::Finished);
 }
 
@@ -113,6 +140,10 @@ void Tutorial::Begin()
     {
         return;
     }
+
+    isSkipped_ = false;
+    skipHoldTimer_ = 0.0f;
+    skipHintVisibility_ = 0.0f;
 
     // 途中から始めるときも、ゲームが始まってから少し待って出す
     currentStep_ = Step::Finished;
@@ -183,7 +214,60 @@ void Tutorial::UpdateInputDevice()
     if (isUsingController_ != wasUsingController)
     {
         ApplyIcons();
+        ApplySkipIcon();
     }
+}
+
+void Tutorial::ApplySkipIcon()
+{
+    // 画像が置かれていなければ、キーの名前を文字で出す
+    const char* iconName = isUsingController_ ? "xbox_button_view" : "keyboard_tab";
+    hasSkipIcon_ = FS::TextureManager::GetInstance().GetMetaData(iconName) != nullptr;
+    if (hasSkipIcon_)
+    {
+        skipIcon_->SetTexture(iconName);
+        skipText_->SetText("長押しでスキップ");
+    }
+    else
+    {
+        skipText_->SetText(isUsingController_ ? "View 長押しでスキップ" : "Tab 長押しでスキップ");
+    }
+}
+
+bool Tutorial::UpdateSkip(float deltaTime)
+{
+    // 完了を出している間は、もう飛ばすものがない
+    if (currentStep_ == Step::Complete)
+    {
+        skipHoldTimer_ = 0.0f;
+        skipHintVisibility_ = std::max(skipHintVisibility_ - deltaTime / fadeTime_, 0.0f);
+        return false;
+    }
+
+    skipHintVisibility_ = std::min(skipHintVisibility_ + deltaTime / fadeTime_, 1.0f);
+
+    if (GameInput::IsPressed(GameAction::SkipTutorial))
+    {
+        skipHoldTimer_ += deltaTime;
+    }
+    else
+    {
+        // 離したらすばやく戻す
+        skipHoldTimer_ = std::max(skipHoldTimer_ - deltaTime * 3.0f, 0.0f);
+    }
+
+    if (skipHoldTimer_ < skipHoldTime_)
+    {
+        return false;
+    }
+
+    UISound::PlayConfirm();
+    isSkipped_ = true;
+    skipHoldTimer_ = 0.0f;
+    skipHintVisibility_ = 0.0f;
+    resumeStep_ = Step::Finished;
+    StartStep(Step::Finished);
+    return true;
 }
 
 void Tutorial::ApplyIcons()
@@ -306,6 +390,10 @@ void Tutorial::Update()
     UpdateInputDevice();
 
     const float deltaTime = TimeManager::GetInstance()->GetDeltaTime();
+    if (UpdateSkip(deltaTime))
+    {
+        return;
+    }
     phaseTimer_ += deltaTime;
 
     switch (phase_)
@@ -362,7 +450,15 @@ void Tutorial::Update()
 
 void Tutorial::Draw()
 {
-    if (currentStep_ == Step::Finished || visibility_ <= 0.0f)
+    if (currentStep_ == Step::Finished)
+    {
+        return;
+    }
+
+    // 説明の切り替わりで帯が消えている間も、案内は出したままにする
+    DrawSkipHint();
+
+    if (visibility_ <= 0.0f)
     {
         return;
     }
@@ -390,6 +486,55 @@ void Tutorial::Draw()
         iconSprite->SetColor(Vector4(1.0f, 1.0f, 1.0f, visibility_));
         iconSprite->Draw();
         iconCenterX += iconSize_ + iconSpacing_;
+    }
+}
+
+void Tutorial::DrawSkipHint()
+{
+    if (skipHintVisibility_ <= 0.0f)
+    {
+        return;
+    }
+
+    skipText_->SetFontSize(skipHintFontSize_);
+    const float textWidth = skipText_->MeasureSize().x;
+    const float iconWidth = hasSkipIcon_ ? skipHintIconSize_ + skipHintSpacing_ : 0.0f;
+    const float rowWidth = iconWidth + textWidth;
+    const float rightX = -skipHintMargin_.x;
+    const float leftX = rightX - rowWidth;
+    const float rowY = -skipHintMargin_.y;
+
+    skipText_->SetPosition({ rightX, rowY });
+    skipText_->SetColor(skipHintColor_);
+    skipText_->SetOpacity(skipHintVisibility_);
+    skipText_->Draw();
+
+    if (hasSkipIcon_)
+    {
+        skipIcon_->SetPosition({ leftX, rowY });
+        skipIcon_->SetSize({ skipHintIconSize_, skipHintIconSize_ });
+        skipIcon_->SetColor({ 1.0f, 1.0f, 1.0f, skipHintColor_.w * skipHintVisibility_ });
+        skipIcon_->Draw();
+    }
+
+    // 押している長さを、左から伸びる線で見せる
+    const float barY = rowY + skipBarOffsetY_;
+    Vector4 backColor = skipBarBackColor_;
+    backColor.w *= skipHintVisibility_;
+    skipBarBack_->SetPosition({ leftX, barY });
+    skipBarBack_->SetSize({ rowWidth, skipBarHeight_ });
+    skipBarBack_->SetColor(backColor);
+    skipBarBack_->Draw();
+
+    const float holdRatio = std::clamp(skipHoldTimer_ / std::max(skipHoldTime_, 0.001f), 0.0f, 1.0f);
+    if (holdRatio > 0.0f)
+    {
+        Vector4 fillColor = skipBarFillColor_;
+        fillColor.w *= skipHintVisibility_;
+        skipBarFill_->SetPosition({ leftX, barY });
+        skipBarFill_->SetSize({ rowWidth * holdRatio, skipBarHeight_ });
+        skipBarFill_->SetColor(fillColor);
+        skipBarFill_->Draw();
     }
 }
 
@@ -426,6 +571,7 @@ void Tutorial::DebugGui()
     binder_->Draw("ClearedWaitTime", "できてから消えるまで (秒)");
     binder_->Draw("RequiredHoldTime", "移動・ダッシュ・エイムを続ける時間 (秒)");
     binder_->Draw("CompleteShowTime", "完了を出しておく時間 (秒)");
+    binder_->Draw("SkipHoldTime", "長押しで飛ばすまでの時間 (秒)");
 
     if (ImGui::CollapsingHeader("帯"))
     {
@@ -448,6 +594,19 @@ void Tutorial::DebugGui()
         binder_->Draw("IconSize", "大きさ");
         binder_->Draw("IconSpacing", "間隔");
         binder_->Draw("IconOffsetY", "帯の中心からの高さ");
+    }
+
+    if (ImGui::CollapsingHeader("長押しでスキップの案内"))
+    {
+        binder_->Draw("SkipHintMargin", "画面の右下からの距離");
+        binder_->Draw("SkipHintFontSize", "文字の大きさ");
+        binder_->Draw("SkipHintIconSize", "ボタンの絵の大きさ");
+        binder_->Draw("SkipHintSpacing", "絵と文字の間隔");
+        binder_->Draw("SkipHintColor", "色");
+        binder_->Draw("SkipBarHeight", "線の太さ");
+        binder_->Draw("SkipBarOffsetY", "線の位置 (文字の中心から下へ)");
+        binder_->Draw("SkipBarBackColor", "線の下地の色");
+        binder_->Draw("SkipBarFillColor", "押している長さの色");
     }
 
     if (ImGui::CollapsingHeader("説明の内容"))

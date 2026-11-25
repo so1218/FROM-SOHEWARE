@@ -7,6 +7,9 @@
 ### 追加
 - `ParticleSystem::ReleaseAttractionTarget` を追加。粒は `ParticleEmitter::SetAttractionTarget` で渡した `WorldTransform` を指したまま飛ぶので、その持ち主が先に消えると、消えたメモリを読んで落ちることがあった。持ち主を消す前 (デストラクタなど) に呼ぶと、そこへ向かっている粒を消す
 - `RendererManager::SetSpriteDrawEnabled` を追加。false の間はスプライトと文字を描かない。「全体のデバッグ情報・設定」の「スプライト」で切り替えられる
+- `EnvironmentManager::SetTimeFlowEnabled` を追加。false の間は時刻を自動で進めないので、ゲーム側で `SetTimeOfDay` を呼んで時刻を決められる
+- `EnvironmentManager::RequestWeatherChange` をゲームから呼べるようにした (今まで private)。すぐに天候を変える `SetWeatherImmediately` も追加
+- 夕方の移り変わりの時刻 (夕焼けになり始める・日が沈む・夜になりきる) を、環境の設定 `DuskStartHour` / `SunsetHour` / `NightHour` で変えられるようにした。標準は 17 / 18 / 19 時で、今までと同じ見た目になる。太陽の向き・時間帯の色・霧はこの時刻に合わせて動き、時計の時刻 (`GetTimeOfDay`) はそのまま。見た目の時刻は `GetVisualTimeOfDay` で取れる
 
 ### 変更
 - パッドとキーボードのどちらで遊んでいるかを、キーやマウスのボタンを押し続けているかではなく、押した瞬間で判定するようにした。押されたままと読めるキーがあると、パッドから手を離すたびにキーボードの表示へ戻っていた

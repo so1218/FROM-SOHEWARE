@@ -101,7 +101,7 @@
         "MagnetAcceleration": 70.0,
         "MagnetDelay": 0.30000001192092896,
         "MagnetMaxSpeed": 50.0,
-        "MagnetRadius": 4.0,
+        "MagnetRadius": 25.0,
         "MaxSparkleBursts": 4,
         "RestSpeed": 1.5,
         "Scale": [
