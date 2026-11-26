@@ -11,7 +11,8 @@ public:
     void DrawProperties(FS::PropertyBinder& binder);
 
     void Update();
-    void DrawGauge();
+    // HP のゲージの真下に、左端をそろえて出す
+    void DrawGauge(const FS::Vector2& healthGaugeOffset, const FS::Vector2& healthGaugeSize);
 
     // 足りていれば amount だけ減らして true を返す
     bool TryConsume(float amount);
@@ -33,11 +34,12 @@ private:
     float timeSinceUsed_ = 0.0f;
     bool isExhausted_ = false;
 
-    // 画面下のゲージ
+    // HP の下のゲージ
     std::unique_ptr<FS::Sprite> gaugeBack_;
     std::unique_ptr<FS::Sprite> gaugeFill_;
-    FS::Vector2 gaugeOffset_ = { 0.0f, -60.0f };  
+    float gaugeGap_ = 6.0f;
+    bool isHiddenWhenFull_ = false;
     FS::Vector2 gaugeSize_ = { 240.0f, 6.0f };
-    FS::Vector4 gaugeColor_ = { 1.0f, 1.0f, 1.0f, 0.9f };
+    FS::Vector4 gaugeColor_ = { 0.95f, 0.78f, 0.25f, 0.95f };
     FS::Vector4 exhaustedColor_ = { 0.9f, 0.25f, 0.2f, 0.9f };
 };

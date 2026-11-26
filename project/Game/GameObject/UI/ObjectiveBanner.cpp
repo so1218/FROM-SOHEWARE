@@ -99,10 +99,23 @@ void ObjectiveBanner::Initialize()
     phase_ = Phase::Hidden;
 }
 
-void ObjectiveBanner::Begin(bool withFade, bool isFirstTime, int startHour, int endHour)
+void ObjectiveBanner::Begin(bool withFade, bool isFirstTime, int endHour, float playSeconds)
 {
     titleText_->SetText(std::to_string(endHour) + "時まで生き残れ");
-    timeText_->SetText(std::to_string(startHour) + ":00 から " + std::to_string(endHour) + ":00 まで");
+    // ゲームの中の時刻は見出しで言っているので、ここでは現実の長さを出す
+    const int totalSeconds = static_cast<int>(std::round(playSeconds));
+    const int minutes = totalSeconds / 60;
+    const int seconds = totalSeconds % 60;
+    std::string limitText = "制限時間 ";
+    if (minutes > 0)
+    {
+        limitText += std::to_string(minutes) + "分";
+    }
+    if (seconds > 0 || minutes == 0)
+    {
+        limitText += std::to_string(seconds) + "秒";
+    }
+    timeText_->SetText(limitText);
     showDuration_ = isFirstTime ? showTime_ : repeatShowTime_;
     isResetRequested_ = false;
     isFinished_ = false;
@@ -297,7 +310,7 @@ void ObjectiveBanner::DebugGui()
 
     if (ImGui::Button("表示してみる"))
     {
-        Begin(false, true, 17, 20);
+        Begin(false, true, 20, 180.0f);
     }
 
     if (ImGui::TreeNode("暗転"))

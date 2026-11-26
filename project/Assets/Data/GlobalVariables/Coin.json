@@ -93,9 +93,9 @@
             0.0,
             0.0
         ],
-        "CoinsPerBurst": 10,
         "CollectRadius": 0.800000011920929,
         "EjectSpeed": 30.0,
+        "FloatingCoinCount": 30,
         "Gravity": 64.5,
         "LifeTime": 30.0,
         "MagnetAcceleration": 70.0,
@@ -112,6 +112,7 @@
         "SparkleHeight": 0.10000000149011612,
         "SpawnDuration": 1.0,
         "SpreadSpeed": 3.200000047683716,
-        "ValuePerCoin": 3
+        "ValuePerCoin": 3,
+        "ZombieCoinCount": 5
     }
 }

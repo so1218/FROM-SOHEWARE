@@ -43,11 +43,11 @@ ResultScreen::ResultScreen(Engine* engine)
     dimOverlay_->SetLayerOrder(44);
     blackout_->SetLayerOrder(49);
 
-    titleText_ = std::make_unique<Text>(engine_, "Shippori");
-    titleText_->SetText("生き残った");
+    titleText_ = std::make_unique<Text>(engine_, "Title");
+    titleText_->SetText("YOU SURVIVED");
     moneyLabelText_ = std::make_unique<Text>(engine_, "Shippori");
     moneyLabelText_->SetText("所持金");
-    moneyText_ = std::make_unique<Text>(engine_, "Shippori");
+    moneyText_ = std::make_unique<Text>(engine_, "Title");
     retryText_ = std::make_unique<Text>(engine_, "Shippori");
     retryText_->SetText("もう一度");
     titleChoiceText_ = std::make_unique<Text>(engine_, "Shippori");
@@ -67,17 +67,24 @@ void ResultScreen::Initialize()
 
     binder_->BindFontName("Font", "Shippori", [this](const std::string& fontName)
         {
-            for (Text* text : { titleText_.get(), moneyLabelText_.get(), moneyText_.get(), retryText_.get(), titleChoiceText_.get() })
+            for (Text* text : { moneyLabelText_.get(), retryText_.get(), titleChoiceText_.get() })
             {
                 text->SetFont(fontName);
             }
         });
+    binder_->BindFontName("TitleFont", "Title", [this](const std::string& fontName) { titleText_->SetFont(fontName); });
+    binder_->BindFontName("MoneyFont", "Title", [this](const std::string& fontName) { moneyText_->SetFont(fontName); });
+    binder_->BindString("TitleContent", "YOU SURVIVED", [this](const std::string& content) { titleText_->SetText(content); });
 
     binder_->Bind("TitleDelay", &titleDelay_, 0.6f, 0.01f, 0.0f, 10.0f);
     binder_->Bind("TitleFadeTime", &titleFadeTime_, 0.8f, 0.01f, 0.01f, 5.0f);
     binder_->Bind("TitleFontSize", &titleFontSize_, 96.0f, 1.0f, 8.0f, 1000.0f);
     binder_->Bind("TitleOffsetY", &titleOffsetY_, -170.0f, 1.0f);
-    binder_->BindColor("TitleColor", &titleColor_, { 0.95f, 0.9f, 0.8f, 1.0f });
+    binder_->BindColor("TitleColor", &titleColor_, { 0.86f, 0.72f, 0.38f, 1.0f });
+    binder_->BindColor("TitleGlowColor", &titleGlowColor_, { 0.45f, 0.3f, 0.05f, 0.7f });
+    binder_->Bind("TitleGlowSoftness", &titleGlowSoftness_, 12.0f, 0.1f, 0.0f, 50.0f);
+    binder_->Bind("TitleCharSpacing", &titleCharSpacing_, 8.0f, 0.1f, -50.0f, 100.0f);
+    binder_->Bind("TitleDrift", &titleDrift_, 0.04f, 0.001f, 0.0f, 1.0f);
 
     binder_->Bind("MoneyDelay", &moneyDelay_, 1.4f, 0.01f, 0.0f, 10.0f);
     binder_->Bind("MoneyCountTime", &moneyCountTime_, 1.2f, 0.01f, 0.01f, 10.0f);
@@ -158,7 +165,7 @@ void ResultScreen::Update()
         revealTimer_ += deltaTime;
         if (previousTimer < moneyDelay_ && revealTimer_ >= moneyDelay_ && money_ > 0)
         {
-            PlayIfLoaded("coinCollect", moneyCountSoundVolume_);
+            PlayIfLoaded("coinBurst", moneyCountSoundVolume_);
         }
         if (revealTimer_ >= moneyDelay_ + moneyCountTime_ + choiceDelay_)
         {
@@ -280,13 +287,17 @@ void ResultScreen::Draw()
 
 void ResultScreen::DrawContent(float opacity)
 {
-    // 見出しは少し下から浮かび上がる
-    const float titleRatio = Ratio(revealTimer_ - titleDelay_, titleFadeTime_);
+    // 見出しはゆっくり浮かび上がり、表示している間もわずかに迫ってくる
+    const float titleTime = revealTimer_ - titleDelay_;
+    const float titleRatio = Ratio(titleTime, titleFadeTime_);
     if (titleRatio > 0.0f)
     {
-        titleText_->SetFontSize(titleFontSize_);
+        const float driftScale = 1.0f + titleDrift_ * Ratio(titleTime, 6.0f);
+        titleText_->SetFontSize(titleFontSize_ * driftScale);
+        titleText_->SetCharacterSpacing(titleCharSpacing_);
         titleText_->SetPosition({ 0.0f, titleOffsetY_ + 20.0f * (1.0f - EaseOutCubic(titleRatio)) });
         titleText_->SetColor(titleColor_);
+        titleText_->SetShadow({ 0.0f, 0.0f }, titleGlowColor_, titleGlowSoftness_, 0.0f);
         titleText_->SetOpacity(opacity * SmoothStep01(titleRatio));
         titleText_->Draw();
     }
@@ -357,17 +368,23 @@ void ResultScreen::DebugGui()
     {
         binder_->Draw("DimColor", "画面を暗くする色");
         binder_->Draw("DimTime", "暗くなりきるまで (秒)");
-        binder_->Draw("Font", "フォント");
+        binder_->Draw("Font", "フォント (見出しと金額以外)");
         ImGui::TreePop();
     }
 
     if (ImGui::TreeNode("見出し"))
     {
+        binder_->Draw("TitleContent", "文字");
+        binder_->Draw("TitleFont", "フォント");
         binder_->Draw("TitleDelay", "出るまで (秒)");
         binder_->Draw("TitleFadeTime", "濃くなるまで (秒)");
         binder_->Draw("TitleFontSize", "大きさ");
         binder_->Draw("TitleOffsetY", "位置 (画面中央から)");
         binder_->Draw("TitleColor", "色");
+        binder_->Draw("TitleGlowColor", "にじみの色");
+        binder_->Draw("TitleGlowSoftness", "にじみの広さ");
+        binder_->Draw("TitleCharSpacing", "字の間隔");
+        binder_->Draw("TitleDrift", "表示中に大きくなる量 (倍)");
         ImGui::TreePop();
     }
 
@@ -378,10 +395,11 @@ void ResultScreen::DebugGui()
         binder_->Draw("MoneyLabelFontSize", "「所持金」の大きさ");
         binder_->Draw("MoneyLabelOffsetY", "「所持金」の位置 (画面中央から)");
         binder_->Draw("MoneyLabelColor", "「所持金」の色");
+        binder_->Draw("MoneyFont", "金額のフォント");
         binder_->Draw("MoneyFontSize", "金額の大きさ");
         binder_->Draw("MoneyOffsetY", "金額の位置 (画面中央から)");
         binder_->Draw("MoneyColor", "金額の色");
-        binder_->Draw("MoneyCountSoundVolume", "数え始めの音 (coinCollect) の大きさ");
+        binder_->Draw("MoneyCountSoundVolume", "数え始めの音 (coinBurst) の大きさ");
         ImGui::TreePop();
     }
 

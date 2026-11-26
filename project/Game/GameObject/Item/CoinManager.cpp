@@ -27,7 +27,8 @@ void CoinManager::Initialize()
     binder_->BindModel("CoinModel", sourceModel_.get());
 
     Config& c = config_;
-    binder_->Bind("CoinsPerBurst", &c.coinsPerBurst, c.coinsPerBurst, 1.0f, 1, 100);
+    binder_->Bind("ZombieCoinCount", &c.zombieCoinCount, c.zombieCoinCount, 1.0f, 0, 100);
+    binder_->Bind("FloatingCoinCount", &c.floatingCoinCount, c.floatingCoinCount, 1.0f, 0, 100);
     binder_->Bind("ValuePerCoin", &c.valuePerCoin, c.valuePerCoin, 1.0f, 0, 10000);
     binder_->Bind("SpawnDuration", &c.spawnDuration, c.spawnDuration, 0.01f, 0.0f, 3.0f);
     binder_->Bind("BurstSoundVolume", &c.burstSoundVolume, c.burstSoundVolume, 0.01f, 0.0f, 2.0f);
@@ -51,20 +52,24 @@ void CoinManager::Initialize()
     isSparklePlaying_.clear();
 }
 
-void CoinManager::SpawnBurst(const Vector3& position)
+void CoinManager::SpawnBurst(const Vector3& position, int coinCount)
 {
+    if (coinCount <= 0)
+    {
+        return;
+    }
     const int burstId = nextBurstId_++;
 
     // 1 枚ずつ鳴らすと重なって割れるので、まとめて散らばる音を 1 回だけ鳴らす
     AudioPlayer::GetInstance().Play("coinBurst", config_.burstSoundVolume);
 
-    for (int coinIndex = 0; coinIndex < config_.coinsPerBurst; ++coinIndex)
+    for (int coinIndex = 0; coinIndex < coinCount; ++coinIndex)
     {
         Coin coin;
         coin.model = std::make_unique<Model>(engine_, "cylinder");
         coin.model->ShareMaterialsFrom(sourceModel_.get());
         coin.position = position;
-        coin.spawnDelay = config_.spawnDuration * static_cast<float>(coinIndex) / static_cast<float>(config_.coinsPerBurst);
+        coin.spawnDelay = config_.spawnDuration * static_cast<float>(coinIndex) / static_cast<float>(coinCount);
         coin.burstId = burstId;
         coins_.push_back(std::move(coin));
     }
@@ -312,7 +317,8 @@ void CoinManager::DebugGui()
 
     if (ImGui::TreeNode("出る量と飛び散り方"))
     {
-        binder_->Draw("CoinsPerBurst", "1 体から出る枚数");
+        binder_->Draw("ZombieCoinCount", "ゾンビから出る枚数");
+        binder_->Draw("FloatingCoinCount", "floating から出る枚数");
         binder_->Draw("ValuePerCoin", "1 枚の金額");
         binder_->Draw("SpawnDuration", "出し切るまで (秒)");
         binder_->Draw("BurstSoundVolume", "飛び出すときの音 (coinBurst) の大きさ");
@@ -347,7 +353,7 @@ void CoinManager::DebugGui()
 
     if (ImGui::Button("プレイヤーの前に出す") && player_)
     {
-        SpawnBurst(player_->GetTransform().translation_ + Vector3(0.0f, 1.0f, 3.0f));
+        SpawnBurst(player_->GetTransform().translation_ + Vector3(0.0f, 1.0f, 3.0f), config_.zombieCoinCount);
     }
 
     ImGui::End();

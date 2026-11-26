@@ -34,12 +34,12 @@ private:
     float elapsedTime_ = 0.0f;
 
     // パラメータ
-    FS::Vector2 ammoTextOffset_ = { -110.0f, -36.0f };
+    FS::Vector2 ammoTextOffset_ = { 75.0f, -45.0f };
     float ammoFontSize_ = 56.0f;
-    FS::Vector2 magazineTextOffset_ = { -40.0f, -44.0f };
+    FS::Vector2 magazineTextOffset_ = { 125.0f, -55.0f };
     float magazineFontSize_ = 26.0f;
 
-    FS::Vector2 roundsOffset_ = { -40.0f, -110.0f }; 
+    FS::Vector2 roundsOffset_ = { 35.5f, -111.0f };
     FS::Vector2 roundSize_ = { 6.0f, 18.0f };
     float roundSpacing_ = 4.0f;
 
@@ -61,7 +61,7 @@ private:
     float lowAmmoRatio_ = 0.3f;  
 
     // 弾の種類
-    FS::Vector2 ammoTypeTextOffset_ = { -200.0f, -44.0f };
+    FS::Vector2 ammoTypeTextOffset_ = { 208.0f, -59.0f };
     float ammoTypeFontSize_ = 22.0f;
     FS::Vector4 incendiaryColor_ = { 1.0f, 0.55f, 0.15f, 0.95f };
 };

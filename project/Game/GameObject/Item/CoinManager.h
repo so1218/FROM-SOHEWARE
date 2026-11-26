@@ -18,7 +18,10 @@ public:
     void Draw() override;
     void DebugGui() override;
 
-    void SpawnBurst(const FS::Vector3& position);
+    // 何枚出すかは、倒した敵の種類ごとの設定から決める
+    void SpawnBurst(const FS::Vector3& position, int coinCount);
+    int GetZombieCoinCount() const { return config_.zombieCoinCount; }
+    int GetFloatingCoinCount() const { return config_.floatingCoinCount; }
     // 落ちているコインを全部消す
     void Clear();
 
@@ -46,7 +49,8 @@ private:
 
     struct Config
     {
-        int coinsPerBurst = 10;
+        int zombieCoinCount = 5;
+        int floatingCoinCount = 30;
         int valuePerCoin = 3;
         float burstSoundVolume = 0.5f;   
         float spawnDuration = 0.2f;    

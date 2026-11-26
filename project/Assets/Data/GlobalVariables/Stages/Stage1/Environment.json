@@ -39,7 +39,7 @@
         "Day_V_FogNoiseIntens": 1.850000023841858,
         "Day_V_FogNoiseScale": 0.0560000017285347,
         "Day_V_FogSunScattering": 13.600000381469727,
-        "Day_V_FogWindSpeedMultiplier": 0.20000000298023224,
+        "Day_V_FogWindSpeedMultiplier": 0.10000000149011612,
         "Day_ZenithColor": [
             0.0,
             0.05063295364379883,
@@ -86,7 +86,7 @@
         "Night_V_FogNoiseIntens": 1.399999976158142,
         "Night_V_FogNoiseScale": 0.029999999329447746,
         "Night_V_FogSunScattering": 13.0,
-        "Night_V_FogWindSpeedMultiplier": 0.0,
+        "Night_V_FogWindSpeedMultiplier": 0.10000000149011612,
         "Night_ZenithColor": [
             0.0022182813845574856,
             0.010979102924466133,
@@ -300,7 +300,7 @@
         ],
         "Thunder_V_FogErosion": 0.5799999833106995,
         "Thunder_V_FogExtinct": 0.014000000432133675,
-        "Thunder_V_FogHDensity": 0.44999998807907104,
+        "Thunder_V_FogHDensity": 0.15000000596046448,
         "Thunder_V_FogHFalloff": 0.30000001192092896,
         "Thunder_V_FogNoiseIntens": 1.0,
         "Thunder_V_FogNoiseScale": 0.029999999329447746,

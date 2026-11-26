@@ -76,7 +76,12 @@ private:
     float titleFadeTime_ = 0.8f;
     float titleFontSize_ = 96.0f;
     float titleOffsetY_ = -170.0f;
-    FS::Vector4 titleColor_ = { 0.95f, 0.9f, 0.8f, 1.0f };
+    FS::Vector4 titleColor_ = { 0.86f, 0.72f, 0.38f, 1.0f };
+    FS::Vector4 titleGlowColor_ = { 0.45f, 0.3f, 0.05f, 0.7f };
+    float titleGlowSoftness_ = 12.0f;
+    float titleCharSpacing_ = 8.0f;
+    // 出てからゆっくり大きくなる量
+    float titleDrift_ = 0.04f;
 
     // 所持金
     float moneyDelay_ = 1.4f;

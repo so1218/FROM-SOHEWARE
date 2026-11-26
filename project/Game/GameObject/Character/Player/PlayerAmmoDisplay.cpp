@@ -9,13 +9,16 @@ using namespace FS;
 PlayerAmmoDisplay::PlayerAmmoDisplay(Engine* engine)
     : engine_(engine)
 {
+    // 数字と文字は画面の左下を基準にし、右端をそろえる
     ammoText_ = std::make_unique<Text>(engine_);
-    ammoText_->SetAnchor(UIAnchor::BottomRight);
+    ammoText_->SetScreenAnchor({ 0.0f, 1.0f });
+    ammoText_->SetPivot({ 1.0f, 1.0f });
     ammoText_->SetAlign(TextAlign::Right);
     ammoText_->SetLayerOrder(12);
 
     magazineText_ = std::make_unique<Text>(engine_);
-    magazineText_->SetAnchor(UIAnchor::BottomRight);
+    magazineText_->SetScreenAnchor({ 0.0f, 1.0f });
+    magazineText_->SetPivot({ 1.0f, 1.0f });
     magazineText_->SetAlign(TextAlign::Right);
     magazineText_->SetLayerOrder(12);
 
@@ -25,7 +28,8 @@ PlayerAmmoDisplay::PlayerAmmoDisplay(Engine* engine)
     promptText_->SetLayerOrder(12);
 
     ammoTypeText_ = std::make_unique<Text>(engine_);
-    ammoTypeText_->SetAnchor(UIAnchor::BottomRight);
+    ammoTypeText_->SetScreenAnchor({ 0.0f, 1.0f });
+    ammoTypeText_->SetPivot({ 1.0f, 1.0f });
     ammoTypeText_->SetAlign(TextAlign::Right);
     ammoTypeText_->SetLayerOrder(12);
 
@@ -35,8 +39,8 @@ PlayerAmmoDisplay::PlayerAmmoDisplay(Engine* engine)
     reloadText_->SetLayerOrder(12);
 
     roundSprite_ = std::make_unique<Sprite>(engine_);
-    roundSprite_->SetScreenAnchor({ 1.0f, 1.0f });
-    roundSprite_->SetAnchorPoint({ 1.0f, 1.0f });
+    roundSprite_->SetScreenAnchor({ 0.0f, 1.0f });
+    roundSprite_->SetAnchorPoint({ 0.0f, 1.0f });
     roundSprite_->SetLayerOrder(12);
 
     promptIcon_ = std::make_unique<Sprite>(engine_);
@@ -58,11 +62,11 @@ PlayerAmmoDisplay::PlayerAmmoDisplay(Engine* engine)
 
 void PlayerAmmoDisplay::BindProperties(PropertyBinder& binder)
 {
-    binder.Bind("Ammo_TextOffset", &ammoTextOffset_, { -110.0f, -36.0f }, 1.0f);
+    binder.Bind("Ammo_TextOffset", &ammoTextOffset_, { 75.0f, -45.0f }, 1.0f);
     binder.Bind("Ammo_FontSize", &ammoFontSize_, 56.0f, 0.5f, 4.0f, 200.0f);
-    binder.Bind("Ammo_MagazineTextOffset", &magazineTextOffset_, { -40.0f, -44.0f }, 1.0f);
+    binder.Bind("Ammo_MagazineTextOffset", &magazineTextOffset_, { 125.0f, -55.0f }, 1.0f);
     binder.Bind("Ammo_MagazineFontSize", &magazineFontSize_, 26.0f, 0.5f, 4.0f, 200.0f);
-    binder.Bind("Ammo_RoundsOffset", &roundsOffset_, { -40.0f, -110.0f }, 1.0f);
+    binder.Bind("Ammo_RoundsOffset", &roundsOffset_, { 35.5f, -111.0f }, 1.0f);
     binder.Bind("Ammo_RoundSize", &roundSize_, { 6.0f, 18.0f }, 0.5f, 1.0f, 100.0f);
     binder.Bind("Ammo_RoundSpacing", &roundSpacing_, 4.0f, 0.5f, 0.0f, 50.0f);
     binder.Bind("Ammo_PromptCenterOffset", &promptOffset_, { 0.0f, 90.0f }, 1.0f);
@@ -76,7 +80,7 @@ void PlayerAmmoDisplay::BindProperties(PropertyBinder& binder)
     binder.BindColor("Ammo_NormalColor", &normalColor_, { 1.0f, 1.0f, 1.0f, 0.95f });
     binder.BindColor("Ammo_LowColor", &lowAmmoColor_, { 1.0f, 0.35f, 0.25f, 0.95f });
     binder.BindColor("Ammo_EmptyRoundColor", &emptyRoundColor_, { 1.0f, 1.0f, 1.0f, 0.2f });
-    binder.Bind("Ammo_TypeTextOffset", &ammoTypeTextOffset_, { -200.0f, -44.0f }, 1.0f);
+    binder.Bind("Ammo_TypeTextOffset", &ammoTypeTextOffset_, { 208.0f, -59.0f }, 1.0f);
     binder.Bind("Ammo_TypeFontSize", &ammoTypeFontSize_, 22.0f, 0.5f, 4.0f, 200.0f);
     binder.BindColor("Ammo_IncendiaryColor", &incendiaryColor_, { 1.0f, 0.55f, 0.15f, 0.95f });
     binder.Bind("Ammo_LowRatio", &lowAmmoRatio_, 0.3f, 0.01f, 0.0f, 1.0f);
@@ -96,11 +100,11 @@ void PlayerAmmoDisplay::BindProperties(PropertyBinder& binder)
 
 void PlayerAmmoDisplay::DrawProperties(PropertyBinder& binder)
 {
-    binder.Draw("Ammo_TextOffset", "残弾の数字の位置");
+    binder.Draw("Ammo_TextOffset", "残弾の数字の位置 (画面左下から、右端)");
     binder.Draw("Ammo_FontSize", "残弾の数字の大きさ");
-    binder.Draw("Ammo_MagazineTextOffset", "装弾数の位置");
+    binder.Draw("Ammo_MagazineTextOffset", "装弾数の位置 (画面左下から、右端)");
     binder.Draw("Ammo_MagazineFontSize", "装弾数の大きさ");
-    binder.Draw("Ammo_RoundsOffset", "弾の列の位置 (右端)");
+    binder.Draw("Ammo_RoundsOffset", "弾の列の位置 (画面左下から、左端)");
     binder.Draw("Ammo_RoundSize", "弾 1 発の大きさ");
     binder.Draw("Ammo_RoundSpacing", "弾の間隔");
     binder.Draw("Ammo_PromptCenterOffset", "弾切れの表示の位置 (画面中央から)");
@@ -114,7 +118,7 @@ void PlayerAmmoDisplay::DrawProperties(PropertyBinder& binder)
     binder.Draw("Ammo_NormalColor", "色");
     binder.Draw("Ammo_LowColor", "残り少ないときの色");
     binder.Draw("Ammo_EmptyRoundColor", "撃ったあとの弾の色");
-    binder.Draw("Ammo_TypeTextOffset", "弾の種類の位置");
+    binder.Draw("Ammo_TypeTextOffset", "弾の種類の位置 (画面左下から、右端)");
     binder.Draw("Ammo_TypeFontSize", "弾の種類の文字の大きさ");
     binder.Draw("Ammo_IncendiaryColor", "焼夷弾の色");
     binder.Draw("Ammo_LowRatio", "残り少ないとみなす割合");
@@ -168,11 +172,11 @@ void PlayerAmmoDisplay::DrawRounds(const PlayerWeapon& weapon)
 
     roundSprite_->SetSize(roundSize_);
 
-    // 右から並べる
+    // 左端をそろえて右へ並べる
     for (int roundIndex = 0; roundIndex < magazineSize; ++roundIndex)
     {
-        const float offsetX = -static_cast<float>(roundIndex) * (roundSize_.x + roundSpacing_);
-        const bool isFilled = (magazineSize - 1 - roundIndex) < filledCount;
+        const float offsetX = static_cast<float>(roundIndex) * (roundSize_.x + roundSpacing_);
+        const bool isFilled = roundIndex < filledCount;
 
         roundSprite_->SetPosition({ roundsOffset_.x + offsetX, roundsOffset_.y });
         const Vector4& filledColor = (weapon.GetAmmoType() == PlayerWeapon::AmmoType::Incendiary) ? incendiaryColor_ : normalColor_;

@@ -18,7 +18,7 @@ void PlayerHealth::BindProperties(PropertyBinder& binder)
 
     binder.Bind("Health_GaugeOffset", &gaugeOffset_, { 40.0f, -40.0f }, 1.0f);
     binder.Bind("Health_GaugeSize", &gaugeSize_, { 300.0f, 10.0f }, 1.0f, 1.0f, 1280.0f);
-    binder.BindColor("Health_GaugeColor", &gaugeColor_, { 0.9f, 0.9f, 0.9f, 0.9f });
+    binder.BindColor("Health_GaugeColor", &gaugeColor_, { 0.35f, 0.8f, 0.3f, 0.95f });
     binder.BindColor("Health_LowColor", &lowHealthColor_, { 0.9f, 0.2f, 0.15f, 0.9f });
     binder.Bind("Health_LowRatio", &lowHealthRatio_, 0.3f, 0.01f, 0.0f, 1.0f);
 

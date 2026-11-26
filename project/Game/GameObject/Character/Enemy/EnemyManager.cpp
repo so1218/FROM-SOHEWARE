@@ -274,7 +274,10 @@ void EnemyManager::Update()
     {
         if (enemy && !enemy->IsActive() && enemy->IsDefeated() && coinManager_)
         {
-            coinManager_->SpawnBurst(enemy->GetTransform().translation_);
+            const int coinCount = enemy->GetType() == EnemyType::Floating
+                ? coinManager_->GetFloatingCoinCount()
+                : coinManager_->GetZombieCoinCount();
+            coinManager_->SpawnBurst(enemy->GetTransform().translation_, coinCount);
         }
     }
 

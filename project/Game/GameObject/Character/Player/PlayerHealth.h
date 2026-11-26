@@ -22,6 +22,9 @@ public:
 
     bool IsDead() const { return currentHP_ <= 0; }
     int GetCurrent() const { return currentHP_; }
+    // スタミナのゲージを真下に並べるために使う
+    const FS::Vector2& GetGaugeOffset() const { return gaugeOffset_; }
+    const FS::Vector2& GetGaugeSize() const { return gaugeSize_; }
 
 private:
     int maxHP_ = 100;
@@ -32,7 +35,7 @@ private:
     std::unique_ptr<FS::Sprite> gaugeFill_;
     FS::Vector2 gaugeOffset_ = { 40.0f, -40.0f };   // 画面左下からのずれ
     FS::Vector2 gaugeSize_ = { 300.0f, 10.0f };
-    FS::Vector4 gaugeColor_ = { 0.9f, 0.9f, 0.9f, 0.9f };
+    FS::Vector4 gaugeColor_ = { 0.35f, 0.8f, 0.3f, 0.95f };
     FS::Vector4 lowHealthColor_ = { 0.9f, 0.2f, 0.15f, 0.9f };
     float lowHealthRatio_ = 0.3f;   // この割合を下回るとゲージが赤くなる
 

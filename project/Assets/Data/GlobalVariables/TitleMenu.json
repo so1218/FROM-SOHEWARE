@@ -181,7 +181,7 @@
         ],
         "StartText_Content": "START GAME",
         "StartText_Direction": 0,
-        "StartText_Font": "Shippori",
+        "StartText_Font": "Title",
         "StartText_FontSize": 32.5,
         "StartText_Layer": 31,
         "StartText_LineSpacing": 1.0,

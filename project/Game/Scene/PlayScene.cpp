@@ -211,7 +211,7 @@ void PlayScene::ResetGameClock()
 
 void PlayScene::BeginObjective(bool withFade)
 {
-    objectiveBanner_->Begin(withFade, !hasShownObjective_, static_cast<int>(startHour_), static_cast<int>(endHour_));
+    objectiveBanner_->Begin(withFade, !hasShownObjective_, static_cast<int>(endHour_), GetTotalPlayTime());
     gameUI_->SetObjective(static_cast<int>(startHour_), static_cast<int>(stormHour_), static_cast<int>(endHour_));
     hasShownObjective_ = true;
     ChangePhase(Phase::Intro);

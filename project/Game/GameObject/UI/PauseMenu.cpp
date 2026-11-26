@@ -22,7 +22,7 @@ PauseMenu::PauseMenu(Engine* engine)
     cursorBand_->SetAnchorPoint({ 0.5f, 0.5f });
     cursorBand_->SetLayerOrder(51);
 
-    headerText_ = std::make_unique<Text>(engine_, "Shippori");
+    headerText_ = std::make_unique<Text>(engine_, "Title");
     headerText_->SetText("PAUSE");
     headerText_->SetCharacterSpacing(10.0f);
     itemText_ = std::make_unique<Text>(engine_, "Shippori");

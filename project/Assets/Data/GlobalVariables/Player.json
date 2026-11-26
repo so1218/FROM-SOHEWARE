@@ -28,8 +28,8 @@
         "Ammo_LowRatio": 0.30000001192092896,
         "Ammo_MagazineFontSize": 31.5,
         "Ammo_MagazineTextOffset": [
-            -40.0,
-            -22.0
+            125.0,
+            -55.0
         ],
         "Ammo_NormalColor": [
             1.0,
@@ -64,17 +64,17 @@
         ],
         "Ammo_RoundSpacing": 6.5,
         "Ammo_RoundsOffset": [
-            -40.0,
-            -88.0
+            35.5,
+            -111.0
         ],
         "Ammo_TextOffset": [
-            -96.0,
-            -15.0
+            75.0,
+            -45.0
         ],
-        "Ammo_TypeFontSize": 37.5,
+        "Ammo_TypeFontSize": 32.5,
         "Ammo_TypeTextOffset": [
-            -169.0,
-            -22.0
+            208.0,
+            -59.0
         ],
         "Burn_AfterburnTime": 11.0,
         "Burn_CameraShake": 0.012000000104308128,
@@ -143,18 +143,18 @@
         ],
         "Health_FlashDuration": 0.3499999940395355,
         "Health_GaugeColor": [
-            0.8999999761581421,
-            0.8999999761581421,
-            0.8999999761581421,
-            0.8999999761581421
+            0.0621117427945137,
+            0.6211180090904236,
+            0.0,
+            0.949999988079071
         ],
         "Health_GaugeOffset": [
-            40.0,
+            35.0,
             -40.0
         ],
         "Health_GaugeSize": [
             300.0,
-            10.0
+            6.0
         ],
         "Health_LowColor": [
             0.8999999761581421,
@@ -203,20 +203,20 @@
         "Money_Font": "Title",
         "Money_FontSize": 36.0,
         "Money_IconColor": [
-            0.9780101776123047,
+            0.9751553535461426,
             1.0,
-            0.11490684747695923,
+            0.0,
             0.949999988079071
         ],
-        "Money_IconGap": 3.5,
-        "Money_IconOffsetY": -2.5,
+        "Money_IconGap": 6.0,
+        "Money_IconOffsetY": -7.0,
         "Money_IconPopScale": 1.600000023841858,
         "Money_IconPopTime": 0.3499999940395355,
         "Money_IconScale": 1.0,
         "Money_IconTexture": "pouch",
         "Money_Offset": [
-            -32.0,
-            554.0
+            -954.0,
+            630.0
         ],
         "Muzzle Flash Color": [
             1.0,
@@ -1223,19 +1223,17 @@
         ],
         "Stamina_ExhaustedRecover": 40.0,
         "Stamina_GaugeColor": [
-            1.0,
-            1.0,
-            1.0,
-            0.8999999761581421
+            0.7950310707092285,
+            0.7282596230506897,
+            0.02715945988893509,
+            0.949999988079071
         ],
-        "Stamina_GaugeOffset": [
-            0.0,
-            -60.0
-        ],
+        "Stamina_GaugeGap": 5.5,
         "Stamina_GaugeSize": [
-            240.0,
-            6.0
+            300.0,
+            4.0
         ],
+        "Stamina_HideWhenFull": false,
         "Stamina_Max": 100.0,
         "Stamina_RegenDelay": 2.0,
         "Stamina_RegenPerSecond": 7.5,

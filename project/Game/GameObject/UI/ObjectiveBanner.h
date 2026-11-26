@@ -14,7 +14,8 @@ public:
     void Draw() override;
     void DebugGui() override;
 
-    void Begin(bool withFade, bool isFirstTime, int startHour, int endHour);
+    // playSeconds は本番の長さ
+    void Begin(bool withFade, bool isFirstTime, int endHour, float playSeconds);
     void Cancel();
 
     // 画面が真っ暗になった瞬間に一度だけ true を返す

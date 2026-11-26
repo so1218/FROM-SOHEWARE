@@ -791,7 +791,7 @@ void Player::Draw()
 		reticle_->Draw(weapon_->GetAmmoType() == PlayerWeapon::AmmoType::Incendiary);
 		ammoDisplay_->Draw(*weapon_);
 		moneyDisplay_->Draw(money_);
-		stamina_->DrawGauge();
+		stamina_->DrawGauge(health_->GetGaugeOffset(), health_->GetGaugeSize());
 		health_->DrawHUD();
 	}
 }

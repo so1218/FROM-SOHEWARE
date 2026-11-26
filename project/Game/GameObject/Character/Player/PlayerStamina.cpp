@@ -17,9 +17,10 @@ void PlayerStamina::BindProperties(PropertyBinder& binder)
     binder.Bind("Stamina_RegenDelay", &regenDelay_, 0.8f, 0.01f, 0.0f, 5.0f);
     binder.Bind("Stamina_ExhaustedRecover", &exhaustedRecoverAmount_, 40.0f, 1.0f, 0.0f, 1000.0f);
 
-    binder.Bind("Stamina_GaugeOffset", &gaugeOffset_, { 0.0f, -60.0f }, 1.0f);
+    binder.Bind("Stamina_GaugeGap", &gaugeGap_, 6.0f, 0.5f, -100.0f, 100.0f);
+    binder.Bind("Stamina_HideWhenFull", &isHiddenWhenFull_, false);
     binder.Bind("Stamina_GaugeSize", &gaugeSize_, { 240.0f, 6.0f }, 1.0f, 1.0f, 1280.0f);
-    binder.BindColor("Stamina_GaugeColor", &gaugeColor_, { 1.0f, 1.0f, 1.0f, 0.9f });
+    binder.BindColor("Stamina_GaugeColor", &gaugeColor_, { 0.95f, 0.78f, 0.25f, 0.95f });
     binder.BindColor("Stamina_ExhaustedColor", &exhaustedColor_, { 0.9f, 0.25f, 0.2f, 0.9f });
 
     Refill();
@@ -39,7 +40,8 @@ void PlayerStamina::DrawProperties(PropertyBinder& binder)
     binder.Draw("Stamina_RegenPerSecond", "1 秒あたりの回復量");
     binder.Draw("Stamina_RegenDelay", "回復が始まるまでの時間 (秒)");
     binder.Draw("Stamina_ExhaustedRecover", "息切れから戻る量");
-    binder.Draw("Stamina_GaugeOffset", "ゲージの位置 (画面下中央から)");
+    binder.Draw("Stamina_GaugeGap", "HP のゲージとの間");
+    binder.Draw("Stamina_HideWhenFull", "満タンのときは出さない");
     binder.Draw("Stamina_GaugeSize", "ゲージの大きさ");
     binder.Draw("Stamina_GaugeColor", "ゲージの色");
     binder.Draw("Stamina_ExhaustedColor", "息切れ中の色");
@@ -88,18 +90,18 @@ void PlayerStamina::Drain(float amountPerSecond)
     }
 }
 
-void PlayerStamina::DrawGauge()
+void PlayerStamina::DrawGauge(const Vector2& healthGaugeOffset, const Vector2& healthGaugeSize)
 {
-    // 満タンのときは出さない
-    if (currentStamina_ >= maxStamina_)
+    if (isHiddenWhenFull_ && currentStamina_ >= maxStamina_)
     {
         return;
     }
 
-    const Vector2 gaugeLeft(gaugeOffset_.x - gaugeSize_.x * 0.5f, gaugeOffset_.y);
+    // 左端の縦の真ん中を基準にして真下へずらす
+    const Vector2 gaugeLeft(healthGaugeOffset.x, healthGaugeOffset.y + healthGaugeSize.y * 0.5f + gaugeGap_ + gaugeSize_.y * 0.5f);
     const float staminaRatio = currentStamina_ / maxStamina_;
 
-    gaugeBack_->SetScreenAnchor({ 0.5f, 1.0f });
+    gaugeBack_->SetScreenAnchor({ 0.0f, 1.0f });
     gaugeBack_->SetAnchorPoint({ 0.0f, 0.5f });
     gaugeBack_->SetPosition(gaugeLeft);
     gaugeBack_->SetSize(gaugeSize_);
@@ -107,7 +109,7 @@ void PlayerStamina::DrawGauge()
     gaugeBack_->SetLayerOrder(10);
     gaugeBack_->Draw();
 
-    gaugeFill_->SetScreenAnchor({ 0.5f, 1.0f });
+    gaugeFill_->SetScreenAnchor({ 0.0f, 1.0f });
     gaugeFill_->SetAnchorPoint({ 0.0f, 0.5f });
     gaugeFill_->SetPosition(gaugeLeft);
     gaugeFill_->SetSize({ gaugeSize_.x * staminaRatio, gaugeSize_.y });
