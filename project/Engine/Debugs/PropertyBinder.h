@@ -24,7 +24,19 @@ public:
         groupPath_{ std::string(std::forward<Args>(args))... }
     {
         GlobalVariables::GetInstance()->CreateGroup(groupPath_);
+        // まとめて元に戻すときに探せるよう、作られている PropertyBinder を覚えておく
+        GetInstances().push_back(this);
     }
+    ~PropertyBinder();
+
+    // 覚えているアドレスがずれないよう、コピーと移動はしない
+    PropertyBinder(const PropertyBinder&) = delete;
+    PropertyBinder& operator=(const PropertyBinder&) = delete;
+
+    // 保存先が groupPath から始まる項目を、まとめて最後に保存した値に戻すボタン
+    static void DrawRevertToSavedButton(const std::vector<std::string>& groupPath, const char* label);
+    // まとめて戻したのを取り消すボタン。取り消せるものがあるときだけ出す
+    static void DrawUndoBulkRevertButton();
 
     // 基本型バインド
     void Bind(const std::string& key, int32_t* ptr, int32_t defaultValue, float speed = 1.0f, int32_t min = 0, int32_t max = 0);
@@ -66,6 +78,7 @@ public:
     void BindTextElement(const std::string& groupName, Text* text, bool bindContent = true);
 
     // UI描画
+    // 項目を右クリックすると、最後に保存した値・初期値に戻すメニューが出る
     bool Draw(const std::string& key, const std::string& name = "", std::source_location location = std::source_location::current());
     // 一括で登録順に描画する関数
     void DrawAll();
@@ -95,6 +108,13 @@ private:
         return (nameOverride.empty() ? key : nameOverride) + "###" + key;
     }
 
+    // 元に戻せる項目として登録する
+    void RegisterRevert(const std::string& key, std::any defaultValue, std::function<void()> applyFromStore);
+    // 右クリックのメニュー
+    bool DrawRevertMenu(const std::string& key);
+    // GlobalVariables に値を入れ、変数にも反映する
+    void ApplyStoredValue(const std::string& key, const std::any& value, bool recordUndo);
+
     void BindBoolInternal(const std::string& key, int32_t* ptr, bool defaultValue);
     void BindVector3Internal(const std::string& key, Vector3* ptr, const Vector3& defaultValue, float speed, float min, float max, std::function<void()> onChange);
     void BindMaterialProperties(const std::string& prefix, MaterialHandle* handle);
@@ -110,7 +130,7 @@ private:
     std::vector<std::string> groupPath_;
     std::vector<std::string> keys_;
     std::unordered_map<std::string, std::function<bool(const std::string&)>> items_;
-    // BindRotation の編集・保存用のオイラー角。ポインタを ImGui の項目に渡すので、要素が動かない std::map にする
+    // BindRotation の編集・保存用のオイラー角
     std::map<std::string, Vector3> rotationEulers_;
 
     struct ModelBindInfo { Model* model = nullptr; };
@@ -121,6 +141,34 @@ private:
     std::unordered_map<std::string, AnimationBindInfo> animationBindMap_;
     std::unordered_map<std::string, Sprite*> spriteBindMap_;
     std::unordered_map<std::string, TextBindInfo> textBindMap_;
+
+    // まとめて元に戻す機能
+    struct SavedValueChange
+    {
+        PropertyBinder* binder = nullptr;
+        std::string key;
+        std::any savedValue;
+        std::any currentValue;
+    };
+    static std::vector<PropertyBinder*>& GetInstances();
+    // 確認の一覧に出している、戻す予定の値
+    static std::vector<SavedValueChange>& GetPendingChanges();
+    // まとめて戻す前の値
+    static std::vector<SavedValueChange>& GetBulkUndo();
+    static std::vector<SavedValueChange> CollectChangesFromSaved(const std::vector<std::string>& groupPath);
+
+    // 元に戻す機能
+    struct RevertInfo
+    {
+        std::any defaultValue;
+        std::function<void()> applyFromStore;
+    };
+    std::unordered_map<std::string, RevertInfo> revertInfos_;
+    // 戻す前の値
+    std::unordered_map<std::string, std::any> undoValues_;
+    // メニューを開いたときにファイルから読んだ値
+    std::string revertMenuKey_;
+    std::optional<std::any> revertMenuSavedValue_;
 };
 
 }

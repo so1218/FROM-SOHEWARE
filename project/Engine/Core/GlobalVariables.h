@@ -45,6 +45,16 @@ public:
 	// グループ階層をたどる関数
 	const Group* FindGroup(const std::vector<std::string>& groupPath) const;
 
+	// 型を問わずに値を読み書きする。値を元に戻す機能で使う。見つからなければ空の std::any を返す
+	std::any GetAnyValue(const std::vector<std::string>& groupPath, const std::string& key) const;
+	void SetAnyValue(const std::vector<std::string>& groupPath, const std::string& key, const std::any& value);
+	// ファイルに保存されている値を読む。メモリ上の値は変えない。保存されていなければ std::nullopt
+	std::optional<std::any> LoadSavedValue(const std::vector<std::string>& groupPath, const std::string& key) const;
+	// そのグループに保存されている値を全部読む (下の階層のグループは含まない)。メモリ上の値は変えない
+	std::unordered_map<std::string, std::any> LoadSavedGroup(const std::vector<std::string>& groupPath) const;
+	// JSON の 1 つの値を、読み込みと同じ型の std::any にする。対応していない形なら std::nullopt
+	static std::optional<std::any> JsonToAny(const json& value);
+
 	// 値のセット
 	template <typename T>
 	void SetValue(const std::vector<std::string>& groupPath, const std::string& key, const T& value);

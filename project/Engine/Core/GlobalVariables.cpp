@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "GlobalVariables.h"
+#include "PropertyBinder.h"
 
 namespace FS
 {
@@ -23,6 +24,9 @@ void GlobalVariables::Update()
 	{
 		SaveAllFiles();
 	}
+	ImGui::SameLine();
+	PropertyBinder::DrawRevertToSavedButton({}, "すべてを最後に保存した値に戻す");
+	PropertyBinder::DrawUndoBulkRevertButton();
 
 	if (!statusMessage_.empty())
 	{
@@ -69,6 +73,8 @@ void GlobalVariables::DrawGroupRecursive(const std::vector<std::string>& groupPa
 			SaveFile(groupPath);
 			statusMessage_ = std::format("{}.json をセーブ(最終)", groupPath[0]);
 		}
+		ImGui::SameLine();
+		PropertyBinder::DrawRevertToSavedButton(groupPath, "最後に保存した値に戻す");
 		if (!statusMessage_.empty())
 		{
 			ImGui::SameLine();
@@ -310,6 +316,116 @@ const GlobalVariables::Group* GlobalVariables::FindGroup(const std::vector<std::
 	return current;
 }
 
+std::any GlobalVariables::GetAnyValue(const std::vector<std::string>& groupPath, const std::string& key) const
+{
+	const Group* group = FindGroup(groupPath);
+	if (!group)
+	{
+		return {};
+	}
+	auto itItem = group->items.find(key);
+	return itItem != group->items.end() ? itItem->second : std::any{};
+}
+
+void GlobalVariables::SetAnyValue(const std::vector<std::string>& groupPath, const std::string& key, const std::any& value)
+{
+	FindOrCreateGroup(groupPath).items[key] = value;
+}
+
+std::optional<std::any> GlobalVariables::LoadSavedValue(const std::vector<std::string>& groupPath, const std::string& key) const
+{
+	const std::unordered_map<std::string, std::any> savedValues = LoadSavedGroup(groupPath);
+	auto it = savedValues.find(key);
+	if (it == savedValues.end())
+	{
+		return std::nullopt;
+	}
+	return it->second;
+}
+
+std::unordered_map<std::string, std::any> GlobalVariables::LoadSavedGroup(const std::vector<std::string>& groupPath) const
+{
+	std::unordered_map<std::string, std::any> savedValues;
+	if (groupPath.empty())
+	{
+		return savedValues;
+	}
+
+	std::ifstream ifs(kDirectoryPath_ + groupPath[0] + ".json");
+	if (!ifs.is_open())
+	{
+		return savedValues;
+	}
+	// 書きかけのファイルなどで読めなくても、ゲームは止めない
+	const json root = json::parse(ifs, nullptr, false);
+	if (root.is_discarded())
+	{
+		return savedValues;
+	}
+
+	// LoadFile と同じく、先頭のグループ名が無ければルートに直接値があるものとして読む
+	auto itTop = root.find(groupPath[0]);
+	const json* node = itTop != root.end() ? &*itTop : &root;
+	for (size_t i = 1; i < groupPath.size(); ++i)
+	{
+		auto itSub = node->find(groupPath[i]);
+		if (itSub == node->end() || !itSub->is_object())
+		{
+			return savedValues;
+		}
+		node = &*itSub;
+	}
+
+	for (auto it = node->begin(); it != node->end(); ++it)
+	{
+		if (it->is_object())
+		{
+			continue;
+		}
+		if (std::optional<std::any> value = JsonToAny(*it))
+		{
+			savedValues[it.key()] = *value;
+		}
+	}
+	return savedValues;
+}
+
+std::optional<std::any> GlobalVariables::JsonToAny(const json& value)
+{
+	if (value.is_number_integer())
+	{
+		return std::any(value.get<int32_t>());
+	}
+	if (value.is_number_float())
+	{
+		return std::any(static_cast<float>(value.get<double>()));
+	}
+	if (value.is_boolean())
+	{
+		return std::any(value.get<bool>());
+	}
+	if (value.is_string())
+	{
+		return std::any(value.get<std::string>());
+	}
+	if (value.is_array())
+	{
+		if (value.size() == 2)
+		{
+			return std::any(Vector2{ value[0], value[1] });
+		}
+		if (value.size() == 3)
+		{
+			return std::any(Vector3{ value[0], value[1], value[2] });
+		}
+		if (value.size() == 4)
+		{
+			return std::any(Vector4{ value[0], value[1], value[2], value[3] });
+		}
+	}
+	return std::nullopt;
+}
+
 GlobalVariables::Group& GlobalVariables::FindOrCreateGroup(const std::vector<std::string>& groupPath)
 {
 	assert(!groupPath.empty());
@@ -522,41 +638,10 @@ void GlobalVariables::LoadGroupRecursive(const std::vector<std::string>& groupPa
 			nextGroupPath.push_back(key);
 			LoadGroupRecursive(nextGroupPath, value);
 		}
-		else
+		else if (std::optional<std::any> item = JsonToAny(value))
 		{
-			// 値の場合は型に応じて SetValue 呼び出し
-
-			if (value.is_number_integer())
-			{
-				SetValue(groupPath, key, value.get<int32_t>());
-			}
-			else if (value.is_number_float())
-			{
-				SetValue(groupPath, key, static_cast<float>(value.get<double>()));
-			}
-			else if (value.is_boolean())
-			{
-				SetValue(groupPath, key, value.get<bool>());
-			}
-			else if (value.is_string())
-			{
-				SetValue(groupPath, key, value.get<std::string>());
-			}
-			else if (value.is_array())
-			{
-				if (value.size() == 2)
-				{
-					SetValue(groupPath, key, Vector2{ value[0], value[1] });
-				}
-				else if (value.size() == 3)
-				{
-					SetValue(groupPath, key, Vector3{ value[0], value[1], value[2] });
-				}
-				else if (value.size() == 4)
-				{
-					SetValue(groupPath, key, Vector4{ value[0], value[1], value[2], value[3] });
-				}
-			}
+			// 値は型に合わせて入れる。保存されている値を読むときも同じ変換を使う
+			SetAnyValue(groupPath, key, *item);
 		}
 	}
 }

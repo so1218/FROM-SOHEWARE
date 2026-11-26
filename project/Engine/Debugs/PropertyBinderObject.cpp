@@ -69,6 +69,11 @@ void PropertyBinder::BindModelName(
     }
 
     keys_.push_back(key);
+    RegisterRevert(key, std::any(defaultName), [this, key, currentModelName, onChange]()
+        {
+            *currentModelName = GlobalVariables::GetInstance()->GetStringValue(groupPath_, key);
+            if (onChange) onChange(*currentModelName);
+        });
 
 #ifdef ENABLE_IMGUI
     items_[key] = [this, currentModelName, onChange, key](const std::string& nameOverride) {
@@ -421,6 +426,10 @@ void PropertyBinder::BindTexture(
         DevError::ScopedContext context(DescribeKey(key));
         onValueChanged(savedValue);
     }
+    RegisterRevert(key, std::any(valToSave), [this, key, onValueChanged]()
+        {
+            if (onValueChanged) onValueChanged(GlobalVariables::GetInstance()->GetStringValue(groupPath_, key));
+        });
 
 #ifdef ENABLE_IMGUI
     // 描画処理の登録
@@ -860,6 +869,10 @@ void PropertyBinder::BindString(
         DevError::ScopedContext context(DescribeKey(key));
         onChange(globalVariables->GetStringValue(groupPath_, key));
     }
+    RegisterRevert(key, std::any(defaultValue), [this, key, onChange]()
+        {
+            if (onChange) onChange(GlobalVariables::GetInstance()->GetStringValue(groupPath_, key));
+        });
 
 #ifdef ENABLE_IMGUI
     items_[key] = [this, key, onChange, isMultiline](const std::string& nameOverride)
@@ -915,6 +928,10 @@ void PropertyBinder::BindFontName(
     {
         onChange(globalVariables->GetStringValue(groupPath_, key));
     }
+    RegisterRevert(key, std::any(defaultName), [this, key, onChange]()
+        {
+            if (onChange) onChange(GlobalVariables::GetInstance()->GetStringValue(groupPath_, key));
+        });
 
 #ifdef ENABLE_IMGUI
     items_[key] = [this, key, onChange](const std::string& nameOverride)

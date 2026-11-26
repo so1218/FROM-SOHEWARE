@@ -56,6 +56,11 @@ void ImGuiManager::Initialize(
     static const ImWchar ranges[] =
     {
         0x0020, 0x00FF,   // 基本ラテン文字＋補助
+        0x2000, 0x206F,   // 一般の句読点 (… ― ‥ など)
+        0x2190, 0x21FF,   // 矢印 (→ ← など)
+        0x25A0, 0x25FF,   // 図形 (◆ ● ■ など)
+        0x2600, 0x26FF,   // その他の記号 (★ ☆ など)
+        0x3000, 0x303F,   // 和文の記号 (「」『』、。〜 など)
         0x3040, 0x309F,   // ひらがな
         0x30A0, 0x30FF,   // カタカナ
         0x4E00, 0x9FFF,   // 漢字
@@ -93,6 +98,8 @@ void ImGuiManager::Initialize(
     style.Colors[ImGuiCol_WindowBg] = bgDark;
     style.Colors[ImGuiCol_ChildBg] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
     style.Colors[ImGuiCol_PopupBg] = ImVec4(0.04f, 0.04f, 0.04f, 0.96f);
+    // 確認のポップアップを出している間に後ろへかぶせる色。ポップアップに目が行くよう、後ろを暗く沈める
+    style.Colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.0f, 0.0f, 0.0f, 0.6f);
     style.Colors[ImGuiCol_Border] = navyBorder;
     style.Colors[ImGuiCol_BorderShadow] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
 
