@@ -83,6 +83,52 @@ objectManager_.Create<Environment>(engine_);
 
 ブルーム・被写界深度・ビネットなどの画面全体の効果は、シーン名のウィンドウの「ポストエフェクト設定」で調整し、シーンごとに保存します。
 
+### シーンの途中で一時的にかける
+
+ボスの登場や必殺技などで一瞬だけ画面演出をかけるときは、`PlayScreenEffect` を呼びます。決めた長さが過ぎると自動で消えるので、戻す処理は要りません。シーンの設定で切っている効果にもかけられます。
+
+```cpp
+ScreenEffectRequest request;
+request.values.radialBlurStrength = 0.15f;      // 放射ブラー
+request.values.chromaOffset = { 0.01f, 0.0f };  // 色収差
+request.duration = 0.6f;                        // かけ始めから消えきるまで (秒)
+request.fadeOutTime = 0.4f;                     // 最後の 0.4 秒で薄くする
+engine_->GetPostEffectManager()->PlayScreenEffect(request);
+```
+
+- 値が 0 の効果は重ねません。使える効果は放射ブラー・色収差・画面の縁のビネット・ピクセル化・砂嵐です
+- `duration` を 0 以下にすると、`StopScreenEffect` に戻り値を渡すまでかけ続けます (状態が続く間だけかけたいとき)
+
+強弱を繰り返したり震わせたりするときは、揺れの 3 つの値を入れます。揺れは `values` の全部の値に同じようにかかり、最後は揺れながら消えます。
+
+```cpp
+request.pulseFrequency = 12.0f;  // 1 秒に 12 回、強弱を繰り返す
+request.pulseDepth = 0.7f;       // どれだけ弱まるか (0 なら揺れない、1 なら 0 まで落ちる)
+request.pulseRandomness = 0.5f;  // 不規則さ (0 なら規則正しい、上げるほどガタガタ震える)
+```
+
+### 値の動きを自分で決める
+
+効果ごとに違う動きにしたいときや、距離・HP などゲームの状態に合わせたいときは、`AddFrameScreenEffect` を毎フレーム呼びます。呼んだフレームだけかかり、呼ばなくなれば消えます。
+
+```cpp
+// Update の中で、ボスに近いほど赤い縁を強く震わせる
+const float closeness = std::clamp(1.0f - distanceToBoss / 30.0f, 0.0f, 1.0f);
+const float shake = 0.5f + 0.5f * std::sin(time_ * 25.0f);
+
+ScreenEffectValues values;
+values.vignetteAmount = closeness * (0.4f + 0.3f * shake);
+values.vignetteColor = { 0.4f, 0.0f, 0.0f };
+engine_->GetPostEffectManager()->AddFrameScreenEffect(values);
+```
+
+- 同じ効果が重なったときは強いほうを使います。足し合わせはしません
+- ポーズやヒットストップで時間を遅くしている間も進めるかを `useUnscaledTime` で選べます (初期値は進める)
+- シーンを作り直すと、重ねている演出は全部消えます
+- 「ポストエフェクト設定」の「一時的に重ねる演出の確認」で、見た目をその場で試せます
+
+ずっと値を変えたいときは `GetScreenEffectSettings()` を書き換えます。こちらはシーンに保存される値です。
+
 ## つまずきやすい点
 
 - **パーティクルが出ない。** プリセット名の間違いは「開発用のエラー」ウィンドウに出る。名前が合っているなら、`Play()` を呼んでいるか、位置がカメラに映る場所かを確認する。JSON を足したあとは起動し直す

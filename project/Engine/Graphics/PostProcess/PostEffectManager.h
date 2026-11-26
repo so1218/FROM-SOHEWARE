@@ -18,6 +18,77 @@ class Engine;
 class SRVManager;
 class PropertyBinder;
 
+// 画面演出の、シーンに保存する設定
+struct ScreenEffectSettings
+{
+    bool isVignetteEnabled = false;
+    float vignetteAmount = 0.294f;
+    float vignetteRadius = 0.148f;
+    float vignetteSoftness = 0.3f;
+    Vector2 vignetteEllipseScale = { 1.2f, 1.0f };
+    Vector3 vignetteColor = { 1.0f, 1.0f, 1.0f };
+
+    bool isChromaticAberrationEnabled = false;
+    Vector2 chromaOffset = { 0.003f, 0.0f };
+
+    bool isPixelationEnabled = false;
+    float pixelationSize = 2.386f;
+
+    bool isRadialBlurEnabled = false;
+    float radialBlurStrength = 0.3f;
+    Vector2 radialBlurCenter = { 0.5f, 0.5f };
+
+    bool isScreenNoiseEnabled = false;
+    float noiseAmount = 0.05f;
+    float noiseSpeed = 1.0f;
+    float noiseScale = 0.2f;
+};
+
+// ゲームから重ねる画面演出の値
+struct ScreenEffectValues
+{
+    float radialBlurStrength = 0.0f;
+    Vector2 radialBlurCenter = { 0.5f, 0.5f };
+
+    // 色収差のずれ 
+    Vector2 chromaOffset = { 0.0f, 0.0f };
+
+    // 画面の縁を暗くする
+    float vignetteAmount = 0.0f;
+    Vector3 vignetteColor = { 0.0f, 0.0f, 0.0f };
+    float vignetteStart = 0.25f;
+    float vignetteEnd = 0.85f;
+
+    // 1 より大きいときだけ、その大きさのドットにする
+    float pixelationSize = 0.0f;
+    // 砂嵐の量
+    float noiseAmount = 0.0f;
+};
+
+// 決めた長さだけ重ねる画面演出
+struct ScreenEffectRequest
+{
+    ScreenEffectValues values;
+
+    // かけ始めから消えきるまでの長さ
+    float duration = 0.5f;
+    float fadeInTime = 0.0f;
+    float fadeOutTime = 0.2f;
+    // true なら時間の速さが変わっても、そのまま進める
+    bool useUnscaledTime = true;
+
+    // 揺れ
+    // 1 秒に強弱を繰り返す回数
+    float pulseFrequency = 0.0f;
+    // どれだけ弱まるか
+    float pulseDepth = 0.0f;
+    // 不規則さ
+    float pulseRandomness = 0.0f;
+};
+
+// PlayScreenEffect が返す番号
+using ScreenEffectHandle = uint32_t;
+
 class PostEffectManager
 {
 public:
@@ -50,7 +121,8 @@ public:
 
     // 出力リソース取得
     D3D12_GPU_DESCRIPTOR_HANDLE GetBloomCombineSRVHandle() const { return compositePass_->GetSRVHandleGPU(); }
-    PostEffectData* GetPostEffectData() const { return cbData_; }
+    // シーンに保存する画面演出の設定
+    ScreenEffectSettings& GetScreenEffectSettings() { return screenEffectSettings_; }
     D3D12_GPU_VIRTUAL_ADDRESS GetPostEffectDataAddress() const { return constantBuffer_->GetGPUVirtualAddress(); }
 
     uint32_t GetFinalCompositeSRVIndex() const { return compositePass_ ? compositePass_->GetSRVIndex() : 0; }
@@ -61,6 +133,17 @@ public:
     void SetSceneDepthIndex(uint32_t index) { sceneDepthIndex_ = index; }
 
     void SetOverlayVignette(float amount, const Vector3& color, float start = 0.25f, float end = 0.85f);
+
+    // このフレームだけ画面演出を重ねる
+    void AddFrameScreenEffect(const ScreenEffectValues& values);
+
+    // 画面演出を一時的に重ねる
+    ScreenEffectHandle PlayScreenEffect(const ScreenEffectRequest& request);
+    // フェードアウトの時間をかけて消す
+    void StopScreenEffect(ScreenEffectHandle handle, bool isImmediate = false);
+    // 重ねている演出を全部すぐに消す
+    void ClearScreenEffects();
+    bool IsScreenEffectPlaying(ScreenEffectHandle handle) const;
 
     uint32_t GetVolumetricFogSRVIndex() const { return volumetricFogPass_->GetSRVIndex(); }
 
@@ -119,11 +202,37 @@ private:
 
     std::string prefix_;
 
-    bool flagVignette_ = false;
-    bool flagChromAberration_ = false;
-    bool flagPixelation_ = false;
-    bool flagRadialBlur_ = false;
-    bool flagScreenNoise_ = false;
+    // 一時的に重ねている画面演出
+    struct ActiveScreenEffect
+    {
+        ScreenEffectHandle handle = 0;
+        ScreenEffectRequest request;
+        float elapsedTime = 0.0f;
+        // StopScreenEffect が呼ばれた時刻
+        float stopTime = -1.0f;
+    };
+
+    // 重ねる演出の今の強さ
+    static float CalculateScreenEffectWeight(const ActiveScreenEffect& effect);
+    // 揺れの倍率
+    static float CalculatePulse(const ScreenEffectRequest& request, float time);
+    // 値に weight を掛けて、効果ごとに今の値より強いときだけ上書きする
+    static void BlendScreenEffectValues(PostEffectData& data, const ScreenEffectValues& values, float weight);
+    // 設定と重ねている演出を合わせて、GPU に渡す値を作る
+    void ComposeScreenEffects();
+
+    ScreenEffectSettings screenEffectSettings_;
+    std::vector<ActiveScreenEffect> activeScreenEffects_;
+    // AddFrameScreenEffect で渡された、このフレームの分
+    std::vector<ScreenEffectValues> frameScreenEffects_;
+    ScreenEffectHandle nextScreenEffectHandle_ = 1;
+    Vector2 screenResolution_ = { 0.0f, 0.0f };
+
+    // SetOverlayVignette で渡された値
+    float overlayVignetteAmount_ = 0.0f;
+    Vector3 overlayVignetteColor_ = { 0.0f, 0.0f, 0.0f };
+    float overlayVignetteStart_ = 0.25f;
+    float overlayVignetteEnd_ = 0.85f;
     bool flagSSAO_ = false;
     bool flagDoF_ = false;
     bool flagVolumetricFog_ = false;

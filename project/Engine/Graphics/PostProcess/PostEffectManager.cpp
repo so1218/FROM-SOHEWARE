@@ -95,54 +95,251 @@ void PostEffectManager::Initialize(
     finalPassRTVHandle_ = finalRtvHandle;
     finalPassSRVIndex_ = finalSrvIndex;
 
-    // パラメータの初期値を設定
-    cbData_->totalTime = static_cast<float>(TimeManager::GetInstance()->GetTotalTime());
-    cbData_->pixelationSize = 2.386f;
-    cbData_->screenResolution = Vector2(float(width), float(height));
-    cbData_->vignetteAmount = 0.294f;
-    cbData_->vignetteRadius = 0.148f;
-    cbData_->vignetteSoftness = 0.3f;
-    cbData_->vignetteEllipseScale = Vector2(1.2f, 1.0f);
-    cbData_->noiseAmount = 0.05f;
-    cbData_->noiseSpeed = 1.0f;
-    cbData_->noiseScale = 0.2f;
-    cbData_->chromaOffset = { 0.003f,0.0f };
-    cbData_->vignetteColor = Vector3(255.0f / 255.0f, 255.0f / 255.0f, 255.0f / 255.0f);
-    cbData_->flag = 0;
-	cbData_->radialBlurCenter = Vector2(0.5f, 0.5f);
-	cbData_->radialBlurStrength = 0.3f; 
-    cbData_->overlayVignetteAmount = 0.0f;
-    cbData_->overlayVignetteStart = 0.25f;
-    cbData_->overlayVignetteEnd = 0.85f;
-    cbData_->overlayVignetteColor = Vector3(0.0f, 0.0f, 0.0f);
+    // GPU に渡す値を一度作っておく
+    screenResolution_ = Vector2(float(width), float(height));
+    ComposeScreenEffects();
 }
 
 void PostEffectManager::SetOverlayVignette(float amount, const Vector3& color, float start, float end)
 {
-    if (!cbData_) return;
+    overlayVignetteAmount_ = std::clamp(amount, 0.0f, 1.0f);
+    overlayVignetteColor_ = color;
+    overlayVignetteStart_ = std::max(start, 0.0f);
+    overlayVignetteEnd_ = std::max(end, overlayVignetteStart_);
+}
 
-    cbData_->overlayVignetteAmount = std::clamp(amount, 0.0f, 1.0f);
-    cbData_->overlayVignetteColor = color;
-    cbData_->overlayVignetteStart = std::max(start, 0.0f);
-    cbData_->overlayVignetteEnd = std::max(end, cbData_->overlayVignetteStart);
+void PostEffectManager::AddFrameScreenEffect(const ScreenEffectValues& values)
+{
+    frameScreenEffects_.push_back(values);
+}
+
+ScreenEffectHandle PostEffectManager::PlayScreenEffect(const ScreenEffectRequest& request)
+{
+    ActiveScreenEffect effect;
+    effect.handle = nextScreenEffectHandle_++;
+    // 一周して 0 にならないようにする
+    if (nextScreenEffectHandle_ == 0)
+    {
+        nextScreenEffectHandle_ = 1;
+    }
+    effect.request = request;
+    activeScreenEffects_.push_back(effect);
+    return effect.handle;
+}
+
+void PostEffectManager::StopScreenEffect(ScreenEffectHandle handle, bool isImmediate)
+{
+    for (auto it = activeScreenEffects_.begin(); it != activeScreenEffects_.end(); ++it)
+    {
+        if (it->handle != handle)
+        {
+            continue;
+        }
+        if (isImmediate || it->request.fadeOutTime <= 0.0f)
+        {
+            activeScreenEffects_.erase(it);
+        }
+        else if (it->stopTime < 0.0f)
+        {
+            it->stopTime = it->elapsedTime;
+        }
+        return;
+    }
+}
+
+void PostEffectManager::ClearScreenEffects()
+{
+    activeScreenEffects_.clear();
+    frameScreenEffects_.clear();
+}
+
+bool PostEffectManager::IsScreenEffectPlaying(ScreenEffectHandle handle) const
+{
+    return std::any_of(activeScreenEffects_.begin(), activeScreenEffects_.end(),
+        [handle](const ActiveScreenEffect& effect) { return effect.handle == handle; });
+}
+
+float PostEffectManager::CalculateScreenEffectWeight(const ActiveScreenEffect& effect)
+{
+    const ScreenEffectRequest& request = effect.request;
+    const float time = effect.elapsedTime;
+
+    const float fadeInWeight = request.fadeInTime > 0.0f ? std::min(time / request.fadeInTime, 1.0f) : 1.0f;
+
+    // 止められたときは、その時刻からフェードアウトする
+    float fadeOutStart = std::numeric_limits<float>::max();
+    if (effect.stopTime >= 0.0f)
+    {
+        fadeOutStart = effect.stopTime;
+    }
+    else if (request.duration > 0.0f)
+    {
+        fadeOutStart = request.duration - std::max(request.fadeOutTime, 0.0f);
+    }
+
+    float fadeOutWeight = 1.0f;
+    if (time >= fadeOutStart)
+    {
+        if (request.fadeOutTime <= 0.0f)
+        {
+            return -1.0f;
+        }
+        fadeOutWeight = 1.0f - (time - fadeOutStart) / request.fadeOutTime;
+        if (fadeOutWeight <= 0.0f)
+        {
+            return -1.0f;
+        }
+    }
+    return std::min(fadeInWeight, fadeOutWeight) * CalculatePulse(request, time);
+}
+
+float PostEffectManager::CalculatePulse(const ScreenEffectRequest& request, float time)
+{
+    const float depth = std::clamp(request.pulseDepth, 0.0f, 1.0f);
+    if (request.pulseFrequency <= 0.0f || depth <= 0.0f)
+    {
+        return 1.0f;
+    }
+
+    // 規則正しい揺れ
+    const float phase = time * request.pulseFrequency;
+    const float wave = 0.5f + 0.5f * std::cos(phase * 2.0f * std::numbers::pi_v<float>);
+
+    // 不規則な揺れ
+    auto hash = [](float value)
+        {
+            const float result = std::sin(value * 12.9898f) * 43758.5453f;
+            return result - std::floor(result);
+        };
+    const float noisePosition = phase * 2.0f;
+    const float noiseIndex = std::floor(noisePosition);
+    float noiseRatio = noisePosition - noiseIndex;
+    noiseRatio = noiseRatio * noiseRatio * (3.0f - 2.0f * noiseRatio);
+    const float noise = hash(noiseIndex) + (hash(noiseIndex + 1.0f) - hash(noiseIndex)) * noiseRatio;
+
+    const float randomness = std::clamp(request.pulseRandomness, 0.0f, 1.0f);
+    const float strength = wave + (noise - wave) * randomness;
+    return 1.0f - depth * (1.0f - strength);
+}
+
+void PostEffectManager::BlendScreenEffectValues(PostEffectData& data, const ScreenEffectValues& values, float weight)
+{
+    if (weight <= 0.0f)
+    {
+        return;
+    }
+
+    const float radialBlurStrength = values.radialBlurStrength * weight;
+    const float currentRadialBlur = (data.flag & RADIAL_BLUR) ? data.radialBlurStrength : 0.0f;
+    if (radialBlurStrength > currentRadialBlur)
+    {
+        data.radialBlurStrength = radialBlurStrength;
+        data.radialBlurCenter = values.radialBlurCenter;
+        data.flag |= RADIAL_BLUR;
+    }
+
+    const Vector2 chromaOffset = values.chromaOffset * weight;
+    const float currentChroma = (data.flag & CHROM_ABERRATION) ? data.chromaOffset.Length() : 0.0f;
+    if (chromaOffset.Length() > currentChroma)
+    {
+        data.chromaOffset = chromaOffset;
+        data.flag |= CHROM_ABERRATION;
+    }
+
+    if (values.pixelationSize > 1.0f)
+    {
+        const float pixelationSize = 1.0f + (values.pixelationSize - 1.0f) * weight;
+        const float currentPixelation = (data.flag & PIXELATION) ? data.pixelationSize : 1.0f;
+        if (pixelationSize > currentPixelation)
+        {
+            data.pixelationSize = pixelationSize;
+            data.flag |= PIXELATION;
+        }
+    }
+
+    const float noiseAmount = values.noiseAmount * weight;
+    const float currentNoise = (data.flag & SCREEN_NOISE) ? data.noiseAmount : 0.0f;
+    if (noiseAmount > currentNoise)
+    {
+        data.noiseAmount = noiseAmount;
+        data.flag |= SCREEN_NOISE;
+    }
+
+    const float vignetteAmount = std::clamp(values.vignetteAmount, 0.0f, 1.0f) * weight;
+    if (vignetteAmount > data.overlayVignetteAmount)
+    {
+        data.overlayVignetteAmount = vignetteAmount;
+        data.overlayVignetteColor = values.vignetteColor;
+        data.overlayVignetteStart = std::max(values.vignetteStart, 0.0f);
+        data.overlayVignetteEnd = std::max(values.vignetteEnd, data.overlayVignetteStart);
+    }
+}
+
+void PostEffectManager::ComposeScreenEffects()
+{
+    if (!cbData_)
+    {
+        return;
+    }
+
+    // シーンの設定を土台にする
+    const ScreenEffectSettings& settings = screenEffectSettings_;
+    PostEffectData data = {};
+    data.totalTime = static_cast<float>(TimeManager::GetInstance()->GetTotalTime());
+    data.screenResolution = screenResolution_;
+    data.vignetteAmount = settings.vignetteAmount;
+    data.vignetteRadius = settings.vignetteRadius;
+    data.vignetteSoftness = settings.vignetteSoftness;
+    data.vignetteEllipseScale = settings.vignetteEllipseScale;
+    data.vignetteColor = settings.vignetteColor;
+    data.chromaOffset = settings.chromaOffset;
+    data.pixelationSize = settings.pixelationSize;
+    data.radialBlurStrength = settings.radialBlurStrength;
+    data.radialBlurCenter = settings.radialBlurCenter;
+    data.noiseAmount = settings.noiseAmount;
+    data.noiseSpeed = settings.noiseSpeed;
+    data.noiseScale = settings.noiseScale;
+    data.overlayVignetteAmount = overlayVignetteAmount_;
+    data.overlayVignetteColor = overlayVignetteColor_;
+    data.overlayVignetteStart = overlayVignetteStart_;
+    data.overlayVignetteEnd = overlayVignetteEnd_;
+
+    data.flag = 0;
+    if (settings.isVignetteEnabled)            data.flag |= VIGNETTE;
+    if (settings.isChromaticAberrationEnabled) data.flag |= CHROM_ABERRATION;
+    if (settings.isPixelationEnabled)          data.flag |= PIXELATION;
+    if (settings.isRadialBlurEnabled)          data.flag |= RADIAL_BLUR;
+    if (settings.isScreenNoiseEnabled)         data.flag |= SCREEN_NOISE;
+
+    // 重ねる演出は、効果ごとに土台より強いときだけ上書き
+    for (const ActiveScreenEffect& effect : activeScreenEffects_)
+    {
+        BlendScreenEffectValues(data, effect.request.values, CalculateScreenEffectWeight(effect));
+    }
+    for (const ScreenEffectValues& values : frameScreenEffects_)
+    {
+        BlendScreenEffectValues(data, values, 1.0f);
+    }
+    // このフレームの分は使い終わったので捨てる
+    frameScreenEffects_.clear();
+
+    // 作った値をまとめて書き込むだけにする
+    *cbData_ = data;
 }
 
 void PostEffectManager::Update(const Matrix4x4& viewMatrix, const Matrix4x4& projectionMatrix, const Vector3& cameraPosition)
 {
-    // 時間依存データの更新
-    if (cbData_)
+    // 重ねている画面演出の時間を進め、消えきったものを外す
     {
-        cbData_->totalTime = static_cast<float>(TimeManager::GetInstance()->GetTotalTime());
-    }
-
-    if (cbData_)
-    {
-        cbData_->flag = 0;
-        if (flagVignette_)        cbData_->flag |= VIGNETTE;
-        if (flagChromAberration_)  cbData_->flag |= CHROM_ABERRATION;
-        if (flagPixelation_)      cbData_->flag |= PIXELATION;
-        if (flagRadialBlur_)      cbData_->flag |= RADIAL_BLUR;
-        if (flagScreenNoise_)     cbData_->flag |= SCREEN_NOISE;
+        TimeManager* timeManager = TimeManager::GetInstance();
+        const float deltaTime = timeManager->GetDeltaTime();
+        const float unscaledDeltaTime = timeManager->GetUnscaledDeltaTime();
+        for (ActiveScreenEffect& effect : activeScreenEffects_)
+        {
+            effect.elapsedTime += effect.request.useUnscaledTime ? unscaledDeltaTime : deltaTime;
+        }
+        std::erase_if(activeScreenEffects_,
+            [](const ActiveScreenEffect& effect) { return CalculateScreenEffectWeight(effect) < 0.0f; });
     }
 
     if (volumetricFogPass_)
@@ -189,6 +386,9 @@ void PostEffectManager::Update(const Matrix4x4& viewMatrix, const Matrix4x4& pro
 
 void PostEffectManager::ExecutePostEffects(ID3D12GraphicsCommandList* cmdList)
 {
+    // ゲームの更新でこのフレームに渡された演出も入れるため、描く直前に値を作る
+    ComposeScreenEffects();
+
     // Contextセットアップとリソースバリア
     auto* offscreenRTV = engine_->GetOffscreenRTVManager();
     context_.srvManager = srvManager_;
@@ -287,6 +487,9 @@ void PostEffectManager::BindProperties(PropertyBinder& binder, const std::string
 
     if (!cbData_) return;
 
+    // 前のシーンで重ねていた演出は持ち越さない
+    ClearScreenEffects();
+
     // パス設定ポインタの取得
     BrightExtractSettings* brightSettings = GetBrightSettings();
     BloomSettings* bloomSettings = GetBloomSettings();
@@ -297,32 +500,29 @@ void PostEffectManager::BindProperties(PropertyBinder& binder, const std::string
     VolumetricFogSettings* volFogSettings = GetVolumetricFogSettings();
     FogBilateralSettings* fogBilateralSettings = GetFogBilateralSettings();
 
-    flagVignette_ = (cbData_->flag & VIGNETTE) != 0;
-    binder.Bind(p + "Vignette/Enable", &flagVignette_, flagVignette_);
-    binder.Bind(p + "Vignette/Amount", &cbData_->vignetteAmount, 0.0f, 0.1f, 0.0f, 10.0f);
-    binder.Bind(p + "Vignette/Radius", &cbData_->vignetteRadius, 0.0f, 0.05f, 0.0f, 1.0f);
-    binder.Bind(p + "Vignette/Softness", &cbData_->vignetteSoftness, 0.0f, 0.05f, 0.0f, 1.0f);
-    binder.Bind(p + "Vignette/EllipseScale", &cbData_->vignetteEllipseScale, { 1.0f, 1.0f });
-    binder.BindColor(p + "Vignette/Color", &cbData_->vignetteColor, cbData_->vignetteColor);
+    // 画面演出は ScreenEffectSettings に保存し、GPU に渡す値は ComposeScreenEffects で毎フレーム作る
+    ScreenEffectSettings& screen = screenEffectSettings_;
+    binder.Bind(p + "Vignette/Enable", &screen.isVignetteEnabled, false);
+    binder.Bind(p + "Vignette/Amount", &screen.vignetteAmount, 0.0f, 0.1f, 0.0f, 10.0f);
+    binder.Bind(p + "Vignette/Radius", &screen.vignetteRadius, 0.0f, 0.05f, 0.0f, 1.0f);
+    binder.Bind(p + "Vignette/Softness", &screen.vignetteSoftness, 0.0f, 0.05f, 0.0f, 1.0f);
+    binder.Bind(p + "Vignette/EllipseScale", &screen.vignetteEllipseScale, { 1.0f, 1.0f });
+    binder.BindColor(p + "Vignette/Color", &screen.vignetteColor, screen.vignetteColor);
 
-    flagChromAberration_ = (cbData_->flag & CHROM_ABERRATION) != 0;
-    binder.Bind(p + "ChromAberration/Enable", &flagChromAberration_, flagChromAberration_);
-    binder.Bind(p + "ChromAberration/Offset", &cbData_->chromaOffset, { 0.0f, 0.0f }, 0.001f);
+    binder.Bind(p + "ChromAberration/Enable", &screen.isChromaticAberrationEnabled, false);
+    binder.Bind(p + "ChromAberration/Offset", &screen.chromaOffset, { 0.0f, 0.0f }, 0.001f);
 
-    flagPixelation_ = (cbData_->flag & PIXELATION) != 0;
-    binder.Bind(p + "Pixelation/Enable", &flagPixelation_, flagPixelation_);
-    binder.Bind(p + "Pixelation/Size", &cbData_->pixelationSize, 1.0f, 0.5f, 1.0f, 64.0f);
+    binder.Bind(p + "Pixelation/Enable", &screen.isPixelationEnabled, false);
+    binder.Bind(p + "Pixelation/Size", &screen.pixelationSize, 1.0f, 0.5f, 1.0f, 64.0f);
 
-    flagRadialBlur_ = (cbData_->flag & RADIAL_BLUR) != 0;
-    binder.Bind(p + "RadialBlur/Enable", &flagRadialBlur_, flagRadialBlur_);
-    binder.Bind(p + "RadialBlur/Strength", &cbData_->radialBlurStrength, 0.0f, 0.01f, 0.0f, 0.2f);
-    binder.Bind(p + "RadialBlur/Center", &cbData_->radialBlurCenter, { 0.5f, 0.5f }, 0.01f, 0.0f, 1.0f);
+    binder.Bind(p + "RadialBlur/Enable", &screen.isRadialBlurEnabled, false);
+    binder.Bind(p + "RadialBlur/Strength", &screen.radialBlurStrength, 0.0f, 0.01f, 0.0f, 0.2f);
+    binder.Bind(p + "RadialBlur/Center", &screen.radialBlurCenter, { 0.5f, 0.5f }, 0.01f, 0.0f, 1.0f);
 
-    flagScreenNoise_ = (cbData_->flag & SCREEN_NOISE) != 0;
-    binder.Bind(p + "ScreenNoise/Enable", &flagScreenNoise_, flagScreenNoise_);
-    binder.Bind(p + "ScreenNoise/Amount", &cbData_->noiseAmount, 0.0f, 0.01f, 0.0f, 1.0f);
-    binder.Bind(p + "ScreenNoise/Speed", &cbData_->noiseSpeed, 1.0f, 0.1f, 0.0f, 10.0f);
-    binder.Bind(p + "ScreenNoise/Scale", &cbData_->noiseScale, 0.5f, 0.01f, 0.0f, 1.0f);
+    binder.Bind(p + "ScreenNoise/Enable", &screen.isScreenNoiseEnabled, false);
+    binder.Bind(p + "ScreenNoise/Amount", &screen.noiseAmount, 0.0f, 0.01f, 0.0f, 1.0f);
+    binder.Bind(p + "ScreenNoise/Speed", &screen.noiseSpeed, 1.0f, 0.1f, 0.0f, 10.0f);
+    binder.Bind(p + "ScreenNoise/Scale", &screen.noiseScale, 0.5f, 0.01f, 0.0f, 1.0f);
 
 
     if (compositeSettings && ssaoSettings)
@@ -454,7 +654,7 @@ void PostEffectManager::DebugGui(PropertyBinder& binder)
         if (ImGui::TreeNode("画面演出"))
         {
             binder.Draw(p + "Vignette/Enable", "ビネット");
-            if (flagVignette_)
+            if (screenEffectSettings_.isVignetteEnabled)
             {
                 ImGui::Indent();
                 binder.Draw(p + "Vignette/Amount", "強度");
@@ -467,7 +667,7 @@ void PostEffectManager::DebugGui(PropertyBinder& binder)
 
             ImGui::Spacing();
             binder.Draw(p + "ChromAberration/Enable", "色収差");
-            if (flagChromAberration_)
+            if (screenEffectSettings_.isChromaticAberrationEnabled)
             {
                 ImGui::Indent();
                 binder.Draw(p + "ChromAberration/Offset", "ズレ量 (X, Y)");
@@ -476,7 +676,7 @@ void PostEffectManager::DebugGui(PropertyBinder& binder)
 
             ImGui::Spacing();
             binder.Draw(p + "Pixelation/Enable", "ドット化");
-            if (flagPixelation_)
+            if (screenEffectSettings_.isPixelationEnabled)
             {
                 ImGui::Indent();
                 binder.Draw(p + "Pixelation/Size", "ドットサイズ");
@@ -485,7 +685,7 @@ void PostEffectManager::DebugGui(PropertyBinder& binder)
 
             ImGui::Spacing();
             binder.Draw(p + "RadialBlur/Enable", "ラディアルブラー");
-            if (flagRadialBlur_)
+            if (screenEffectSettings_.isRadialBlurEnabled)
             {
                 ImGui::Indent();
                 binder.Draw(p + "RadialBlur/Strength", "ブラー強度");
@@ -495,7 +695,7 @@ void PostEffectManager::DebugGui(PropertyBinder& binder)
 
             ImGui::Spacing();
             binder.Draw(p + "ScreenNoise/Enable", "スクリーンノイズ (砂嵐)");
-            if (flagScreenNoise_)
+            if (screenEffectSettings_.isScreenNoiseEnabled)
             {
                 ImGui::Indent();
                 binder.Draw(p + "ScreenNoise/Amount", "ノイズ量");

@@ -10,10 +10,18 @@
 - `EnvironmentManager::SetTimeFlowEnabled` を追加。false の間は時刻を自動で進めないので、ゲーム側で `SetTimeOfDay` を呼んで時刻を決められる
 - `EnvironmentManager::RequestWeatherChange` をゲームから呼べるようにした (今まで private)。すぐに天候を変える `SetWeatherImmediately` も追加
 - 夕方の移り変わりの時刻 (夕焼けになり始める・日が沈む・夜になりきる) を、環境の設定 `DuskStartHour` / `SunsetHour` / `NightHour` で変えられるようにした。標準は 17 / 18 / 19 時で、今までと同じ見た目になる。太陽の向き・時間帯の色・霧はこの時刻に合わせて動き、時計の時刻 (`GetTimeOfDay`) はそのまま。見た目の時刻は `GetVisualTimeOfDay` で取れる
+- シーンの途中で画面演出を重ねる仕組みを追加。放射ブラー・色収差・画面の縁のビネット・ピクセル化・砂嵐の値を `ScreenEffectValues` で渡す。シーンの設定で切っている効果にもかけられ、重なったときは効果ごとに強いほうを使う。シーンを作り直すと全部消える。「ポストエフェクト設定」の「一時的に重ねる演出の確認」で試せる
+  - `PostEffectManager::PlayScreenEffect`: `ScreenEffectRequest` で決めた長さ (フェードイン・フェードアウト付き) だけかけ、終わると自動で消える。長さを 0 以下にすると `StopScreenEffect` を呼ぶまでかけ続ける。`pulseFrequency` / `pulseDepth` / `pulseRandomness` で強弱を繰り返したり震わせたりできる。ポーズやヒットストップ中も進めるか (`useUnscaledTime`) を選べる
+  - `PostEffectManager::AddFrameScreenEffect`: そのフレームだけ重ねる。毎フレーム呼んでいる間だけかかるので、値の動きをゲームが自由に計算できる
 
 ### 変更
 - パッドとキーボードのどちらで遊んでいるかを、キーやマウスのボタンを押し続けているかではなく、押した瞬間で判定するようにした。押されたままと読めるキーがあると、パッドから手を離すたびにキーボードの表示へ戻っていた
 - v1.2.0 で CHANGELOG の中身が消えていたのを元に戻した。v1.2.0 で変わった内容は下の「v1.2.0」に書いてある
+- 画面演出 (ビネット・色収差・ピクセル化・放射ブラー・砂嵐) の設定を、GPU に渡す定数バッファから `ScreenEffectSettings` に分けた。GPU に渡す値は、設定と重ねている演出から描く直前に毎フレーム作る。演出のために変えた値が保存されることも、Map したままの遅いメモリを ImGui が毎フレーム読むこともなくなった。保存のキーは今までと同じ
+- `SetOverlayVignette` の値も描く直前に合わせるようにした。`PlayScreenEffect` のビネットと重なったときは、強いほうを使う
+
+### 対応が必要
+- `PostEffectManager::GetPostEffectData` を消した。GPU に渡す値は毎フレーム作り直すので、書き換えても次のフレームで戻る。ずっと変えるなら `GetScreenEffectSettings` (保存される値)、一時的にかけるなら `PlayScreenEffect` を使う
 
 ## v1.2.0 (2026-11-23)
 
