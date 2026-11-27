@@ -146,8 +146,6 @@ void Fade::DebugGui()
         }
     }
 
-    ImGui::Separator();
-
     ImGui::End();
 }
 

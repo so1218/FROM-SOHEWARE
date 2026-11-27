@@ -5,8 +5,11 @@
 Texture2D<float> gDepthTexture : register(t0);
 Texture2DArray<float> gShadowMap : register(t1);
 Texture3D<float4> gNoiseVolume : register(t2);
+// 地形の高さの地図
+Texture2D<float> gTerrainHeightMap : register(t3);
 SamplerState gSampler : register(s0);
 SamplerComparisonState gShadowSampler : register(s1);
+SamplerState gClampSampler : register(s2);
 
 // rgb: 散乱した光, a: 減衰係数
 RWTexture3D<float4> gVoxelInject : register(u0);
@@ -101,6 +104,29 @@ float CalculateVolumeMask(FogVolume volume, float3 localPosition)
     return smoothstep(1.0f, 1.0f - volume.blendDistance, distanceFromCenter);
 }
 
+// 高さの霧が一番濃い高さ
+float CalculateFogReferenceHeight(float3 position)
+{
+    float referenceHeight = gFogSettings.baseHeight;
+    if (gFogSettings.hasTerrain == 0 || gFogSettings.terrainFollow <= 0.0f)
+    {
+        return referenceHeight;
+    }
+
+    float2 terrainUV = (position.xz - gFogSettings.terrainTexcoordOrigin) * gFogSettings.terrainTexcoordScale;
+    // 地形の外では、端へ向かって世界の高さの霧に戻す
+    float2 distanceToEdge = min(terrainUV, 1.0f - terrainUV);
+    float insideRatio = saturate(min(distanceToEdge.x, distanceToEdge.y) * 20.0f);
+    if (insideRatio <= 0.0f)
+    {
+        return referenceHeight;
+    }
+
+    float heightRatio = gTerrainHeightMap.SampleLevel(gClampSampler, terrainUV, 0);
+    float groundHeight = gFogSettings.terrainBaseY + (heightRatio - 0.5f) * gFogSettings.terrainMaxHeight;
+    return lerp(referenceHeight, groundHeight + gFogSettings.terrainFogOffset, saturate(gFogSettings.terrainFollow) * insideRatio);
+}
+
 // detailRatio が 0 に近いほど細かい模様を省く
 FogMedia EvaluateFogMedia(float3 position, float detailRatio, bool isDetailed)
 {
@@ -112,7 +138,7 @@ FogMedia EvaluateFogMedia(float3 position, float detailRatio, bool isDetailed)
     float heightFactor = 1.0f;
     if (gFogSettings.heightFalloff > 0.0f)
     {
-        heightFactor = exp(-max(position.y - gFogSettings.baseHeight, 0.0f) * gFogSettings.heightFalloff);
+        heightFactor = exp(-max(position.y - CalculateFogReferenceHeight(position), 0.0f) * gFogSettings.heightFalloff);
     }
     float globalDensity = gFogSettings.extinction + gFogSettings.heightDensity * heightFactor;
 

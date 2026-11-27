@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "Ground.h"
 #include "ImGuiManager.h"
+#include "PostEffectManager.h"
 
 using namespace FS;
 
@@ -27,6 +28,12 @@ void Ground::Initialize()
 void Ground::Update()
 {
 	interactionSystem_->Update();
+
+	// 高さの霧を、この地形に沿わせる
+	if (PostEffectManager* postEffectManager = engine_->GetPostEffectManager())
+	{
+		postEffectManager->GetVolumetricFogPass()->SubmitGroundTerrain(*terrain_);
+	}
 }
 
 void Ground::Draw()

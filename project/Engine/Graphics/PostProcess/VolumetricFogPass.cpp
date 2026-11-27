@@ -7,6 +7,7 @@
 #include "PSOManager.h"
 #include "EnvironmentManager.h"
 #include "PIXColors.h"
+#include "Terrain.h"
 
 namespace FS
 {
@@ -37,6 +38,9 @@ void VolumetricFogPass::Initialize(Engine* engine, uint32_t width, uint32_t heig
     settings_->erosion = 0.4f;
     settings_->noiseFeather = 0.3f;
     settings_->noiseIntensity = 1.0f;
+    settings_->terrainFollow = 0.0f;
+    settings_->terrainFogOffset = 0.0f;
+    settings_->hasTerrain = 0;
 
     volumeConstantBuffer_ = BufferManager::CreateMappedConstantBuffer(device, &volumeBuffer_);
     memset(volumeBuffer_, 0, sizeof(FogVolumeBuffer));
@@ -160,6 +164,10 @@ void VolumetricFogPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEf
         CopyToHeap(1, engine_->GetShadowMap()->GetSRVHandleCPU());
         CopyToHeap(2, srvManager->GetSRVHandleCPU_ForCopying(noiseTexture_.srvIndex));
         CopyToHeap(3, srvManager->GetSRVHandleCPU_ForCopying(injectTexture_.uavIndex));
+        // 地形が渡されていないフレームも、何かの 2D テクスチャをつないでおく (シェーダーは読まない)
+        CopyToHeap(14, settings_->hasTerrain != 0
+            ? srvManager->GetSRVHandleCPU_ForCopying(terrainHeightMapSrvIndex_)
+            : context.GetCPUHandle(context.sceneDepthSrvIndex));
 
         BindCommonConstants("VolumetricFogInjectionCS");
         cmdList->SetComputeRootConstantBufferView(2, engine_->GetLightManager()->GetPointLightResource()->GetGPUVirtualAddress());
@@ -169,6 +177,7 @@ void VolumetricFogPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEf
         cmdList->SetComputeRootConstantBufferView(6, EnvironmentManager::GetInstance()->GetGlobalEnvironmentResource()->GetGPUVirtualAddress());
         cmdList->SetComputeRootDescriptorTable(7, HeapGPU(0));
         cmdList->SetComputeRootDescriptorTable(8, HeapGPU(3));
+        cmdList->SetComputeRootDescriptorTable(9, HeapGPU(14));
         cmdList->Dispatch(groupCountX, groupCountY, groupCountZ);
 
         ToShaderResource(injectTexture_.resource.Get());
@@ -262,6 +271,26 @@ void VolumetricFogPass::BeginFrame()
     {
         volumeBuffer_->volumeCount = 0;
     }
+    // 地形は毎フレーム渡してもらう
+    if (settings_)
+    {
+        settings_->hasTerrain = 0;
+    }
+}
+
+void VolumetricFogPass::SubmitGroundTerrain(const Terrain& terrain)
+{
+    if (!settings_ || !terrain.HasHeightData())
+    {
+        return;
+    }
+
+    terrain.GetTexcoordTransform(settings_->terrainTexcoordOrigin, settings_->terrainTexcoordScale);
+    // 高さの割合 0.5 が、地形の位置の高さになる
+    settings_->terrainBaseY = terrain.GetCenterY();
+    settings_->terrainMaxHeight = terrain.GetHeightScale();
+    terrainHeightMapSrvIndex_ = terrain.GetHeightmapHandle();
+    settings_->hasTerrain = 1;
 }
 
 bool VolumetricFogPass::SubmitFogVolume(const FogVolumeData& volumeData)

@@ -51,6 +51,7 @@ public:
     float GetHeightScale() const { return params_.maxHeight; }
 
     Vector2 GetCenterXZ() const { return { position_.x, position_.z }; }
+    float GetCenterY() const { return position_.y; }
     Vector2 GetSizeXZ() const;
 
     std::string* GetHeightmapNamePtr() { return &heightmapTextureName_; }
@@ -58,6 +59,12 @@ public:
     uint32_t* GetHeightmapHandlePtr() { return &heightMapHandle_; }
 
     TerrainMaterial& GetMaterial() { return material_; }
+
+    // 高さの地図の SRV の番号
+    uint32_t GetHeightmapHandle() const { return heightMapHandle_; }
+    bool HasHeightData() const { return !heightRatios_.empty(); }
+    // ワールドの XZ から高さの地図の UV にする変換
+    void GetTexcoordTransform(Vector2& outOrigin, Vector2& outScale) const;
 
 private:
     struct Chunk
@@ -74,7 +81,6 @@ private:
     // heightRatios_ と大きさを入れたあとに呼び、チャンクとメッシュを作り直す
     void RebuildFromHeights(uint32_t width, uint32_t height, float cellSize);
     void UploadOwnedHeightMap();
-    void GetTexcoordTransform(Vector2& outOrigin, Vector2& outScale) const;
 
     void CreateChunks();
     void CreateMesh();

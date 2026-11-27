@@ -670,6 +670,16 @@ struct VolumetricFogSettings
     float noiseIntensity;
     
     float windSpeedMultiplier;
+    float terrainFollow;
+    float terrainFogOffset;
+    float terrainBaseY;
+
+    float2 terrainTexcoordOrigin;
+    float2 terrainTexcoordScale;
+
+    float terrainMaxHeight;
+    uint hasTerrain;
+    float2 terrainPadding;
 };
 
 struct FogBilateralSettings

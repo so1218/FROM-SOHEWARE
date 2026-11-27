@@ -6,6 +6,8 @@
 namespace FS
 {
 
+class Terrain;
+
 class VolumetricFogPass : public IPostEffect
 {
 public:
@@ -52,6 +54,9 @@ public:
 
     std::vector<FogVolumeData>& GetFogVolumesData() { return editorVolumes_; }
 
+    // 高さの霧を沿わせる地形を、このフレームの描画に渡す。毎フレーム呼ぶ (呼ばないフレームは世界の高さだけで決める)
+    void SubmitGroundTerrain(const Terrain& terrain);
+
 private:
     // フロクセルの数。横と縦は画面の比率に合わせ、奥行きは指数で分ける
     static constexpr uint32_t kFroxelWidth = 160;
@@ -88,6 +93,9 @@ private:
     Microsoft::WRL::ComPtr<ID3D12Resource> volumeConstantBuffer_;
     FogVolumeBuffer* volumeBuffer_ = nullptr;
     std::vector<FogVolumeData> editorVolumes_;
+
+    // SubmitGroundTerrain で渡された地形の高さの地図
+    uint32_t terrainHeightMapSrvIndex_ = 0;
 };
 
 }

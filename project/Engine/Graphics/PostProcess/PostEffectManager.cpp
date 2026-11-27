@@ -579,6 +579,8 @@ void PostEffectManager::BindProperties(PropertyBinder& binder, const std::string
         binder.Bind(p + "VolumetricFog/HeightDensity", &volFogSettings->heightDensity, 0.0f, 0.01f, 0.0f, 5.0f);
         binder.Bind(p + "VolumetricFog/BaseHeight", &volFogSettings->baseHeight, 0.0f, 0.5f, -100.0f, 100.0f);
         binder.Bind(p + "VolumetricFog/HeightFalloff", &volFogSettings->heightFalloff, 0.1f, 0.001f, 0.0f, 1.0f);
+        binder.Bind(p + "VolumetricFog/TerrainFollow", &volFogSettings->terrainFollow, 0.0f, 0.01f, 0.0f, 1.0f);
+        binder.Bind(p + "VolumetricFog/TerrainFogOffset", &volFogSettings->terrainFogOffset, 0.0f, 0.05f, -10.0f, 50.0f);
 
         binder.Bind(p + "VolumetricFog/NoiseScale", &volFogSettings->noiseScale, 0.01f, 0.001f, 0.0f, 1.0f);
         binder.Bind(p + "VolumetricFog/NoiseDistortion", &volFogSettings->noiseDistortion, 0.15f, 0.01f, 0.0f, 1.0f);
@@ -762,6 +764,8 @@ void PostEffectManager::DebugGui(PropertyBinder& binder)
             binder.Draw(p + "VolumetricFog/HeightDensity", "高さフォグ最大密度");
             binder.Draw(p + "VolumetricFog/BaseHeight", "基準高さ");
             binder.Draw(p + "VolumetricFog/HeightFalloff", "高さ減衰率");
+            binder.Draw(p + "VolumetricFog/TerrainFollow", "地面に沿わせる割合 (0 = 世界の高さ、1 = 地面から)");
+            binder.Draw(p + "VolumetricFog/TerrainFogOffset", "地面に沿うとき、一番濃い高さ (地面から m)");
 
             ImGui::SeparatorText("ノイズ・形状");
             binder.Draw(p + "VolumetricFog/NoiseScale", "ノイズスケール");
