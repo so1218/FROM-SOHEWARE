@@ -344,13 +344,11 @@ void FloatingBehavior::UpdateLockOn(Enemy* owner, float deltaTime)
     // 狙っている間はほとんど止まる
     MoveToward(owner, owner->GetTransform().translation_, config_.moveSpeed, deltaTime);
 
-    // 追いかける間 → 狙いを止める間 → 撃つ、の順に進む
     const float lockOnTime = std::max(config_.lockOnTime, 0.01f);
     const float trackEndTime = std::max(lockOnTime - config_.lockFreezeTime, 0.0f);
     const bool isLocked = stateTimer_ >= trackEndTime;
     const Vector3 muzzle = GetMuzzlePosition(owner);
 
-    // 撃つ直前ほど激しく吸い込み、それ自体を「もうすぐ撃つ」合図にする
     chargeTarget_.translation_ = muzzle;
     if (chargeEmitterPtr_)
     {
@@ -495,7 +493,6 @@ void FloatingBehavior::ChangeState(State state)
         hasWanderTarget_ = false;
         wanderPauseTimer_ = 0.0f;
 
-        // 追いかけている間の銃声は数えていないので、見失った直後に「聞こえた」ことにならないよう数え直す
         if (player_)
         {
             lastPlayerShotCount_ = player_->GetShotCount();
@@ -817,8 +814,7 @@ void FloatingBehavior::OnDeath(Enemy* owner)
 
 void FloatingBehavior::OnTakeDamage(Enemy* owner, int damage, const Vector3& hitPoint, const Vector3& hitNormal)
 {
-    // 撃った手応えとして、距離に関係なく同じ大きさで鳴らす
-    // 本体は弾かれる音で効きにくいことを、スラスターは効いている音で弱点であることを伝える
+    // 距離に関係なく同じ大きさで鳴らす
     if (wasThrusterHit_)
     {
         AudioPlayer::GetInstance().Play("floatingThrusterHit", config_.thrusterHitSoundVolume);
@@ -846,7 +842,7 @@ void FloatingBehavior::OnDespawn(Enemy* owner)
         deathSparkEmitterPtr_ = nullptr;
     }
 
-    // 撃った演出は飛んでいる途中の粒が消えるまで残したいので、倒れたときではなく片付けるときに消す
+    // 撃った演出は倒れたときではなく片付けるときに消す
     for (ParticleEmitter** emitter : { &tracerEmitterPtr_, &chargeEmitterPtr_, &thrusterHitZapEmitterPtr_ })
     {
         if (*emitter)

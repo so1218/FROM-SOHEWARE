@@ -471,7 +471,7 @@ void PlayerWeapon::Eject(const EjectSettings& settings, const std::string& model
 
     // 向きを少しばらけさせて飛ばし、重力で落とす
     std::uniform_real_distribution<float> spread(-settings.spread, settings.spread);
-    // 向きはカメラを基準にする。銃の向きは構え方やリロードの傾きで変わるので、画面の右上へ飛ばすにはカメラのほうが安定する
+    // 向きはカメラを基準にする
     const Quaternion& directionBasis = camera_ ? camera_->GetWorldTransform().rotation_ : gunRotation;
     const Vector3 baseDirection = directionBasis.RotateVector(settings.direction).Normalize();
     const Vector3 direction = (baseDirection + Vector3(spread(random_), spread(random_), spread(random_))).Normalize();

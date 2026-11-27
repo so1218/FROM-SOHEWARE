@@ -1,99 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Assets\Data\GlobalVariables">
-      <UniqueIdentifier>{684e491d-de7c-48ae-b40d-dba84b2cab11}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Assets\Data">
-      <UniqueIdentifier>{419bafbc-891a-4af6-99fc-2496197c0579}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Assets">
-      <UniqueIdentifier>{ce2e61c7-eec8-494a-a22e-99ace726149e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Assets\Data\Particle">
-      <UniqueIdentifier>{6e03a0bb-be83-44f0-9f7c-bd284ba1c8b8}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Assets\Data\PSODefinitions">
-      <UniqueIdentifier>{8e1d7259-503e-4d00-980e-1484548f40af}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Assets\Models\Environment\Foliage\Foliage_01">
-      <UniqueIdentifier>{acf5b75d-178d-4265-9803-5c63313b95d0}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Assets\Models\Environment\Foliage">
-      <UniqueIdentifier>{2825f0d8-8999-47e5-b799-e9940c280f2f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Assets\Models\Environment">
-      <UniqueIdentifier>{ae22c6fa-b7a9-4c32-9b1a-d9bf3931ea72}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Assets\Models">
-      <UniqueIdentifier>{02316456-f7c6-4269-a5e5-34b5a527e92f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Assets\Textures\albedo">
-      <UniqueIdentifier>{3d8c5b38-f4c9-455a-b2e2-f38b1913ed2e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Assets\Textures">
-      <UniqueIdentifier>{ed378759-5271-49b9-9855-c9c4eb063311}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Assets\Textures\Environments">
-      <UniqueIdentifier>{fbb434fa-e992-44b2-a63c-dadcadaeb7a3}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Assets\Textures\LUTs">
-      <UniqueIdentifier>{c2534d53-d359-403b-aff5-2da409174817}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Assets\Textures\Noise">
-      <UniqueIdentifier>{e74eddbc-6b58-4801-8e37-43b784b39b66}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Assets\Textures\Normal">
-      <UniqueIdentifier>{e1092c17-9a61-4271-89a5-461329eb3eba}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Assets\Textures\Particles">
-      <UniqueIdentifier>{66d00b7f-9b79-456a-9d1f-48a470d7ef6a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Assets\Textures\Ramps">
-      <UniqueIdentifier>{82e7a77f-327a-43b4-b494-70dfb4b364c4}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Assets\Textures\UI\numFont">
-      <UniqueIdentifier>{f224dfe7-75b1-4ae5-a860-b46dbf31aece}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Assets\Textures\UI">
-      <UniqueIdentifier>{a6d33b99-704e-426a-a0c5-80dedcbf4d03}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Assets\Textures\utility">
-      <UniqueIdentifier>{b16b9fe4-8556-4e0f-a350-2d3972fc745e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Cache\Textures\albedo">
-      <UniqueIdentifier>{2ddbf988-554e-4b2d-8ab8-6886a6b512c5}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Cache\Textures">
-      <UniqueIdentifier>{278af72f-4f63-49a0-b28d-e86b29a52904}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Cache">
-      <UniqueIdentifier>{955d34be-6cde-478c-85a9-2c7f47342285}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Cache\Textures\LUTs">
-      <UniqueIdentifier>{1e47d232-f25d-4437-a407-5d1367f96a02}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Cache\Textures\Noise">
-      <UniqueIdentifier>{49b01cab-0fee-4c81-8ffd-8d8f0149a58a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Cache\Textures\Normal">
-      <UniqueIdentifier>{b8a33726-54c8-44b7-a9e0-495e2611eada}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Cache\Textures\Particles">
-      <UniqueIdentifier>{b0f620e8-070a-4926-8fec-ebececed0ec3}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Cache\Textures\Ramps">
-      <UniqueIdentifier>{c0739abc-804d-48a9-b007-c13a706085ad}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Cache\Textures\UI\numFont">
-      <UniqueIdentifier>{d8d20411-b707-48ea-b122-856832544dc2}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Cache\Textures\UI">
-      <UniqueIdentifier>{43ddd05b-9cb9-41f3-b707-91776e7d05f9}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Cache\Textures\utility">
-      <UniqueIdentifier>{fee85e40-11a9-46ac-bee5-bbe601954be8}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Game\Camera">
       <UniqueIdentifier>{063c031f-8068-48a3-b47c-d9cbed58c86f}</UniqueIdentifier>
     </Filter>
@@ -129,18 +36,6 @@
     </Filter>
     <Filter Include="Game\Scene">
       <UniqueIdentifier>{970b018d-0b5a-4994-9771-ff1f73000083}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="packages\WinPixEventRuntime.1.0.240308001\Include\WinPixEventRuntime">
-      <UniqueIdentifier>{799f768f-1a35-4086-9ab6-16730961a59c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="packages\WinPixEventRuntime.1.0.240308001\Include">
-      <UniqueIdentifier>{5e91471e-59b1-4fc6-a51b-cd4ddc04d729}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="packages\WinPixEventRuntime.1.0.240308001">
-      <UniqueIdentifier>{9901fc4d-68f7-4d3e-8602-b66d6cd8a3f2}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="packages">
-      <UniqueIdentifier>{5416652a-67e8-4dda-a0c3-1b416c261b9e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

@@ -30,7 +30,6 @@ int BurnStatus::Update(const RendererManager* rendererManager, const Vector3& fo
     afterburnTime_ = config.afterburnTime;
     if (isInFire_)
     {
-        // 燃え始めは間隔の半分だけ待ち、炎の縁をかすめただけでは痛くないようにする
         if (!wasBurning)
         {
             tickTimer_ = tickInterval * 0.5f;

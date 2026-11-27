@@ -14,19 +14,12 @@
 namespace
 {
 
-// ゾンビの Enemy の番号
 constexpr int kZombieIdOffset = 1000;
-// ゾンビの保存グループ
 constexpr const char* kZombieGroupName = "GameZombie";
-// 地形の端からこれより内側に出す
 constexpr float kZombieSpawnEdgeMargin = 10.0f;
-// 出す場所を探す回数
 constexpr int kZombieSpawnAttemptCount = 8;
-// 浮遊する敵の出す場所を探す回数
 constexpr int kFloatingSpawnAttemptCount = 16;
-// 浮遊する敵は、カメラの正面からこの角度 (度) より外の方向に出す
 constexpr float kFloatingSpawnHiddenAngle = 70.0f;
-// 飛んできた機体が最初に向かう、プレイヤーからの距離
 constexpr float kArrivalTargetMinDistance = 30.0f;
 constexpr float kArrivalTargetMaxDistance = 70.0f;
 

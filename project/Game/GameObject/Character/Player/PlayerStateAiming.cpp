@@ -25,7 +25,7 @@ void PlayerStateAiming::Update(Player* player)
     if (player->TryStartDodge())
         return;
 
-    // エイム中は常にカメラの正面を向くので、移動は体の向きに対して前後左右のどれかで歩き方を変える
+    // 移動は体の向きに対して前後左右のどれかで歩き方を変える
     player->UpdateAimRotation();
 
     if (player->IsMoving())

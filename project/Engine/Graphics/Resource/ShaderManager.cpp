@@ -99,7 +99,7 @@ Microsoft::WRL::ComPtr<IDxcBlob> ShaderManager::CompileShader(const std::wstring
     // 製品ビルド 直接 Cache を読み込む
     auto csoBlob = LoadBlobFromFile(csoPath, dxcUtils_.Get());
     if (!csoBlob) {
-        MessageBoxW(nullptr, L"シェーダーキャッシュ(.cso)が見つかりません", L"Fatal Error", MB_OK | MB_ICONERROR);
+        MessageBoxW(nullptr, L"シェーダーキャッシュ(.cso)が見つかりません。先に Development で一度起動してください。", L"Fatal Error", MB_OK | MB_ICONERROR);
         exit(1);
     }
     return csoBlob;

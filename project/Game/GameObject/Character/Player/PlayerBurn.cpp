@@ -12,7 +12,7 @@ using namespace FS;
 namespace
 {
 
-// 用意した音だけ鳴らす。ファイルを置く前でもエラーにしない
+// 用意した音だけ鳴らす
 void PlayIfLoaded(const char* name, float volume)
 {
     AudioPlayer& audioPlayer = AudioPlayer::GetInstance();

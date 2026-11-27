@@ -234,12 +234,9 @@ private:
     FS::ParticleEmitter* moveFireEmitterPtr_ = nullptr;
     FS::ParticleEmitter* explosionEmitterPtr_ = nullptr;
     FS::ParticleEmitter* deathSparkEmitterPtr_ = nullptr;
-    // 壊れたスラスターから上がり続ける火
     FS::ParticleEmitter* thrusterFireEmitterPtrs_[kThrusterCount] = {};
     FS::ParticleEmitter* tracerEmitterPtr_ = nullptr;
-    // ためている間に銃口へ吸い込まれる粒
     FS::ParticleEmitter* chargeEmitterPtr_ = nullptr;
-    // スラスターに当たったときの電撃。弱点に当たったと分かるよう、ゾンビの頭に当てたときと同じものを使う
     FS::ParticleEmitter* thrusterHitZapEmitterPtr_ = nullptr;
     FS::WorldTransform chargeTarget_;
     int soundHandleID_ = -1;

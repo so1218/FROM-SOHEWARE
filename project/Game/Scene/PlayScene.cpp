@@ -31,7 +31,6 @@
 #include "EnvironmentManager.h"
 #include "PostEffectManager.h"
 #include "RendererManager.h"
-#include "SceneManager.h"
 #include "StageCatalog.h"
 
 using namespace FS;

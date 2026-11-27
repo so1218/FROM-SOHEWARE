@@ -11,7 +11,7 @@ namespace FS { class Terrain; }
 
 class Player;
 
-// ゾンビで共通の設定。出現のさせ方も持つ
+// ゾンビで共通の設定
 struct ZombieConfig
 {
     void Bind(FS::PropertyBinder& binder);

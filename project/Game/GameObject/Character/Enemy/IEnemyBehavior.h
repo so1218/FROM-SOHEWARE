@@ -3,7 +3,7 @@
 
 class Enemy; 
 
-// 敵のパラメータ。同じ種類の敵で共有
+// 敵のパラメータ
 struct EnemyBodyConfig
 {
     int maxHP = 100;

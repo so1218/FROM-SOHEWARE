@@ -47,14 +47,11 @@ private:
     std::unique_ptr<FS::Text> subtitleText_;
     std::unique_ptr<FS::Text> startText_;
     std::unique_ptr<FS::Text> stageText_;
-    // ステージ名の上の見出しSTAGE
     std::unique_ptr<FS::Text> stageLabelText_;
-    // ステージ名の左右で、選び直せることを見せるボタンの絵
     std::unique_ptr<FS::Sprite> stageLeftIcon_;
     std::unique_ptr<FS::Sprite> stageRightIcon_;
     float arrowTimer_ = 0.0f;
     std::unique_ptr<FS::Sprite> blackScreen_;
-    // 右上のパッド推奨
     std::unique_ptr<FS::Sprite> padHintIcon_;
     std::unique_ptr<FS::Text> padHintText_;
 
