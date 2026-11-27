@@ -21,7 +21,8 @@ void PlayerStamina::BindProperties(PropertyBinder& binder)
     binder.Bind("Stamina_HideWhenFull", &isHiddenWhenFull_, false);
     binder.Bind("Stamina_GaugeSize", &gaugeSize_, { 240.0f, 6.0f }, 1.0f, 1.0f, 1280.0f);
     binder.BindColor("Stamina_GaugeColor", &gaugeColor_, { 0.95f, 0.78f, 0.25f, 0.95f });
-    binder.BindColor("Stamina_ExhaustedColor", &exhaustedColor_, { 0.9f, 0.25f, 0.2f, 0.9f });
+    binder.Bind("Stamina_ExhaustedBlinkSpeed", &exhaustedBlinkSpeed_, 3.0f, 0.1f, 0.0f, 20.0f);
+    binder.Bind("Stamina_ExhaustedBlinkMinAlpha", &exhaustedBlinkMinAlpha_, 0.35f, 0.01f, 0.0f, 1.0f);
 
     Refill();
 }
@@ -31,6 +32,7 @@ void PlayerStamina::Refill()
     currentStamina_ = maxStamina_;
     timeSinceUsed_ = 0.0f;
     isExhausted_ = false;
+    exhaustedTime_ = 0.0f;
 }
 
 void PlayerStamina::DrawProperties(PropertyBinder& binder)
@@ -44,13 +46,15 @@ void PlayerStamina::DrawProperties(PropertyBinder& binder)
     binder.Draw("Stamina_HideWhenFull", "満タンのときは出さない");
     binder.Draw("Stamina_GaugeSize", "ゲージの大きさ");
     binder.Draw("Stamina_GaugeColor", "ゲージの色");
-    binder.Draw("Stamina_ExhaustedColor", "息切れ中の色");
+    binder.Draw("Stamina_ExhaustedBlinkSpeed", "息切れ中の点滅の速さ (1 秒あたりの回数)");
+    binder.Draw("Stamina_ExhaustedBlinkMinAlpha", "息切れ中に一番薄くなったときの濃さ");
 }
 
 void PlayerStamina::Update()
 {
     const float deltaTime = TimeManager::GetInstance()->GetDeltaTime();
     timeSinceUsed_ += deltaTime;
+    exhaustedTime_ = isExhausted_ ? exhaustedTime_ + deltaTime : 0.0f;
 
     if (timeSinceUsed_ >= regenDelay_)
     {
@@ -113,7 +117,14 @@ void PlayerStamina::DrawGauge(const Vector2& healthGaugeOffset, const Vector2& h
     gaugeFill_->SetAnchorPoint({ 0.0f, 0.5f });
     gaugeFill_->SetPosition(gaugeLeft);
     gaugeFill_->SetSize({ gaugeSize_.x * staminaRatio, gaugeSize_.y });
-    gaugeFill_->SetColor(isExhausted_ ? exhaustedColor_ : gaugeColor_);
+    // 息切れ中だけ、濃さを上下させて点滅させる
+    Vector4 fillColor = gaugeColor_;
+    if (isExhausted_)
+    {
+        const float wave = 0.5f + 0.5f * std::cos(exhaustedTime_ * exhaustedBlinkSpeed_ * 2.0f * std::numbers::pi_v<float>);
+        fillColor.w *= exhaustedBlinkMinAlpha_ + (1.0f - exhaustedBlinkMinAlpha_) * wave;
+    }
+    gaugeFill_->SetColor(fillColor);
     gaugeFill_->SetLayerOrder(11);
     gaugeFill_->Draw();
 }

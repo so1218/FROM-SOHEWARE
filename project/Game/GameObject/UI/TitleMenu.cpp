@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "TitleMenu.h"
+#include "UITextStyle.h"
 #include "TimeManager.h"
 #include "AudioPlayer.h"
 #include "GameInput.h"
@@ -13,23 +14,24 @@ TitleMenu::TitleMenu(Engine* engine)
 {
     binder_ = std::make_unique<PropertyBinder>(engine_, "TitleMenu");
 
-    titleText_ = std::make_unique<Text>(engine_);
+    titleText_ = std::make_unique<Text>(engine_, "Title");
 
     // 保存した値が無いときの初期値
-    subtitleText_ = std::make_unique<Text>(engine_);
+    subtitleText_ = std::make_unique<Text>(engine_, "Title");
 
-    startText_ = std::make_unique<Text>(engine_);
-    stageText_ = std::make_unique<Text>(engine_, "Main");
+    startText_ = std::make_unique<Text>(engine_, "Maru");
+    UITextStyle::ApplyMaruShadow(*startText_);
+    stageText_ = std::make_unique<Text>(engine_, "Maru");
     stageText_->SetScreenAnchor({ 0.5f, 0.5f });
     stageText_->SetPivot({ 0.5f, 0.5f });
     stageText_->SetPosition({ 0.0f, 112.0f });
     stageText_->SetAlign(TextAlign::Center);
     stageText_->SetFontSize(32.0f);
     stageText_->SetCharacterSpacing(4.0f);
-    stageText_->SetShadow({ 2.5f, 2.5f }, { 0.0f, 0.0f, 0.0f, 0.6f }, 3.5f, 1.0f);
+    UITextStyle::ApplyMaruShadow(*stageText_);
     stageText_->SetLayerOrder(31);
 
-    stageLabelText_ = std::make_unique<Text>(engine_, "Main");
+    stageLabelText_ = std::make_unique<Text>(engine_, "Maru");
     stageLabelText_->SetText("STAGE");
     stageLabelText_->SetScreenAnchor({ 0.5f, 0.5f });
     stageLabelText_->SetPivot({ 0.5f, 0.5f });
@@ -37,7 +39,7 @@ TitleMenu::TitleMenu(Engine* engine)
     stageLabelText_->SetAlign(TextAlign::Center);
     stageLabelText_->SetFontSize(16.0f);
     stageLabelText_->SetCharacterSpacing(6.0f);
-    stageLabelText_->SetShadow({ 2.0f, 2.0f }, { 0.0f, 0.0f, 0.0f, 0.6f }, 3.0f, 1.0f);
+    UITextStyle::ApplyMaruShadow(*stageLabelText_);
     stageLabelText_->SetLayerOrder(31);
 
     for (std::unique_ptr<Sprite>* icon : { &stageLeftIcon_, &stageRightIcon_ })
@@ -54,7 +56,7 @@ TitleMenu::TitleMenu(Engine* engine)
     padHintIcon_->SetAnchorPoint({ 1.0f, 0.5f });
     padHintIcon_->SetLayerOrder(31);
 
-    padHintText_ = std::make_unique<Text>(engine_, "Main");
+    padHintText_ = std::make_unique<Text>(engine_, "Maru");
     padHintText_->SetText("パッド推奨");
     padHintText_->SetScreenAnchor({ 1.0f, 0.0f });
     padHintText_->SetPivot({ 1.0f, 0.5f });
@@ -62,7 +64,7 @@ TitleMenu::TitleMenu(Engine* engine)
     padHintText_->SetAlign(TextAlign::Right);
     padHintText_->SetFontSize(22.0f);
     padHintText_->SetCharacterSpacing(3.0f);
-    padHintText_->SetShadow({ 2.0f, 2.0f }, { 0.0f, 0.0f, 0.0f, 0.6f }, 3.0f, 1.0f);
+    UITextStyle::ApplyMaruShadow(*padHintText_);
     padHintText_->SetLayerOrder(31);
 
     blackScreen_ = std::make_unique<Sprite>(engine_);

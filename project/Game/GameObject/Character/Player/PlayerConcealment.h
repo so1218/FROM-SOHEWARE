@@ -47,4 +47,7 @@ private:
     float vignetteEnd_ = 0.85f;
     float fadeInTime_ = 0.25f;
     float fadeOutTime_ = 0.5f;
+    // 隠れている間の、世界の音の大きさとこもり具合
+    float hiddenWorldVolume_ = 0.7f;
+    float hiddenWorldMuffle_ = 0.6f;
 };

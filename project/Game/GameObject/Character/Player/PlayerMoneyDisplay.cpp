@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "PlayerMoneyDisplay.h"
+#include "UITextStyle.h"
 #include "TimeManager.h"
 #include "ImGuiManager.h"
 
@@ -13,7 +14,8 @@ PlayerMoneyDisplay::PlayerMoneyDisplay(Engine* engine)
     iconSprite_->SetAnchorPoint({ 1.0f, 0.5f });
     iconSprite_->SetLayerOrder(12);
 
-    moneyText_ = std::make_unique<Text>(engine);
+    moneyText_ = std::make_unique<Text>(engine, "Title");
+    UITextStyle::ApplyNumberShadow(*moneyText_);
     moneyText_->SetAnchor(UIAnchor::TopRight);
     moneyText_->SetAlign(TextAlign::Right);
     moneyText_->SetLayerOrder(12);

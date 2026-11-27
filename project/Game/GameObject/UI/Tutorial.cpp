@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "Tutorial.h"
+#include "UITextStyle.h"
 #include "Player.h"
 #include "PlayerWeapon.h"
 #include "PlayerStateSprint.h"
@@ -53,10 +54,12 @@ Tutorial::Tutorial(Engine* engine, Player* player)
 {
     binder_ = std::make_unique<PropertyBinder>(engine_, "Tutorial");
     panel_ = std::make_unique<Sprite>(engine_);
-    messageText_ = std::make_unique<Text>(engine_);
+    messageText_ = std::make_unique<Text>(engine_, "Maru");
+    UITextStyle::ApplyMaruShadow(*messageText_);
 
     // 右下に置く。右端から左へ、文字・画像の順に並べる
-    skipText_ = std::make_unique<Text>(engine_);
+    skipText_ = std::make_unique<Text>(engine_, "Maru");
+    UITextStyle::ApplyMaruShadow(*skipText_);
     skipText_->SetScreenAnchor({ 1.0f, 1.0f });
     skipText_->SetPivot({ 1.0f, 0.5f });
     skipText_->SetLayerOrder(21);
@@ -472,7 +475,9 @@ void Tutorial::Draw()
     const float textY = (iconCount_ > 0) ? panelOffset_.y + textOffsetY_ : panelOffset_.y;
     messageText_->SetPosition({ panelOffset_.x, textY });
     messageText_->SetFontSize(fontSize_);
-    messageText_->SetColor(Vector4(textColor_.x, textColor_.y, textColor_.z, textColor_.w * visibility_));
+    // 影も一緒に薄くするため、色ではなく不透明度で消す
+    messageText_->SetColor(textColor_);
+    messageText_->SetOpacity(visibility_);
     messageText_->Draw();
 
     // 画像は横に並べて、全体を中央にそろえる

@@ -33,6 +33,8 @@ private:
     float currentStamina_ = 100.0f;
     float timeSinceUsed_ = 0.0f;
     bool isExhausted_ = false;
+    // 息切れしてからの時間
+    float exhaustedTime_ = 0.0f;
 
     // HP の下のゲージ
     std::unique_ptr<FS::Sprite> gaugeBack_;
@@ -41,5 +43,7 @@ private:
     bool isHiddenWhenFull_ = false;
     FS::Vector2 gaugeSize_ = { 240.0f, 6.0f };
     FS::Vector4 gaugeColor_ = { 0.95f, 0.78f, 0.25f, 0.95f };
-    FS::Vector4 exhaustedColor_ = { 0.9f, 0.25f, 0.2f, 0.9f };
+    // 息切れ中の点滅
+    float exhaustedBlinkSpeed_ = 3.0f;
+    float exhaustedBlinkMinAlpha_ = 0.35f;
 };

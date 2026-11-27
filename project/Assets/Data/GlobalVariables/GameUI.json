@@ -11,7 +11,7 @@
         ],
         "MessageText_Content": "Y でメイン・デバッグカメラ切り替え\nデバッグカメラ\n[ホイールボタン] + [Shift] + ドラッグ : 視点平行移動\n[ホイールボタン] +ドラッグ : 視点回転移動\n[ホイール回転] : 視点ズーム",
         "MessageText_Direction": 0,
-        "MessageText_Font": "Gothic",
+        "MessageText_Font": "Maru",
         "MessageText_FontSize": 28.5,
         "MessageText_Layer": 0,
         "MessageText_LineSpacing": 0.949999988079071,
@@ -41,11 +41,11 @@
             0.0
         ],
         "MessageText_ShadowOffset": [
-            2.0,
-            2.0
+            0.0,
+            0.0
         ],
-        "MessageText_ShadowSoftness": 0.0,
-        "MessageText_ShadowSpread": 0.0,
+        "MessageText_ShadowSoftness": 11.699999809265137,
+        "MessageText_ShadowSpread": 1.7999999523162842,
         "MessageText_Visible": true,
         "MessageText_WrapLength": 0.0,
         "ObjectiveFadeTime": 0.6000000238418579,
@@ -58,7 +58,7 @@
             0.8500000238418579
         ],
         "ObjectiveSubText_Direction": 0,
-        "ObjectiveSubText_Font": "Shippori",
+        "ObjectiveSubText_Font": "Maru",
         "ObjectiveSubText_FontSize": 22.0,
         "ObjectiveSubText_Layer": 0,
         "ObjectiveSubText_LineSpacing": 1.0,
@@ -85,14 +85,14 @@
             0.0,
             0.0,
             0.0,
-            0.8500000238418579
+            0.8627451062202454
         ],
         "ObjectiveSubText_ShadowOffset": [
-            2.0,
-            2.0
+            0.0,
+            0.0
         ],
-        "ObjectiveSubText_ShadowSoftness": 4.0,
-        "ObjectiveSubText_ShadowSpread": 0.6000000238418579,
+        "ObjectiveSubText_ShadowSoftness": 11.699999809265137,
+        "ObjectiveSubText_ShadowSpread": 1.7999999523162842,
         "ObjectiveSubText_Visible": true,
         "ObjectiveSubText_WrapLength": 0.0,
         "ObjectiveTitleText_Align": 0,
@@ -104,7 +104,7 @@
             1.0
         ],
         "ObjectiveTitleText_Direction": 0,
-        "ObjectiveTitleText_Font": "Shippori",
+        "ObjectiveTitleText_Font": "Maru",
         "ObjectiveTitleText_FontSize": 40.0,
         "ObjectiveTitleText_Layer": 0,
         "ObjectiveTitleText_LineSpacing": 1.0,
@@ -131,14 +131,14 @@
             0.0,
             0.0,
             0.0,
-            0.8500000238418579
+            0.8627451062202454
         ],
         "ObjectiveTitleText_ShadowOffset": [
-            2.0,
-            2.0
+            0.0,
+            0.0
         ],
-        "ObjectiveTitleText_ShadowSoftness": 4.0,
-        "ObjectiveTitleText_ShadowSpread": 0.6000000238418579,
+        "ObjectiveTitleText_ShadowSoftness": 11.699999809265137,
+        "ObjectiveTitleText_ShadowSpread": 1.7999999523162842,
         "ObjectiveTitleText_Visible": true,
         "ObjectiveTitleText_WrapLength": 0.0,
         "SpriteCameraSwitch_Anchor": [
@@ -640,9 +640,9 @@
         "TimeText_Align": 0,
         "TimeText_CharSpacing": 4.400000095367432,
         "TimeText_Color": [
-            0.5652173757553101,
-            0.5242559909820557,
-            0.1772886961698532,
+            0.6677018404006958,
+            0.6123455166816711,
+            0.031104110181331635,
             1.0
         ],
         "TimeText_Direction": 0,
@@ -676,82 +676,12 @@
             0.6235294342041016
         ],
         "TimeText_ShadowOffset": [
-            1.0,
-            1.0
+            1.5,
+            1.5
         ],
-        "TimeText_ShadowSoftness": 0.0,
-        "TimeText_ShadowSpread": 0.0,
+        "TimeText_ShadowSoftness": 1.7999999523162842,
+        "TimeText_ShadowSpread": 0.5,
         "TimeText_Visible": true,
-        "TimeText_WrapLength": 0.0,
-        "TitleText_Align": 0,
-        "TitleText_CharSpacing": 0.0,
-        "TitleText_Color": [
-            1.0,
-            1.0,
-            1.0,
-            1.0
-        ],
-        "TitleText_Content": "操作説明",
-        "TitleText_Direction": 0,
-        "TitleText_Font": "Gothic",
-        "TitleText_FontSize": 48.0,
-        "TitleText_Layer": 0,
-        "TitleText_LineSpacing": 1.0,
-        "TitleText_OutlineColor": [
-            0.0,
-            0.0,
-            0.0,
-            1.0
-        ],
-        "TitleText_OutlineWidth": 0.0,
-        "TitleText_Pivot": [
-            0.0,
-            0.0
-        ],
-        "TitleText_Pos": [
-            20.0,
-            20.0
-        ],
-        "TitleText_ScreenAnchor": [
-            0.0,
-            0.5400000214576721
-        ],
-        "TitleText_Visible": true,
-        "TitleText_WrapLength": 0.0,
-        "VerticalText_Align": 0,
-        "VerticalText_CharSpacing": -1.899999976158142,
-        "VerticalText_Color": [
-            0.36964982748031616,
-            0.36964982748031616,
-            0.36964982748031616,
-            1.0
-        ],
-        "VerticalText_Content": "リムグレイブ",
-        "VerticalText_Direction": 0,
-        "VerticalText_Font": "Shippori",
-        "VerticalText_FontSize": 100.0,
-        "VerticalText_Layer": 0,
-        "VerticalText_LineSpacing": 1.0800000429153442,
-        "VerticalText_OutlineColor": [
-            0.0,
-            0.17120623588562012,
-            0.16121363639831543,
-            1.0
-        ],
-        "VerticalText_OutlineWidth": 0.0,
-        "VerticalText_Pivot": [
-            0.0,
-            0.0
-        ],
-        "VerticalText_Pos": [
-            -30.0,
-            0.0
-        ],
-        "VerticalText_ScreenAnchor": [
-            0.05999999865889549,
-            0.03999999910593033
-        ],
-        "VerticalText_Visible": true,
-        "VerticalText_WrapLength": 0.0
+        "TimeText_WrapLength": 0.0
     }
 }

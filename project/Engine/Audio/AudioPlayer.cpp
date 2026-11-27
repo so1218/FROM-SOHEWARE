@@ -33,7 +33,56 @@ int AudioPlayer::PlayLoop(const std::string& name, float volume, std::source_loc
     return StartInstance(CreateInstance(name, true, volume, location));
 }
 
-int AudioPlayer::CreateInstance(const std::string& name, bool isLoop, float volume, const std::source_location& location)
+int AudioPlayer::PlayUI(const std::string& name, float volume, std::source_location location)
+{
+    return StartInstance(CreateInstance(name, false, volume, location, false));
+}
+
+void AudioPlayer::SetWorldVolume(float volume)
+{
+    volume = std::clamp(volume, 0.0f, 1.0f);
+    if (volume == worldVolume_)
+    {
+        return;
+    }
+    worldVolume_ = volume;
+    if (IXAudio2SubmixVoice* submix = AudioDevice::GetInstance().GetWorldSubmix())
+    {
+        submix->SetVolume(worldVolume_);
+    }
+}
+
+void AudioPlayer::SetWorldMuffle(float amount)
+{
+    amount = std::clamp(amount, 0.0f, 1.0f);
+    if (amount == worldMuffle_)
+    {
+        return;
+    }
+    worldMuffle_ = amount;
+
+    IXAudio2SubmixVoice* submix = AudioDevice::GetInstance().GetWorldSubmix();
+    if (!submix)
+    {
+        return;
+    }
+
+    // 削り始める高さを、こもり具合に合わせて 20000Hz から 500Hz まで下げる
+    constexpr float kOpenFrequency = 20000.0f;
+    constexpr float kMuffledFrequency = 500.0f;
+    const float cutoff = kOpenFrequency * std::pow(kMuffledFrequency / kOpenFrequency, worldMuffle_);
+    const float sampleRate = static_cast<float>(AudioDevice::GetInstance().GetMasterSampleRate());
+
+    XAUDIO2_FILTER_PARAMETERS filter = {};
+    filter.Type = LowPassOnePoleFilter;
+    filter.Frequency = (worldMuffle_ <= 0.0f)
+        ? 1.0f
+        : std::clamp(1.0f - std::exp(-2.0f * std::numbers::pi_v<float> * cutoff / sampleRate), 0.0f, 1.0f);
+    filter.OneOverQ = 1.0f;
+    submix->SetFilterParameters(&filter);
+}
+
+int AudioPlayer::CreateInstance(const std::string& name, bool isLoop, float volume, const std::source_location& location, bool isWorldSound)
 {
     auto it = audioDataMap_.find(name);
     if (it == audioDataMap_.end())
@@ -46,8 +95,13 @@ int AudioPlayer::CreateInstance(const std::string& name, bool isLoop, float volu
 
     if (!AudioDevice::GetInstance().GetXAudio2()) return -1;
 
+    // 世界の音と BGM は通り道へ送り、UI の音はそのまま最後の出力へ送る
     IXAudio2SourceVoice* sourceVoice = nullptr;
-    HRESULT hr = AudioDevice::GetInstance().GetXAudio2()->CreateSourceVoice(&sourceVoice, &audioData.wfex);
+    IXAudio2SubmixVoice* worldSubmix = AudioDevice::GetInstance().GetWorldSubmix();
+    XAUDIO2_SEND_DESCRIPTOR send = { 0, worldSubmix };
+    XAUDIO2_VOICE_SENDS sendList = { 1, &send };
+    const XAUDIO2_VOICE_SENDS* sends = (isWorldSound && worldSubmix) ? &sendList : nullptr;
+    HRESULT hr = AudioDevice::GetInstance().GetXAudio2()->CreateSourceVoice(&sourceVoice, &audioData.wfex, 0, XAUDIO2_DEFAULT_FREQ_RATIO, nullptr, sends);
     if (FAILED(hr)) return -1;
 
     XAUDIO2_BUFFER buffer = { 0 };

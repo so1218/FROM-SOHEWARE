@@ -10,7 +10,7 @@ float gVolume = 0.5f;
 
 void Play(const char* name)
 {
-    AudioPlayer::GetInstance().Play(name, gVolume);
+    AudioPlayer::GetInstance().PlayUI(name, gVolume);
 }
 }
 

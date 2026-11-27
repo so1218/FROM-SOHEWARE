@@ -36,8 +36,6 @@ private:
     FS::Vector2 gaugeOffset_ = { 40.0f, -40.0f };   // 画面左下からのずれ
     FS::Vector2 gaugeSize_ = { 300.0f, 10.0f };
     FS::Vector4 gaugeColor_ = { 0.35f, 0.8f, 0.3f, 0.95f };
-    FS::Vector4 lowHealthColor_ = { 0.9f, 0.2f, 0.15f, 0.9f };
-    float lowHealthRatio_ = 0.3f;   // この割合を下回るとゲージが赤くなる
 
     // 被弾時に画面全体を赤くする
     std::unique_ptr<FS::Sprite> damageFlash_;

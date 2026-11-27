@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "ObjectiveBanner.h"
+#include "UITextStyle.h"
 #include "GameInput.h"
 #include "TimeManager.h"
 #include "UISound.h"
@@ -46,10 +47,13 @@ ObjectiveBanner::ObjectiveBanner(Engine* engine)
     line_->SetAnchorPoint({ 0.5f, 0.5f });
     line_->SetLayerOrder(45);
 
-    titleText_ = std::make_unique<Text>(engine_, "Shippori");
-    subText_ = std::make_unique<Text>(engine_, "Shippori");
+    titleText_ = std::make_unique<Text>(engine_, "Maru");
+    UITextStyle::ApplyMaruShadow(*titleText_);
+    subText_ = std::make_unique<Text>(engine_, "Maru");
+    UITextStyle::ApplyMaruShadow(*subText_);
     subText_->SetText("敵を倒して金を手に入れろ");
-    timeText_ = std::make_unique<Text>(engine_, "Shippori");
+    timeText_ = std::make_unique<Text>(engine_, "Maru");
+    UITextStyle::ApplyMaruShadow(*timeText_);
     for (Text* text : { titleText_.get(), subText_.get(), timeText_.get() })
     {
         text->SetAnchor(UIAnchor::Center);
@@ -70,7 +74,7 @@ void ObjectiveBanner::Initialize()
     binder_->Bind("LeaveTime", &leaveTime_, 0.5f, 0.01f, 0.01f, 5.0f);
     binder_->Bind("SkipDelay", &skipDelay_, 0.5f, 0.01f, 0.0f, 5.0f);
 
-    binder_->BindFontName("Font", "Shippori", [this](const std::string& fontName)
+    binder_->BindFontName("Font", "Maru", [this](const std::string& fontName)
         {
             for (Text* text : { titleText_.get(), subText_.get(), timeText_.get() })
             {
@@ -86,8 +90,6 @@ void ObjectiveBanner::Initialize()
     binder_->Bind("TitleOffsetY", &titleOffsetY_, -40.0f, 1.0f);
     binder_->Bind("TitleStartScale", &titleStartScale_, 1.3f, 0.01f, 0.1f, 5.0f);
     binder_->BindColor("TitleColor", &titleColor_, { 0.95f, 0.9f, 0.8f, 1.0f });
-    binder_->BindColor("TitleGlowColor", &titleGlowColor_, { 0.45f, 0.0f, 0.0f, 0.8f });
-    binder_->Bind("TitleGlowSoftness", &titleGlowSoftness_, 10.0f, 0.1f, 0.0f, 50.0f);
     binder_->Bind("SubFontSize", &subFontSize_, 30.0f, 0.5f, 4.0f, 200.0f);
     binder_->Bind("SubOffsetY", &subOffsetY_, 35.0f, 1.0f);
     binder_->BindColor("SubColor", &subColor_, { 1.0f, 1.0f, 1.0f, 0.9f });
@@ -276,7 +278,6 @@ void ObjectiveBanner::DrawContent(float opacity)
     titleText_->SetFontSize(titleFontSize_ * titleScale);
     titleText_->SetPosition({ 0.0f, titleOffsetY_ });
     titleText_->SetColor(titleColor_);
-    titleText_->SetShadow({ 0.0f, 0.0f }, titleGlowColor_, titleGlowSoftness_, 0.0f);
     titleText_->SetOpacity(opacity * SmoothStep01(Ratio(time, enterTime_ * 0.6f)));
     titleText_->Draw();
 
@@ -344,8 +345,6 @@ void ObjectiveBanner::DebugGui()
         binder_->Draw("TitleOffsetY", "見出しの位置 (画面中央から)");
         binder_->Draw("TitleStartScale", "見出しの出始めの大きさ (倍)");
         binder_->Draw("TitleColor", "見出しの色");
-        binder_->Draw("TitleGlowColor", "見出しのにじみの色");
-        binder_->Draw("TitleGlowSoftness", "見出しのにじみの広さ");
         binder_->Draw("SubFontSize", "目的の大きさ");
         binder_->Draw("SubOffsetY", "目的の位置 (画面中央から)");
         binder_->Draw("SubColor", "目的の色");

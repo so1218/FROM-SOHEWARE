@@ -10,7 +10,7 @@
         "EnterTime": 0.6000000238418579,
         "FadeInTime": 0.800000011920929,
         "FadeOutTime": 0.800000011920929,
-        "Font": "Shippori",
+        "Font": "Maru",
         "HoldTime": 0.5,
         "LeaveTime": 0.5,
         "LineColor": [
@@ -48,13 +48,6 @@
             1.0
         ],
         "TitleFontSize": 64.0,
-        "TitleGlowColor": [
-            0.062745101749897,
-            0.4274509847164154,
-            0.1411764770746231,
-            1.0
-        ],
-        "TitleGlowSoftness": 7.5,
         "TitleOffsetY": -40.0,
         "TitleStartScale": 1.2999999523162842
     }

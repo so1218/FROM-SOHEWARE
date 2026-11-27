@@ -240,14 +240,14 @@
         "PostEffect/VolumetricFog/ExtinctionScale": 0.30000001192092896,
         "PostEffect/VolumetricFog/HeightDensity": 0.5,
         "PostEffect/VolumetricFog/HeightFalloff": 0.10000000149011612,
-        "PostEffect/VolumetricFog/TerrainFogOffset": 0.0,
-        "PostEffect/VolumetricFog/TerrainFollow": 0.8,
         "PostEffect/VolumetricFog/MaxDistance": 500.0,
         "PostEffect/VolumetricFog/NoiseDistortion": 0.15000000596046448,
         "PostEffect/VolumetricFog/NoiseFeather": 0.30000001192092896,
         "PostEffect/VolumetricFog/NoiseIntensity": 0.5,
         "PostEffect/VolumetricFog/NoiseScale": 0.05000000074505806,
         "PostEffect/VolumetricFog/TemporalWeight": 0.05000000074505806,
+        "PostEffect/VolumetricFog/TerrainFogOffset": 0.0,
+        "PostEffect/VolumetricFog/TerrainFollow": 0.800000011920929,
         "PostEffect/VolumetricFog/WindSpeedMultiplier": 1.0
     }
 }

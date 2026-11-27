@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "PauseMenu.h"
+#include "UITextStyle.h"
 #include "ImGuiManager.h"
 #include "TimeManager.h"
 #include "GameInput.h"
@@ -22,12 +23,16 @@ PauseMenu::PauseMenu(Engine* engine)
     cursorBand_->SetAnchorPoint({ 0.5f, 0.5f });
     cursorBand_->SetLayerOrder(51);
 
-    headerText_ = std::make_unique<Text>(engine_, "Title");
+    headerText_ = std::make_unique<Text>(engine_, "Maru");
+    UITextStyle::ApplyMaruShadow(*headerText_);
     headerText_->SetText("PAUSE");
     headerText_->SetCharacterSpacing(10.0f);
-    itemText_ = std::make_unique<Text>(engine_, "Shippori");
-    descriptionText_ = std::make_unique<Text>(engine_, "Shippori");
-    questionText_ = std::make_unique<Text>(engine_, "Shippori");
+    itemText_ = std::make_unique<Text>(engine_, "Maru");
+    UITextStyle::ApplyMaruShadow(*itemText_);
+    descriptionText_ = std::make_unique<Text>(engine_, "Maru");
+    UITextStyle::ApplyMaruShadow(*descriptionText_);
+    questionText_ = std::make_unique<Text>(engine_, "Maru");
+    UITextStyle::ApplyMaruShadow(*questionText_);
     questionText_->SetText("本当に終了しますか？");
 
     for (Text* text : { headerText_.get(), itemText_.get(), descriptionText_.get(), questionText_.get() })

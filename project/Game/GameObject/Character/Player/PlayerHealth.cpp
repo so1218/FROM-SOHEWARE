@@ -19,8 +19,6 @@ void PlayerHealth::BindProperties(PropertyBinder& binder)
     binder.Bind("Health_GaugeOffset", &gaugeOffset_, { 40.0f, -40.0f }, 1.0f);
     binder.Bind("Health_GaugeSize", &gaugeSize_, { 300.0f, 10.0f }, 1.0f, 1.0f, 1280.0f);
     binder.BindColor("Health_GaugeColor", &gaugeColor_, { 0.35f, 0.8f, 0.3f, 0.95f });
-    binder.BindColor("Health_LowColor", &lowHealthColor_, { 0.9f, 0.2f, 0.15f, 0.9f });
-    binder.Bind("Health_LowRatio", &lowHealthRatio_, 0.3f, 0.01f, 0.0f, 1.0f);
 
     binder.BindColor("Health_FlashColor", &flashColor_, { 0.8f, 0.0f, 0.0f, 0.35f });
     binder.Bind("Health_FlashDuration", &flashDuration_, 0.35f, 0.01f, 0.01f, 3.0f);
@@ -41,8 +39,6 @@ void PlayerHealth::DrawProperties(PropertyBinder& binder)
     binder.Draw("Health_GaugeOffset", "ゲージの位置 (画面左下から)");
     binder.Draw("Health_GaugeSize", "ゲージの大きさ");
     binder.Draw("Health_GaugeColor", "ゲージの色");
-    binder.Draw("Health_LowColor", "残り少ないときの色");
-    binder.Draw("Health_LowRatio", "残り少ないとみなす割合");
     binder.Draw("Health_FlashColor", "被弾時の画面の色");
     binder.Draw("Health_FlashDuration", "被弾時の色が消えるまで (秒)");
     binder.Draw("Health_BurnBlinkColor", "燃えている間に点滅する色");
@@ -103,7 +99,7 @@ void PlayerHealth::DrawHUD()
     gaugeFill_->SetAnchorPoint({ 0.0f, 0.5f });
     gaugeFill_->SetPosition(gaugeOffset_);
     gaugeFill_->SetSize({ gaugeSize_.x * healthRatio, gaugeSize_.y });
-    Vector4 fillColor = healthRatio < lowHealthRatio_ ? lowHealthColor_ : gaugeColor_;
+    Vector4 fillColor = gaugeColor_;
     if (isBurning_)
     {
         // 燃えている間は、いつもの色と炎の色の間を行き来する

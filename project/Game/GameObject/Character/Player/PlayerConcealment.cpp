@@ -5,6 +5,7 @@
 #include "RendererManager.h"
 #include "TimeManager.h"
 #include "MathUtils.h"
+#include "AudioPlayer.h"
 
 using namespace FS;
 
@@ -21,6 +22,8 @@ void PlayerConcealment::BindProperties(PropertyBinder& binder)
     binder.Bind("HiddenVignetteEnd", &vignetteEnd_, 0.85f, 0.01f, 0.0f, 1.5f);
     binder.Bind("HiddenFadeInTime", &fadeInTime_, 0.25f, 0.01f, 0.01f, 3.0f);
     binder.Bind("HiddenFadeOutTime", &fadeOutTime_, 0.5f, 0.01f, 0.01f, 3.0f);
+    binder.Bind("HiddenWorldVolume", &hiddenWorldVolume_, 0.7f, 0.01f, 0.0f, 1.0f);
+    binder.Bind("HiddenWorldMuffle", &hiddenWorldMuffle_, 0.6f, 0.01f, 0.0f, 1.0f);
 }
 
 void PlayerConcealment::DrawProperties(PropertyBinder& binder)
@@ -37,6 +40,8 @@ void PlayerConcealment::DrawProperties(PropertyBinder& binder)
     binder.Draw("HiddenVignetteEnd", "ビネットが一番暗くなる距離");
     binder.Draw("HiddenFadeInTime", "隠れたときに暗くなるまで (秒)");
     binder.Draw("HiddenFadeOutTime", "出たときに戻るまで (秒)");
+    binder.Draw("HiddenWorldVolume", "隠れている間の周りの音の大きさ (1 で元のまま)");
+    binder.Draw("HiddenWorldMuffle", "隠れている間の周りの音のこもり具合 (0 で元のまま)");
 }
 
 void PlayerConcealment::Update(const Vector3& footPosition, const Vector3& bodyCenter, bool isCrawling, bool isControllable)
@@ -65,6 +70,12 @@ void PlayerConcealment::Update(const Vector3& footPosition, const Vector3& bodyC
         const float easedRatio = effectRatio_ * effectRatio_ * (3.0f - 2.0f * effectRatio_);
         postEffectManager->SetOverlayVignette(vignetteAmount_ * easedRatio, vignetteColor_, vignetteStart_, vignetteEnd_);
     }
+
+    // 周りの音を小さくこもらせる
+    const float easedRatio = effectRatio_ * effectRatio_ * (3.0f - 2.0f * effectRatio_);
+    AudioPlayer& audioPlayer = AudioPlayer::GetInstance();
+    audioPlayer.SetWorldVolume(1.0f + (hiddenWorldVolume_ - 1.0f) * easedRatio);
+    audioPlayer.SetWorldMuffle(hiddenWorldMuffle_ * easedRatio);
 }
 
 void PlayerConcealment::Reset()
@@ -80,6 +91,8 @@ void PlayerConcealment::Reset()
     {
         postEffectManager->SetOverlayVignette(0.0f, vignetteColor_);
     }
+    AudioPlayer::GetInstance().SetWorldVolume(1.0f);
+    AudioPlayer::GetInstance().SetWorldMuffle(0.0f);
 }
 
 bool PlayerConcealment::IsInsideFogVolume(const Vector3& position) const

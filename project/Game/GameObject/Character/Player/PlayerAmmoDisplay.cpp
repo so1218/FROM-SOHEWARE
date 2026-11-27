@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "PlayerAmmoDisplay.h"
+#include "UITextStyle.h"
 #include "PlayerWeapon.h"
 #include "TimeManager.h"
 #include "GameInput.h"
@@ -10,30 +11,35 @@ PlayerAmmoDisplay::PlayerAmmoDisplay(Engine* engine)
     : engine_(engine)
 {
     // 数字と文字は画面の左下を基準にし、右端をそろえる
-    ammoText_ = std::make_unique<Text>(engine_);
+    ammoText_ = std::make_unique<Text>(engine_, "Title");
+    UITextStyle::ApplyNumberShadow(*ammoText_);
     ammoText_->SetScreenAnchor({ 0.0f, 1.0f });
     ammoText_->SetPivot({ 1.0f, 1.0f });
     ammoText_->SetAlign(TextAlign::Right);
     ammoText_->SetLayerOrder(12);
 
-    magazineText_ = std::make_unique<Text>(engine_);
+    magazineText_ = std::make_unique<Text>(engine_, "Title");
+    UITextStyle::ApplyNumberShadow(*magazineText_);
     magazineText_->SetScreenAnchor({ 0.0f, 1.0f });
     magazineText_->SetPivot({ 1.0f, 1.0f });
     magazineText_->SetAlign(TextAlign::Right);
     magazineText_->SetLayerOrder(12);
 
-    promptText_ = std::make_unique<Text>(engine_);
+    promptText_ = std::make_unique<Text>(engine_, "Maru");
+    UITextStyle::ApplyMaruShadow(*promptText_);
     promptText_->SetAnchor(UIAnchor::Center);
     promptText_->SetAlign(TextAlign::Center);
     promptText_->SetLayerOrder(12);
 
-    ammoTypeText_ = std::make_unique<Text>(engine_);
+    ammoTypeText_ = std::make_unique<Text>(engine_, "Maru");
+    UITextStyle::ApplyMaruShadow(*ammoTypeText_);
     ammoTypeText_->SetScreenAnchor({ 0.0f, 1.0f });
     ammoTypeText_->SetPivot({ 1.0f, 1.0f });
     ammoTypeText_->SetAlign(TextAlign::Right);
     ammoTypeText_->SetLayerOrder(12);
 
-    reloadText_ = std::make_unique<Text>(engine_);
+    reloadText_ = std::make_unique<Text>(engine_, "Maru");
+    UITextStyle::ApplyMaruShadow(*reloadText_);
     reloadText_->SetAnchor(UIAnchor::Center);
     reloadText_->SetAlign(TextAlign::Center);
     reloadText_->SetLayerOrder(12);
@@ -218,12 +224,12 @@ void PlayerAmmoDisplay::DrawReloadPrompt(const PlayerWeapon& weapon)
     }
 
     // 弾切れ
-    Vector4 color = lowAmmoColor_;
-    color.w *= 0.6f + 0.4f * (std::cos(elapsedTime_ * 6.0f) * 0.5f + 0.5f);
+    const float blinkOpacity = 0.6f + 0.4f * (std::cos(elapsedTime_ * 6.0f) * 0.5f + 0.5f);
 
     promptText_->SetText("リロード");
     promptText_->SetFontSize(promptFontSize_);
-    promptText_->SetColor(color);
+    promptText_->SetColor(lowAmmoColor_);
+    promptText_->SetOpacity(blinkOpacity);
 
     // ボタンの絵と文字をひとまとまりにして、真ん中を位置に合わせる
     const float textWidth = promptText_->MeasureSize().x;

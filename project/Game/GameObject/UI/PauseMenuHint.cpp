@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "PauseMenuHint.h"
+#include "UITextStyle.h"
 #include "ImGuiManager.h"
 
 using namespace FS;
@@ -25,11 +26,14 @@ PauseMenuHint::PauseMenuHint(Engine* engine)
         icon->SetLayerOrder(41);
     }
 
-    separatorText_ = std::make_unique<Text>(engine_, "Shippori");
+    separatorText_ = std::make_unique<Text>(engine_, "Maru");
+    UITextStyle::ApplyMaruShadow(*separatorText_);
     separatorText_->SetText("/");
-    labelText_ = std::make_unique<Text>(engine_, "Shippori");
+    labelText_ = std::make_unique<Text>(engine_, "Maru");
+    UITextStyle::ApplyMaruShadow(*labelText_);
     labelText_->SetText("メニュー");
-    editorText_ = std::make_unique<Text>(engine_, "Shippori");
+    editorText_ = std::make_unique<Text>(engine_, "Maru");
+    UITextStyle::ApplyMaruShadow(*editorText_);
     for (Text* text : { separatorText_.get(), labelText_.get(), editorText_.get() })
     {
         text->SetScreenAnchor({ 0.0f, 0.0f });

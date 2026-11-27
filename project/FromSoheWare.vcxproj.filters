@@ -411,6 +411,9 @@
     <ClInclude Include="Game\GameObject\UI\UISound.h">
       <Filter>Game\GameObject\UI</Filter>
     </ClInclude>
+    <ClInclude Include="Game\GameObject\UI\UITextStyle.h">
+      <Filter>Game\GameObject\UI</Filter>
+    </ClInclude>
     <ClInclude Include="Game\GameObject\UI\PauseMenu.h">
       <Filter>Game\GameObject\UI</Filter>
     </ClInclude>

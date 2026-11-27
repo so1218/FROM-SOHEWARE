@@ -74,8 +74,6 @@ private:
     float titleOffsetY_ = -40.0f;
     float titleStartScale_ = 1.3f;
     FS::Vector4 titleColor_ = { 0.95f, 0.9f, 0.8f, 1.0f };
-    FS::Vector4 titleGlowColor_ = { 0.45f, 0.0f, 0.0f, 0.8f };
-    float titleGlowSoftness_ = 10.0f;
     float subFontSize_ = 30.0f;
     float subOffsetY_ = 35.0f;
     FS::Vector4 subColor_ = { 1.0f, 1.0f, 1.0f, 0.9f };

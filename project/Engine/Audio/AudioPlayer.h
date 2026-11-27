@@ -48,6 +48,15 @@ public:
     int Play(const std::string& name, float volume = 1.0f, std::source_location location = std::source_location::current());
     // 止めるまで繰り返し鳴らす
     int PlayLoop(const std::string& name, float volume = 1.0f, std::source_location location = std::source_location::current());
+    // UI の音を鳴らす。世界の音の大きさやこもり具合の影響を受けない
+    int PlayUI(const std::string& name, float volume = 1.0f, std::source_location location = std::source_location::current());
+
+    // ゲームの世界の音の大きさ
+    void SetWorldVolume(float volume);
+    // ゲームの世界の音のこもり具合
+    void SetWorldMuffle(float amount);
+    float GetWorldVolume() const { return worldVolume_; }
+    float GetWorldMuffle() const { return worldMuffle_; }
 
     // ハンドルIDを指定して停止
     void Stop(int handleID);
@@ -55,7 +64,7 @@ public:
     // 全停止
     void StopAll();
 
-    // BGM を繰り返し鳴らす
+    // BGM を繰り返し鳴らす。大きさとこもり具合の影響を受ける
     int PlayBgm(const std::string& name, float volume = 1.0f, std::source_location location = std::source_location::current());
     void StopBgm(const std::string& name);
 
@@ -87,7 +96,7 @@ private:
     ~AudioPlayer() { StopAll(); }
 
     // ボイスを作ってバッファを積み、鳴らさずに登録する
-    int CreateInstance(const std::string& name, bool isLoop, float volume, const std::source_location& location);
+    int CreateInstance(const std::string& name, bool isLoop, float volume, const std::source_location& location, bool isWorldSound = true);
     // 鳴らし始める。失敗したら登録ごと消す
     int StartInstance(int handleID);
     // リスナーとの位置関係から、左右の振り分けと距離による減衰を掛ける
@@ -106,6 +115,10 @@ private:
 
     // 次に発行するハンドルID
     int nextHandleID_ = 0;
+
+    // 世界の音の大きさとこもり具合
+    float worldVolume_ = 1.0f;
+    float worldMuffle_ = 0.0f;
 
     // リスナーの情報
     X3DAUDIO_LISTENER listener_ = {};

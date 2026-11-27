@@ -4,6 +4,7 @@
         "AimTrackSharpness": 6.0,
         "AttackInterval": 2.5,
         "BodyDamageRate": 0.30000001192092896,
+        "BodyHitSoundVolume": 0.5,
         "BurstCount": 6,
         "ChargeRateEnd": 2.0,
         "ChargeRateStart": 0.30000001192092896,
@@ -96,6 +97,7 @@
         ],
         "ThrusterExplosionVolume": 1.399999976158142,
         "ThrusterHP": 30,
+        "ThrusterHitSoundVolume": 0.699999988079071,
         "ThrusterOffset": [
             1.0,
             1.0,

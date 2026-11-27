@@ -18,7 +18,7 @@
             0.15000000596046448,
             0.949999988079071
         ],
-        "Ammo_LabelFont": "Shippori",
+        "Ammo_LabelFont": "Maru",
         "Ammo_LowColor": [
             1.0,
             0.3499999940395355,
@@ -156,13 +156,6 @@
             300.0,
             6.0
         ],
-        "Health_LowColor": [
-            0.8999999761581421,
-            0.20000000298023224,
-            0.15000000596046448,
-            0.8999999761581421
-        ],
-        "Health_LowRatio": 0.30000001192092896,
         "Health_Max": 100,
         "HiddenBurntThreshold": 0.30000001192092896,
         "HiddenFadeInTime": 0.28999999165534973,
@@ -175,6 +168,8 @@
         ],
         "HiddenVignetteEnd": 0.8100000023841858,
         "HiddenVignetteStart": 0.0,
+        "HiddenWorldMuffle": 0.6000000238418579,
+        "HiddenWorldVolume": 0.5,
         "HitCameraShake": 0.03999999910593033,
         "HitInvulnerableTime": 0.800000011920929,
         "HitKnockbackDistance": 3.0,
@@ -1215,12 +1210,8 @@
         "SprintStaminaPerSecond": 20.0,
         "Stamina": 4.550000190734863,
         "StaminaRecovery": 0.5,
-        "Stamina_ExhaustedColor": [
-            0.8999999761581421,
-            0.25,
-            0.20000000298023224,
-            0.8999999761581421
-        ],
+        "Stamina_ExhaustedBlinkMinAlpha": 0.3499999940395355,
+        "Stamina_ExhaustedBlinkSpeed": 3.0,
         "Stamina_ExhaustedRecover": 40.0,
         "Stamina_GaugeColor": [
             0.7950310707092285,

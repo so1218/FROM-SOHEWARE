@@ -453,6 +453,8 @@ void PlayScene::OnFinalize()
     // 時刻の自動の進みを止めたままにしない
     EnvironmentManager::GetInstance()->SetTimeFlowEnabled(true);
 
-    // 隠れているときのビネットは毎フレーム渡す値なので、次のシーンに残さない
+    // 隠れているときのビネットと周りの音は毎フレーム渡す値なので、次のシーンに残さない
     engine_->GetPostEffectManager()->SetOverlayVignette(0.0f, { 0.0f, 0.0f, 0.0f });
+    AudioPlayer::GetInstance().SetWorldVolume(1.0f);
+    AudioPlayer::GetInstance().SetWorldMuffle(0.0f);
 }

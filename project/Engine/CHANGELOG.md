@@ -13,6 +13,7 @@
 - シーンの途中で画面演出を重ねる仕組みを追加。放射ブラー・色収差・画面の縁のビネット・ピクセル化・砂嵐の値を `ScreenEffectValues` で渡す。シーンの設定で切っている効果にもかけられ、重なったときは効果ごとに強いほうを使う。シーンを作り直すと全部消える。「ポストエフェクト設定」の「一時的に重ねる演出の確認」で試せる
   - `PostEffectManager::PlayScreenEffect`: `ScreenEffectRequest` で決めた長さ (フェードイン・フェードアウト付き) だけかけ、終わると自動で消える。長さを 0 以下にすると `StopScreenEffect` を呼ぶまでかけ続ける。`pulseFrequency` / `pulseDepth` / `pulseRandomness` で強弱を繰り返したり震わせたりできる。ポーズやヒットストップ中も進めるか (`useUnscaledTime`) を選べる
   - `PostEffectManager::AddFrameScreenEffect`: そのフレームだけ重ねる。毎フレーム呼んでいる間だけかかるので、値の動きをゲームが自由に計算できる
+- ゲームの世界の音をまとめて変える `AudioPlayer::SetWorldVolume` (大きさ) と `SetWorldMuffle` (こもり具合。高い音を削る) を追加。`Play`・`PlayLoop`・`Play3D`・`PlayBgm` の音は世界の音の通り道 (XAudio2 のサブミックス) を通るので一緒に変わり、UI の音を鳴らす `PlayUI` (追加) の音は変わらない。隠れているときに周りの音をこもらせる、などに使う
 - 高さの霧を地形に沿わせられるようにした。ゲームが毎フレーム `VolumetricFogPass::SubmitGroundTerrain` で地形を渡すと、真下の地面からの高さで霧の濃さを決める。「地面に沿わせる割合」(`VolumetricFog/TerrainFollow`) で、世界の高さの霧 (谷に溜まる) と地面に沿う霧を混ぜられる。初期値 0 なら今までと同じ。地形の外では端へ向かって世界の高さの霧に戻す。霧のフロクセル 1 つにつき高さの地図を 1 回読むだけなので、重さはほぼ変わらない
 - `Terrain` に、高さの地図の SRV の番号を返す `GetHeightmapHandle`、高さがあるかを返す `HasHeightData`、地形の位置の高さを返す `GetCenterY` を追加し、`GetTexcoordTransform` を外から呼べるようにした
 - `PropertyBinder::Draw` で出した項目を右クリックすると、「最後に保存した値に戻す」「初期値に戻す」が選べるようにした。エディターを起動し直さなくても戻せる。押し間違えないよう、戻した先の値をメニューに出し、今と同じ値のときは押せない。戻したあとは「戻す前の値に戻す」で取り消せる。戻してもファイルには書かない。ゲーム側の変更は要らない

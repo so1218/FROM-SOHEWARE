@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "GameOverScreen.h"
+#include "UITextStyle.h"
 #include "GameInput.h"
 #include "TimeManager.h"
 #include "AudioPlayer.h"
@@ -44,8 +45,8 @@ GameOverScreen::GameOverScreen(Engine* engine)
     dimOverlay_->SetLayerOrder(44);
     blackout_->SetLayerOrder(49);
 
-    deathText_ = std::make_unique<Text>(engine_, "Shippori");
-    echoText_ = std::make_unique<Text>(engine_, "Shippori");
+    deathText_ = std::make_unique<Text>(engine_, "Title");
+    echoText_ = std::make_unique<Text>(engine_, "Title");
     for (Text* text : { deathText_.get(), echoText_.get() })
     {
         text->SetText("Death");
@@ -66,9 +67,11 @@ GameOverScreen::GameOverScreen(Engine* engine)
         icon->SetLayerOrder(48);
     }
 
-    separatorText_ = std::make_unique<Text>(engine_, "Shippori");
+    separatorText_ = std::make_unique<Text>(engine_, "Maru");
+    UITextStyle::ApplyMaruShadow(*separatorText_);
     separatorText_->SetText("/");
-    promptText_ = std::make_unique<Text>(engine_, "Shippori");
+    promptText_ = std::make_unique<Text>(engine_, "Maru");
+    UITextStyle::ApplyMaruShadow(*promptText_);
     promptText_->SetText("再開");
     for (Text* text : { separatorText_.get(), promptText_.get() })
     {
@@ -88,7 +91,7 @@ void GameOverScreen::Initialize()
     binder_->BindColor("VignetteColor", &vignetteColor_, { 0.12f, 0.0f, 0.0f });
 
     binder_->Bind("KanjiDelay", &deathTextDelay_, 1.8f, 0.01f, 0.0f, 10.0f);
-    binder_->BindFontName("KanjiFont", "Shippori", [this](const std::string& fontName)
+    binder_->BindFontName("KanjiFont", "Title", [this](const std::string& fontName)
         {
             deathText_->SetFont(fontName);
             echoText_->SetFont(fontName);
@@ -397,7 +400,8 @@ void GameOverScreen::PlayIfLoaded(const std::string& name, float volume)
     AudioPlayer& audioPlayer = AudioPlayer::GetInstance();
     if (audioPlayer.HasSound(name))
     {
-        audioPlayer.Play(name, volume);
+        // 画面の演出の音なので、隠れているときもこもらせない
+        audioPlayer.PlayUI(name, volume);
     }
 }
 

@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "ResultScreen.h"
+#include "UITextStyle.h"
 #include "GameInput.h"
 #include "TimeManager.h"
 #include "AudioPlayer.h"
@@ -45,12 +46,16 @@ ResultScreen::ResultScreen(Engine* engine)
 
     titleText_ = std::make_unique<Text>(engine_, "Title");
     titleText_->SetText("YOU SURVIVED");
-    moneyLabelText_ = std::make_unique<Text>(engine_, "Shippori");
+    moneyLabelText_ = std::make_unique<Text>(engine_, "Maru");
+    UITextStyle::ApplyMaruShadow(*moneyLabelText_);
     moneyLabelText_->SetText("所持金");
     moneyText_ = std::make_unique<Text>(engine_, "Title");
-    retryText_ = std::make_unique<Text>(engine_, "Shippori");
+    UITextStyle::ApplyNumberShadow(*moneyText_);
+    retryText_ = std::make_unique<Text>(engine_, "Maru");
+    UITextStyle::ApplyMaruShadow(*retryText_);
     retryText_->SetText("もう一度");
-    titleChoiceText_ = std::make_unique<Text>(engine_, "Shippori");
+    titleChoiceText_ = std::make_unique<Text>(engine_, "Maru");
+    UITextStyle::ApplyMaruShadow(*titleChoiceText_);
     titleChoiceText_->SetText("タイトルへ");
     for (Text* text : { titleText_.get(), moneyLabelText_.get(), moneyText_.get(), retryText_.get(), titleChoiceText_.get() })
     {
@@ -65,7 +70,7 @@ void ResultScreen::Initialize()
     binder_->BindColor("DimColor", &dimColor_, { 0.0f, 0.0f, 0.0f, 0.7f });
     binder_->Bind("DimTime", &dimTime_, 1.2f, 0.01f, 0.01f, 5.0f);
 
-    binder_->BindFontName("Font", "Shippori", [this](const std::string& fontName)
+    binder_->BindFontName("Font", "Maru", [this](const std::string& fontName)
         {
             for (Text* text : { moneyLabelText_.get(), retryText_.get(), titleChoiceText_.get() })
             {
@@ -351,7 +356,8 @@ void ResultScreen::PlayIfLoaded(const std::string& name, float volume)
     AudioPlayer& audioPlayer = AudioPlayer::GetInstance();
     if (audioPlayer.HasSound(name))
     {
-        audioPlayer.Play(name, volume);
+        // 画面の演出の音なので、隠れているときもこもらせない
+        audioPlayer.PlayUI(name, volume);
     }
 }
 
