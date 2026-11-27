@@ -17,6 +17,7 @@ enum class GameAction
     Confirm,
     Cancel,
     SkipTutorial,
+    Reply,
 };
 
 // ゲームの入力

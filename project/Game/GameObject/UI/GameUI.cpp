@@ -4,6 +4,7 @@
 #include "ImGuiManager.h"
 #include "EnvironmentManager.h"
 #include "TimeManager.h"
+#include "AudioPlayer.h"
 
 using namespace FS;
 
@@ -54,6 +55,18 @@ void GameUI::SetObjective(int startHour, int stormHour, int endHour)
     objectiveTitleText_->SetText(std::to_string(endHour) + "時まで生き残れ");
 }
 
+void GameUI::PlayMissionStart()
+{
+    FlashClock();
+    objectiveIntroTimer_ = 0.0f;
+    // 音のファイルがないうちは鳴らさない
+    AudioPlayer& audio = AudioPlayer::GetInstance();
+    if (audio.HasSound(missionStartSoundName_))
+    {
+        audio.PlayUI(missionStartSoundName_, missionStartSoundVolume_);
+    }
+}
+
 void GameUI::Initialize()
 {
     binder_->Bind("IsVisible", &isVisible_, true);
@@ -63,6 +76,11 @@ void GameUI::Initialize()
     binder_->BindTextElement("ObjectiveTitleText", objectiveTitleText_.get(), false);
     binder_->BindTextElement("ObjectiveSubText", objectiveSubText_.get(), false);
     binder_->Bind("ObjectiveFadeTime", &objectiveFadeTime_, 0.6f, 0.01f, 0.01f, 5.0f);
+    binder_->Bind("ObjectiveIntroTime", &objectiveIntroTime_, 0.8f, 0.01f, 0.01f, 5.0f);
+    binder_->Bind("ObjectiveIntroSlide", &objectiveIntroSlide_, 60.0f, 1.0f, 0.0f, 500.0f);
+    binder_->BindColor("ObjectiveIntroColor", &objectiveIntroColor_, { 1.0f, 0.35f, 0.25f, 1.0f });
+    binder_->BindString("MissionStartSound", missionStartSoundName_, [this](const std::string& name) { missionStartSoundName_ = name; });
+    binder_->Bind("MissionStartSoundVolume", &missionStartSoundVolume_, 0.8f, 0.01f, 0.0f, 1.0f);
     binder_->Bind("TimeBarScreenAnchor", &timeBarScreenAnchor_, { 0.03f, 0.17f }, 0.01f, 0.0f, 1.0f);
     binder_->Bind("TimeBarPos", &timeBarPos_, { 0.0f, 62.0f }, 1.0f);
     binder_->Bind("TimeBarSize", &timeBarSize_, { 320.0f, 6.0f }, 1.0f, 0.0f, 1280.0f);
@@ -84,6 +102,7 @@ void GameUI::Update()
 {
     const float unscaledDeltaTime = TimeManager::GetInstance()->GetUnscaledDeltaTime();
     clockFlashTimer_ += unscaledDeltaTime;
+    objectiveIntroTimer_ += unscaledDeltaTime;
 
     const float fadeStep = unscaledDeltaTime / std::max(objectiveFadeTime_, 0.001f);
     objectiveVisibility_ = isObjectiveVisible_
@@ -148,10 +167,23 @@ void GameUI::DrawObjective()
         return;
     }
 
+    // 本番の始まりは、左から滑り込みながら強調の色から元の色へ戻す
+    const float introRatio = std::clamp(objectiveIntroTimer_ / std::max(objectiveIntroTime_, 0.001f), 0.0f, 1.0f);
+    const float inverse = 1.0f - introRatio;
+    const float slideX = -objectiveIntroSlide_ * inverse * inverse * inverse;
+    const float flash = inverse * inverse;
+
+    // 描くときだけ位置と色を変え、描いたら保存している値に戻す
     for (Text* text : { objectiveTitleText_.get(), objectiveSubText_.get() })
     {
+        const Vector2 basePosition = *text->GetPositionPtr();
+        const Vector4 baseColor = *text->GetColorPtr();
+        text->SetPosition({ basePosition.x + slideX, basePosition.y });
+        text->SetColor(baseColor + (objectiveIntroColor_ - baseColor) * flash);
         text->SetOpacity(objectiveVisibility_);
         text->Draw();
+        text->SetPosition(basePosition);
+        text->SetColor(baseColor);
     }
 
     // 始まりから終わりまでの線
@@ -169,7 +201,7 @@ void GameUI::DrawObjective()
             Vector4 drawColor = color;
             drawColor.w *= objectiveVisibility_;
             sprite.SetScreenAnchor(timeBarScreenAnchor_);
-            sprite.SetPosition({ timeBarPos_.x + timeBarSize_.x * startRatio, timeBarPos_.y });
+            sprite.SetPosition({ timeBarPos_.x + slideX + timeBarSize_.x * startRatio, timeBarPos_.y });
             sprite.SetSize({ timeBarSize_.x * (endRatio - startRatio), timeBarSize_.y });
             sprite.SetColor(drawColor);
             sprite.Draw();
@@ -201,6 +233,15 @@ void GameUI::DebugGui()
 
     ImGui::SeparatorText("目的と制限時間");
     binder_->Draw("ObjectiveFadeTime", "出るまで (秒)");
+    binder_->Draw("ObjectiveIntroTime", "本番の始まりに強調する時間 (秒)");
+    binder_->Draw("ObjectiveIntroSlide", "左から滑り込む距離");
+    binder_->Draw("ObjectiveIntroColor", "強調の色");
+    binder_->Draw("MissionStartSound", "始まりの音");
+    binder_->Draw("MissionStartSoundVolume", "始まりの音の大きさ");
+    if (ImGui::Button("本番の始まりを試す"))
+    {
+        PlayMissionStart();
+    }
     binder_->Draw("TimeBarScreenAnchor", "制限時間の線の基準 (画面の割合)");
     binder_->Draw("TimeBarPos", "制限時間の線の位置 (基準から)");
     binder_->Draw("TimeBarSize", "制限時間の線の長さと太さ");

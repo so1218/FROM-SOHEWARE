@@ -174,7 +174,7 @@ void PlayScene::OnUpdate()
         {
             isClockRunning_ = true;
             ChangePhase(Phase::Playing);
-            gameUI_->FlashClock();
+            gameUI_->PlayMissionStart();
         }
         break;
 

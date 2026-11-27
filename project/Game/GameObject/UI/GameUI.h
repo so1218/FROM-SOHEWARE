@@ -21,6 +21,8 @@ public:
     // 左上の目的と制限時間
     void SetObjective(int startHour, int stormHour, int endHour);
     void SetObjectiveVisible(bool isVisible) { isObjectiveVisible_ = isVisible; }
+    // 本番の始まり
+    void PlayMissionStart();
 
 private:
     FS::Engine* engine_;
@@ -51,6 +53,13 @@ private:
     bool isObjectiveVisible_ = false;
     float objectiveVisibility_ = 0.0f;
     float objectiveFadeTime_ = 0.6f;
+    // 本番の始まりに目的を強調する
+    float objectiveIntroTimer_ = 1000.0f;
+    float objectiveIntroTime_ = 0.8f;
+    float objectiveIntroSlide_ = 60.0f;
+    FS::Vector4 objectiveIntroColor_ = { 1.0f, 0.35f, 0.25f, 1.0f };
+    std::string missionStartSoundName_ = "missionStart";
+    float missionStartSoundVolume_ = 0.8f;
     float startHour_ = 17.0f;
     float stormHour_ = 19.0f;
     float endHour_ = 20.0f;

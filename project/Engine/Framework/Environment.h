@@ -10,7 +10,6 @@ namespace FS
 class Environment : public GameObject
 {
 public:
-    // environmentGroupName は時間・天候・霧の設定、skydomeGroupName は空の設定を保存するグループの名前
     Environment(Engine* engine, const std::string& environmentGroupName = "Environment", const std::string& skydomeGroupName = "Skydome");
 
     void Initialize() override;

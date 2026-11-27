@@ -1,54 +1,58 @@
 {
     "ObjectiveBanner": {
-        "BandColor": [
-            0.0,
-            0.0,
-            0.0,
-            0.6000000238418579
-        ],
-        "BandHeight": 209.0,
-        "EnterTime": 0.6000000238418579,
+        "BottomOffset": -70.0,
+        "CharactersPerSecond": 12.0,
+        "ClickSound": "radioClick",
+        "ClickVolume": 1.0,
+        "CommaPause": 0.11999999731779099,
         "FadeInTime": 0.800000011920929,
         "FadeOutTime": 0.800000011920929,
+        "FirstReadTime": 2.5,
+        "FlickerTime": 0.3499999940395355,
         "Font": "Maru",
+        "FontSize": 30.0,
         "HoldTime": 0.5,
         "LeaveTime": 0.5,
-        "LineColor": [
-            0.007843137718737125,
-            0.501960813999176,
-            0.08627451211214066,
+        "Line1": "...こちら熱血隊。{hour}時にヘリが着く",
+        "Line2": "それまで金を稼いで、なんとか生き延びてくれ",
+        "Line3": "集めた分だけ、報酬は弾むぞ...",
+        "LineGap": 42.0,
+        "LinePause": 0.4000000059604645,
+        "NoiseSound": "radioNoise",
+        "NoiseVolume": 0.44999998807907104,
+        "OffsetY": 30.0,
+        "PeriodPause": 0.25,
+        "RepeatReadTime": 1.2000000476837158,
+        "ReplyColor": [
+            1.0,
+            1.0,
+            1.0,
             1.0
         ],
-        "LineThickness": 5.300000190734863,
-        "LineWidth": 400.0,
-        "RepeatShowTime": 5.0,
-        "ShowTime": 5.0,
+        "ReplyDelay": 0.30000001192092896,
+        "ReplyFontSize": 26.0,
+        "ReplyGap": 60.0,
+        "ReplyIconGap": 10.0,
+        "ReplyIconSize": 40.0,
+        "ReplyLabel": "ラジャー！",
+        "ReplyPulseSpeed": 3.0,
         "SkipDelay": 0.5,
-        "SubColor": [
+        "Speaker": "ホーリー隊長",
+        "SpeakerColor": [
             1.0,
             1.0,
             1.0,
             1.0
         ],
-        "SubDelay": 0.25,
-        "SubFontSize": 30.0,
-        "SubOffsetY": 35.0,
-        "TimeColor": [
+        "SpeakerFontSize": 20.0,
+        "SpeakerGap": 34.0,
+        "TextColor": [
             1.0,
             1.0,
             1.0,
             1.0
         ],
-        "TimeFontSize": 24.0,
-        "TimeOffsetY": 71.0,
-        "TitleColor": [
-            0.949999988079071,
-            0.8999999761581421,
-            0.800000011920929,
-            1.0
-        ],
-        "TitleFontSize": 64.0,
-        "TitleOffsetY": -40.0,
-        "TitleStartScale": 1.2999999523162842
+        "TypeSound": "radioType",
+        "TypeSoundVolume": 0.6000000238418579
     }
 }

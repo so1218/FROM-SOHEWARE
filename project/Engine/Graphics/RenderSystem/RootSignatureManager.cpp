@@ -14,7 +14,7 @@ void RootSignatureManager::Initialize(ID3D12Device* device)
 
 ID3D12RootSignature* RootSignatureManager::GetRootSignature(const std::string& name)
 {
-    // キャッシュチェック
+    // 一度作ったものは使い回す
     if (auto it = rootSignatureCache_.find(name); it != rootSignatureCache_.end())
     {
         return it->second.Get();
@@ -704,7 +704,6 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> RootSignatureManager::CreateRootSign
         builder.AddCBV(0, D3D12_SHADER_VISIBILITY_ALL);
         builder.AddCBV(1, D3D12_SHADER_VISIBILITY_ALL);
 
-        // 前の燃え具合の地図 (t0) と密度マップ (t1)、書き込む地図 (u0)
         builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 2, D3D12_SHADER_VISIBILITY_ALL);
         builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 1, D3D12_SHADER_VISIBILITY_ALL);
 

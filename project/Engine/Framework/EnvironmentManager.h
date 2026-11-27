@@ -32,7 +32,7 @@ enum class WeatherState
     Thunderstorm    
 };
 
-// Volumetric Fog の見た目。雨と雷雨は天候ごとの値、晴れは昼と夜の値を時間で混ぜたものを使う
+// Volumetric Fog の見た目
 struct FogProfile
 {
     float noiseScale = 0.03f;
@@ -43,7 +43,7 @@ struct FogProfile
     float extinction = 0.005f;
     float erosion = 0.0f;
     float windSpeedMultiplier = 1.0f;
-    float sunScattering = 13.0f; // 太陽と月の光が霧を照らす強さ
+    float sunScattering = 13.0f; 
 };
 
 struct WeatherVisualParams
@@ -63,17 +63,17 @@ struct WeatherVisualParams
 // 天候が環境に与える影響のプロファイル
 struct WeatherProfile
 {
-    float cloudThreshold;        // この濃さを超えた所が雲になる。大きいほど雲が減る
-    float cloudShadowBrightness; // 雲の陰の側に空の色をどれだけ残すか
-    float lightDimmer;           // 太陽/月の光をどれくらい遮るか (1.0 = そのまま, 0.2 = 暗い)
-    float atmosphereGlowDimmer;  // 大気散乱の減衰
+    float cloudThreshold;       
+    float cloudShadowBrightness;
+    float lightDimmer;          
+    float atmosphereGlowDimmer; 
     float wetness;
     float rainIntensity;
     Vector2 windDirection;
     float windSpeed;
     float windTurbulence;
-    Vector3 skyZenithColor;      // この天候のときの天頂の色
-    Vector3 skyHorizonColor;     // この天候のときの地平線の色
+    Vector3 skyZenithColor;     
+    Vector3 skyHorizonColor;    
     float skyColorBlendWeight;
     float transitionSpeed;
 
@@ -157,7 +157,7 @@ private:
 
     // 天候のEnumから対応するプロファイルを返すヘルパー関数
     WeatherProfile GetWeatherProfile(WeatherState state) const;
-    // 霧の設定を ImGui に並べる。prefix は保存キーの頭 (Day, Night, Rain など)
+    // 霧の設定を ImGui に並べる
     void DrawFogSettings(const std::string& prefix);
 
     Engine* engine_ = nullptr;
@@ -184,7 +184,7 @@ private:
     // ブレンドされた現在の結果を保存する変数
     TimeOfDayProfile currentProfile_;
 
-    // 晴れのときの霧。昼と夜で持ち、空と同じ時間 (5 ~ 7 時と 17 ~ 19 時) で入れ替える
+    // 晴れのときの霧
     FogProfile fogDay_;
     FogProfile fogNight_;
 

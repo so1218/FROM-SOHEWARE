@@ -31,7 +31,7 @@
 #define MAX_CASCADE_COUNT 3
 #define SHADOW_MAP_RESOLUTION 2048.0f
 
-// Light types
+// ライティングのやり方と、光源の種類
 #define SHADING_MODEL_HALFLAMBERT 0
 #define SHADING_MODEL_PHONG 1
 #define SHADING_MODEL_TOON 2
@@ -46,6 +46,7 @@
 #define SPRITE_DRAW_MODE_NORMAL   0
 #define SPRITE_DRAW_MODE_SDF_TEXT 1
 
+// 1 つの物体の行列
 struct TransformationMatrix
 {
     float4x4 WVP;
@@ -55,6 +56,7 @@ struct TransformationMatrix
     float4x4 PrevWorld;
 };
 
+// そのフレームの全部の描画で共通の値
 struct FrameData
 {
     float4x4 viewMatrix;
@@ -96,6 +98,7 @@ struct FrameData
     
 };
 
+// ライティングに渡す、1 点の表面の情報
 struct SurfaceData
 {
     float3 albedo; 
@@ -109,6 +112,7 @@ struct SurfaceData
     uint lightMode;
 };
 
+// モデルのマテリアル
 struct MaterialData
 {
     float4x4 uvTransform;
@@ -160,6 +164,7 @@ struct MaterialData
     float padding;
 };
 
+// スプライトや文字 1 枚分 
 struct SpriteInstance
 {
     float2 position; 
@@ -194,11 +199,13 @@ struct SpriteInstance
     float2 padding;
 };
 
+// スプライト全体で共通の値 
 struct SpriteFrameConstants
 {
     float4x4 projection; 
 };
 
+// 風などの環境
 struct GlobalEnvironmentData
 {
     float wetness;
@@ -215,6 +222,7 @@ struct GlobalEnvironmentData
     float windTime;
 };
 
+// 空と雲
 struct AtmosphereSkyData
 {
     float2 windVelocity;
@@ -244,6 +252,7 @@ struct AtmosphereSkyData
     float3 starPadding;
 };
 
+// 軌跡のマテリアル
 struct TrailMaterialData
 {
     float jitterStrength;
@@ -256,6 +265,7 @@ struct TrailMaterialData
     float instanceSeed;
 };
 
+// 平行光源 1 つ分
 struct DirectionalLight
 {
     float4 color;
@@ -269,6 +279,7 @@ struct DirectionalLight
     float2 padding;
 };
 
+// 点光源 1 つ分
 struct PointLight
 {
     float4 color;
@@ -282,6 +293,7 @@ struct PointLight
     float volumetricScatteringIntensity;
 };
 
+// スポットライト 1 つ分
 struct SpotLight
 {
     float4 color;
@@ -298,6 +310,7 @@ struct SpotLight
     float volumetricScatteringIntensity;
 };
 
+// パーティクル 1 つ分
 struct ParticleInstanceData
 {
     float3 position;
@@ -310,6 +323,7 @@ struct ParticleInstanceData
     float4 color;
 };
 
+// 画面演出
 struct PostEffectData
 {
     float pixelationSize;
@@ -339,18 +353,21 @@ struct PostEffectData
     float3 overlayVignetteColor;
 };
 
+// ブルームのために明るいところを取り出す設定
 struct BrightExtractSettings
 {
     float threshold;
     float intensity;
 };
 
+// ブルーム 
 struct BloomSettings
 {
     float2 texelSize; 
     float radius;
 };
 
+// 被写界深度
 struct DoFSettings
 {
     float focusDistance;
@@ -362,6 +379,7 @@ struct DoFSettings
     float bokehHighlightIntensity;
 };
 
+// 最後に全部を合成する設定
 struct FinalCompositeSettings
 {
     float bloomIntensity;
@@ -374,6 +392,7 @@ struct FinalCompositeSettings
     float dofStrength; 
 };
 
+// SSAO
 struct SSAOSettings
 {
     float radius;
@@ -385,6 +404,7 @@ struct SSAOSettings
     float fadeEnd;
 };
 
+// 深度と法線を見ながらぼかす設定 
 struct BilateralBlurSettings
 {
     float2 texelSize;
@@ -394,6 +414,7 @@ struct BilateralBlurSettings
     float normalTolerance;
 };
 
+// 草や霧を押しのけるもの 1 つ分 
 struct InteractionEntity
 {
     float3 position; 
@@ -406,6 +427,7 @@ struct InteractionEntity
     float3 padding;
 };
 
+// 草や霧を押しのけた跡の地図を作る設定
 struct InteractionConstants
 {
     uint entityCount;
@@ -421,12 +443,14 @@ struct InteractionConstants
     float2 padding;
 };
 
+// 草 1 本分 
 struct GrassInstanceData
 {
     float4 posAndHeight; 
     float4 rotationAndWidth;
 };
 
+// 草のマテリアル
 struct GrassMaterialData
 {
     float3 rootColor;
@@ -454,6 +478,7 @@ struct GrassMaterialData
     float nearFadeMaxDist;
 };
 
+// 草のカリング
 struct GrassCullingData
 {
     float maxDrawDistance; 
@@ -466,6 +491,7 @@ struct GrassCullingData
     uint totalInstanceCount;
 };
 
+// 草の生成
 struct GrassGenerationData
 {
     float2 terrainCenter;
@@ -484,6 +510,7 @@ struct GrassGenerationData
 
 #define MAX_GRASS_FIRE_IGNITIONS 16
 
+// 草に火がつく場所 1 つ分
 struct GrassFireIgnition
 {
     float2 position; 
@@ -491,6 +518,7 @@ struct GrassFireIgnition
     float strength;  
 };
 
+// 草の延焼
 struct GrassFireConstants
 {
     float2 areaCenter;       
@@ -520,18 +548,21 @@ struct GrassFireConstants
     GrassFireIgnition ignitions[MAX_GRASS_FIRE_IGNITIONS];
 };
 
+// 木 1 本分
 struct TreeInstanceData
 {
     float4x4 worldMatrix;
     float lodFade;  
 };
 
+// 描く木のインスタンスの開始番号
 struct TreeInstanceOffset
 {
     uint baseInstanceIndex;
     uint isLeaf;
 };
 
+// 木のカリング
 struct TreeCullingData
 {
     float maxDrawDistance; 
@@ -542,6 +573,7 @@ struct TreeCullingData
     float4 frustumPlanes[6];
 };
 
+// 木の葉のマテリアル
 struct LeafMaterialData
 {
     float gustScale;         
@@ -569,6 +601,7 @@ struct LeafMaterialData
     float windSpeedMultiplier;  
 };
 
+// 木の幹のマテリアル
 struct TrunkMaterialData
 {
     float4 color;
@@ -586,12 +619,14 @@ struct TrunkMaterialData
     float nearFadeMaxDist;
 };
 
+// 植物 1 つ分
 struct FoliageInstanceData
 {
     float4 posAndScale; 
     float4 rotationQuat;
 };
 
+//  植物のマテリアル
 struct FoliageMaterialData
 {
     float3 baseColor;
@@ -611,6 +646,7 @@ struct FoliageMaterialData
     float colorIntensity;    
 };
 
+// 植物の生成
 struct FoliageGenerationData
 {
     float2 terrainCenter;
@@ -623,6 +659,7 @@ struct FoliageGenerationData
     float maxScale;
 };
 
+// 植物のカリング
 struct FoliageCullingData
 {
     float maxDrawDistance; 
@@ -633,6 +670,7 @@ struct FoliageCullingData
     float modelCenterYOffset; 
 };
 
+// インスタンシングで描くモデル 1 つ分
 struct Object3DInstanceData
 {
     float4x4 World;
@@ -641,11 +679,13 @@ struct Object3DInstanceData
     float4x4 PrevWorld;
 };
 
+// 描くインスタンスの開始番号
 struct InstanceOffset
 {
     int gBaseInstanceIndex;
 };
 
+// ボリュメトリックフォグ
 struct VolumetricFogSettings
 {
     float3 albedo;         
@@ -682,6 +722,7 @@ struct VolumetricFogSettings
     float2 terrainPadding;
 };
 
+// 霧を深度を見ながらぼかす設定
 struct FogBilateralSettings
 {
     int blurRadius; 
@@ -689,6 +730,7 @@ struct FogBilateralSettings
     float depthSigma;
 };
 
+// 形と範囲を決めた霧 1 つ分
 struct FogVolume
 {
     float4x4 worldToLocal;
@@ -713,6 +755,7 @@ struct FogVolume
     float pad;
 };
 
+// 形と範囲を決めた霧の一覧 
 struct FogVolumeBuffer
 {
     FogVolume volumes[MAX_FOG_VOLUMES];
@@ -721,17 +764,20 @@ struct FogVolumeBuffer
     float3 pad; 
 };
 
+// 影のカスケードの行列と分け目 
 struct ShadowData
 {
     float4x4 cascadeLightViewProj[MAX_CASCADE_COUNT]; 
     float4 cascadeSplits; 
 };
 
+// 今描いているカスケードの番号
 struct CascadeConstant
 {
     uint cascadeIndex;
 };
 
+// 地形の大きさと高さ
 struct TerrainSettings
 {
     float3 origin;         
@@ -745,6 +791,7 @@ struct TerrainSettings
     float2 texcoordScale;
 };
 
+// 地形のマテリアル
 struct TerrainMaterialData
 {
     float4 color;
@@ -775,12 +822,14 @@ struct TerrainMaterialData
     float padding;
 };
 
+// 地形のチャンク 1 つ分
 struct TerrainChunkData
 {
     uint startX;
     uint startZ;
 };
 
+// 雷の見た目 
 struct LightningMaterial
 {
     float3 coreColor;
