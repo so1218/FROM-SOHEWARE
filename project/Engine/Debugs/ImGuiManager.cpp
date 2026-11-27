@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "ImGuiManager.h"
+#include "EditorWindowName.h"
 #include "WorldTransform.h"
 #include "Camera.h"
 #include "DebugDraw.h"
@@ -257,11 +258,11 @@ void ImGuiManager::BeginFrame()
         ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Down, 0.3f, &dock_id_down, &dock_main_id);
 
         // 割り当て
-        ImGui::DockBuilderDockWindow("全体のデバッグ情報・設定", dock_id_down);
-        ImGui::DockBuilderDockWindow("Scene", dock_main_id);
-        ImGui::DockBuilderDockWindow("パーティクルエディター", dock_id_down);
-        ImGui::DockBuilderDockWindow("Global Variables", dock_id_down);
-        ImGui::DockBuilderDockWindow("シーンの選択", dock_id_down);
+        ImGui::DockBuilderDockWindow(EditorWindowName::kGlobalDebug, dock_id_down);
+        ImGui::DockBuilderDockWindow(EditorWindowName::kScene, dock_main_id);
+        ImGui::DockBuilderDockWindow(EditorWindowName::kParticleEditor, dock_id_down);
+        ImGui::DockBuilderDockWindow(EditorWindowName::kGlobalVariables, dock_id_down);
+        ImGui::DockBuilderDockWindow(EditorWindowName::kSceneSelect, dock_id_down);
 
         ImGui::DockBuilderFinish(dockspace_id);
     }

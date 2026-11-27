@@ -802,6 +802,22 @@ void FloatingBehavior::OnDeath(Enemy* owner)
         deathSparkEmitterPtr_->Play();
     }
 
+    // 敵はこのあと消えるので、出し終わったら消えるようにして手放す
+    for (ParticleEmitter** emitter : { &explosionEmitterPtr_, &deathSparkEmitterPtr_, &tracerEmitterPtr_, &thrusterHitZapEmitterPtr_ })
+    {
+        if (*emitter)
+        {
+            (*emitter)->DestroyWhenFinished();
+            *emitter = nullptr;
+        }
+    }
+    // 溜めの粒は銃口へ吸い寄せられるので、銃口がなくなる前にすぐ消す
+    if (chargeEmitterPtr_)
+    {
+        chargeEmitterPtr_->Destroy();
+        chargeEmitterPtr_ = nullptr;
+    }
+
     // 地面の近くで爆発したら草に火がつく
     const Vector3& position = owner->GetTransform().translation_;
     float groundHeight = 0.0f;

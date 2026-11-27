@@ -62,7 +62,7 @@ PlayScene::PlayScene(Engine* engine)
     objectManager_.Create<WeatherEffectManager>(engine_, camera_.get(), cameraManager_.get(), player, terrain);
     coinManager_ = objectManager_.Create<CoinManager>(engine_, player, terrain);
     enemyManager_ = objectManager_.Create<EnemyManager>(engine_, "GameEnemy", terrain, treeField, coinManager_);
-    objectManager_.Create<EnvironmentPropManager>(engine_, stage.GetGroupName("EnvironmentProps"));
+    environmentPropManager_ = objectManager_.Create<EnvironmentPropManager>(engine_, stage.GetGroupName("EnvironmentProps"));
     objectManager_.Create<FoliageField>(engine_, terrain, stage.GetGroupName("FoliageField"));
     gameUI_ = objectManager_.Create<GameUI>(engine_);
     tutorial_ = objectManager_.Create<Tutorial>(engine_, player);
@@ -358,6 +358,7 @@ void PlayScene::RestartFromSpawn()
     player_->ResetToSpawn();
     enemyManager_->ResetEnemies();
     coinManager_->Clear();
+    environmentPropManager_->ResetProps();
     engine_->GetRendererManager()->ResetGrassFire();
     // 倒れた場所からカメラが追いかけてこないよう、すぐ後ろに置き直す
     followCamera_->SetDeathFocus(false);
@@ -376,6 +377,7 @@ void PlayScene::ReturnToTitle()
     player_->ResetToSpawn();
     enemyManager_->ResetEnemies();
     coinManager_->Clear();
+    environmentPropManager_->ResetProps();
     // 次に遊ぶときは、燃える前の草原から始める
     engine_->GetRendererManager()->ResetGrassFire();
     tutorial_->Stop();

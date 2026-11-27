@@ -14,6 +14,7 @@ class GameOverScreen;
 class CoinManager;
 class ResultScreen;
 class ObjectiveBanner;
+class EnvironmentPropManager;
 
 class PlayScene : public FS::BaseScene
 {
@@ -76,6 +77,7 @@ private:
     CoinManager* coinManager_ = nullptr;
     ResultScreen* resultScreen_ = nullptr;
     ObjectiveBanner* objectiveBanner_ = nullptr;
+    EnvironmentPropManager* environmentPropManager_ = nullptr;
     std::unique_ptr<FS::PropertyBinder> flowBinder_;
 
     Phase phase_ = Phase::Title;

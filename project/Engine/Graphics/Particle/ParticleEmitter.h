@@ -28,6 +28,9 @@ public:
     void Stop(); // エミッターの再生を停止
 
     void Destroy();
+    // 今の再生が終わったら自動で消す。再生していないとき・ループするとき・長さが決まっていないときはすぐ消す
+    // 出た粒は ParticleSystem が持っているので、エミッターが消えても寿命まで残る。呼んだあとはポインターを使わないこと
+    void DestroyWhenFinished();
 
     void SetFollowAxes(bool x, bool y, bool z);
     // 発生量の倍率を設定
@@ -76,6 +79,7 @@ public:
     const AnimationModel* targetAnimModel_ = nullptr;
 
     bool isDead_ = false;
+    bool isDestroyedWhenFinished_ = false;
 
     bool followX_ = true;
     bool followY_ = true;

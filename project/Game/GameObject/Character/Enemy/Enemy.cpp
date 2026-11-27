@@ -114,6 +114,12 @@ void Enemy::Die()
 {
     isDefeated_ = true;
     if (behavior_) behavior_->OnDeath(this);
+    // 敵はこのあと消えるので、被弾のパーティクルは出し終わったら消えるようにする
+    if (damageParticlePtr_)
+    {
+        damageParticlePtr_->DestroyWhenFinished();
+        damageParticlePtr_ = nullptr;
+    }
     SetActive(false);
 }
 

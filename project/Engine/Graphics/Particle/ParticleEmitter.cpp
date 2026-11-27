@@ -35,9 +35,13 @@ void ParticleEmitter::SetTargetToFollow(WorldTransform* target)
 
 void ParticleEmitter::Update(ParticleSystem& particleSystem)
 {
-    // 再生中でなければ何もしない
+    // 再生中でなければ何もしない。終わったら消す指定のものは、途中で止められたときもここで消す
     if (!isPlaying_)
     {
+        if (isDestroyedWhenFinished_)
+        {
+            isDead_ = true;
+        }
         return;
     }
 
@@ -136,6 +140,17 @@ void ParticleEmitter::Destroy()
 {
     isDead_ = true;
     Stop();
+}
+
+void ParticleEmitter::DestroyWhenFinished()
+{
+    // 終わりが来ないものは待たずに消す
+    if (!isPlaying_ || looping_ || duration_ < 0.0f)
+    {
+        Destroy();
+        return;
+    }
+    isDestroyedWhenFinished_ = true;
 }
 
 void ParticleEmitter::SetFollowAxes(bool x, bool y, bool z)

@@ -16,6 +16,18 @@ EnvironmentProp::~EnvironmentProp()
 {
 }
 
+void EnvironmentProp::ReleaseEmitters()
+{
+    for (FS::ParticleEmitter** emitter : { &activeEmitter_, &activeEmitter2_ })
+    {
+        if (*emitter)
+        {
+            (*emitter)->Destroy();
+            *emitter = nullptr;
+        }
+    }
+}
+
 void EnvironmentProp::Initialize()
 {
     const std::string childGroupName = "Prop_" + std::to_string(id_);
@@ -131,6 +143,13 @@ void EnvironmentProp::ApplySettings()
     // パーティクルエミッターの動的割り当て
     UpdateParticleEmitter(hasParticle_, particleName_, isParticleFollowing_, activeEmitter_);
     UpdateParticleEmitter(hasParticle2_, particleName2_, isParticleFollowing2_, activeEmitter2_);
+}
+
+void EnvironmentProp::ResetState()
+{
+    SetActive(true);
+    // 消えたときに外したパーティクルは、ApplySettings で作り直される
+    ApplySettings();
 }
 
 void EnvironmentProp::UpdateParticleEmitter(

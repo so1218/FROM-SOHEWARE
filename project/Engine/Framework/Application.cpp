@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "Application.h"
+#include "EditorWindowName.h"
 #include "Engine.h"
 #include "BaseScene.h"
 #include "Input.h"
@@ -68,7 +69,7 @@ void Application::Update()
 
 void Application::DebugGui()
 {
-    if (ImGui::Begin("シーンの選択"))
+    if (ImGui::Begin(EditorWindowName::kSceneSelect))
     {
         for (const std::string& name : sceneManager_.GetSceneNames())
         {

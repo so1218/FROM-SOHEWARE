@@ -100,6 +100,17 @@ void EnvironmentPropManager::Update()
     }
 }
 
+void EnvironmentPropManager::ResetProps()
+{
+    for (auto& [prefabName, group] : groups_)
+    {
+        for (auto& prop : group.instances)
+        {
+            prop->ResetState();
+        }
+    }
+}
+
 void EnvironmentPropManager::Draw()
 {
     for (auto& [prefabName, group] : groups_)
@@ -152,6 +163,10 @@ void EnvironmentPropManager::RemoveEnvironmentProp(int targetId)
 
         if (it != group.instances.end())
         {
+            for (auto removed = it; removed != group.instances.end(); ++removed)
+            {
+                (*removed)->ReleaseEmitters();
+            }
             group.instances.erase(it, group.instances.end());
             break;
         }

@@ -601,6 +601,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Debugs\ImGuiManager.h">
       <Filter>Debugs</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Debugs\EditorWindowName.h">
+      <Filter>Debugs</Filter>
+    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)Debugs\Logger.h">
       <Filter>Debugs</Filter>
     </ClInclude>

@@ -33,6 +33,9 @@ public:
     // プロップの削除
     void RemoveEnvironmentProp(int targetId);
 
+    // 拾って消えたプロップを、置いたときの状態に戻す
+    void ResetProps();
+
 private:
     // グループの新規作成とモデル読み込み
     void CreateGroup(const std::string& prefabName, const std::string& fallbackModelName);

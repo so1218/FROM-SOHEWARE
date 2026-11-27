@@ -219,6 +219,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Debugs\EnvironmentWindow.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Debugs\Grid.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Debugs\ImGuiManager.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Debugs\EditorWindowName.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Debugs\Logger.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Debugs\PropertyBinder.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Effect\ShakeEffect.h" />

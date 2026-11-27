@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "DebugGuiManager.h"
+#include "EditorWindowName.h"
 #include "Engine.h"
 #include "TimeManager.h"
 #include "ImGuiManager.h"
@@ -40,7 +41,7 @@ void DebugGuiManager::Update(Camera* targetCamera)
 {
 #ifdef ENABLE_IMGUI
     // メインのデバッグウィンドウ
-    ImGui::Begin("全体のデバッグ情報・設定");
+    ImGui::Begin(EditorWindowName::kGlobalDebug);
 
     auto* time = TimeManager::GetInstance();
 
@@ -175,7 +176,7 @@ void DebugGuiManager::BeginSceneView(
 
     // パディングなしで開始
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
-    ImGui::Begin("Scene");
+    ImGui::Begin(EditorWindowName::kScene);
     ImGui::PopStyleVar();
     isSceneViewBegun_ = true;
 

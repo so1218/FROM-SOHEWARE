@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "ParticleEditor.h"
+#include "EditorWindowName.h"
 #include "imGuiManager.h"
 #include "TextureManager.h"
 #include "ParticleEmitter.h"
@@ -55,7 +56,7 @@ ParticleEditor::ParticleEditor(ParticleSystem* particleSystem, Engine* engine)
 void ParticleEditor::ShowEditor()
 {
 #ifdef ENABLE_IMGUI
-    if (ImGui::Begin("パーティクルエディター"))
+    if (ImGui::Begin(EditorWindowName::kParticleEditor))
     {
         // プリセット名リスト生成
         std::vector<const char*> presetNames;

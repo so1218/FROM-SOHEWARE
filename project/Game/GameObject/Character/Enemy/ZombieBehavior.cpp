@@ -522,6 +522,16 @@ void ZombieBehavior::OnDeath(Enemy* owner)
         deathSparkEmitterPtr_->Play();
     }
 
+    // 敵はこのあと消えるので、出し終わったら消えるようにして手放す
+    for (FS::ParticleEmitter** emitter : { &explosionEmitterPtr_, &deathSparkEmitterPtr_, &headshotZapEmitterPtr_ })
+    {
+        if (*emitter)
+        {
+            (*emitter)->DestroyWhenFinished();
+            *emitter = nullptr;
+        }
+    }
+
     // 足元の草に火がつく
     if (config_.deathIgniteRadius > 0.0f)
     {

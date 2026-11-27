@@ -45,22 +45,23 @@ namespace
         std::erase_if(GetBulkUndo(), isMine);
     }
 
+    // 次の 3 つは、終了時にも壊さない (new したまま解放しない)
     std::vector<PropertyBinder*>& PropertyBinder::GetInstances()
     {
-        static std::vector<PropertyBinder*> instances;
-        return instances;
+        static auto* instances = new std::vector<PropertyBinder*>();
+        return *instances;
     }
 
     std::vector<PropertyBinder::SavedValueChange>& PropertyBinder::GetPendingChanges()
     {
-        static std::vector<SavedValueChange> pendingChanges;
-        return pendingChanges;
+        static auto* pendingChanges = new std::vector<SavedValueChange>();
+        return *pendingChanges;
     }
 
     std::vector<PropertyBinder::SavedValueChange>& PropertyBinder::GetBulkUndo()
     {
-        static std::vector<SavedValueChange> bulkUndo;
-        return bulkUndo;
+        static auto* bulkUndo = new std::vector<SavedValueChange>();
+        return *bulkUndo;
     }
 
     std::vector<PropertyBinder::SavedValueChange> PropertyBinder::CollectChangesFromSaved(const std::vector<std::string>& groupPath)

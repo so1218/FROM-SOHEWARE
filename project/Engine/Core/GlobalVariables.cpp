@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "GlobalVariables.h"
+#include "EditorWindowName.h"
 #include "PropertyBinder.h"
 
 namespace FS
@@ -14,7 +15,7 @@ GlobalVariables* GlobalVariables::GetInstance()
 void GlobalVariables::Update()
 {
 #ifdef ENABLE_IMGUI
-	if (!ImGui::Begin("パラメータの保存###GlobalVariables"))
+	if (!ImGui::Begin(EditorWindowName::kGlobalVariables))
 	{
 		ImGui::End();
 		return;
