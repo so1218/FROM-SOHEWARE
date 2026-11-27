@@ -432,6 +432,9 @@ void PropertyBinder::BindTexture(
         });
 
 #ifdef ENABLE_IMGUI
+    // 項目名と画像を縦に並べて自分で描くので、Draw に項目名を左へ描かせない
+    selfLabeledKeys_.insert(key);
+
     // 描画処理の登録
     items_[key] = [this, key, filterType, onValueChanged](const std::string& nameOverride) 
         {

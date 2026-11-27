@@ -11,6 +11,42 @@
 namespace FS
 {
 
+namespace
+{
+// PropertyBinder::Draw と同じく、項目名を左の列に描き、次の入力欄を右の残りの幅いっぱいに伸ばす
+// 戻り値は入力欄に渡すラベル。項目名は出さずに、今までと同じ文字列を ID にする
+std::string LeftLabel(const char* label)
+{
+    std::string displayName = label;
+    if (const size_t hiddenStart = displayName.find("##"); hiddenStart != std::string::npos)
+    {
+        displayName.resize(hiddenStart);
+    }
+
+    const ImGuiStyle& style = ImGui::GetStyle();
+    const float fontSize = ImGui::GetFontSize();
+    const float labelColumnWidth = std::clamp(ImGui::GetContentRegionAvail().x * 0.4f, fontSize * 5.0f, fontSize * 16.0f);
+    const float startX = ImGui::GetCursorPosX();
+
+    ImGui::Dummy(ImVec2(labelColumnWidth - style.ItemSpacing.x, ImGui::GetFrameHeight()));
+    const ImVec2 labelMin = ImGui::GetItemRectMin();
+    const ImVec2 labelMax = ImGui::GetItemRectMax();
+    const ImVec2 textSize = ImGui::CalcTextSize(displayName.c_str());
+    // 入らない項目名は末尾を「...」にし、マウスを乗せると全文を出す
+    ImGui::RenderTextEllipsis(ImGui::GetWindowDrawList(),
+        ImVec2(labelMin.x, labelMin.y + style.FramePadding.y), labelMax, labelMax.x,
+        displayName.c_str(), nullptr, &textSize);
+    if (textSize.x > labelMax.x - labelMin.x && ImGui::IsItemHovered())
+    {
+        ImGui::SetTooltip("%s", displayName.c_str());
+    }
+
+    ImGui::SameLine(startX + labelColumnWidth);
+    ImGui::SetNextItemWidth(-FLT_MIN);
+    return std::string("###") + label;
+}
+}
+
 ParticleEditor::ParticleEditor(ParticleSystem* particleSystem, Engine* engine)
     : particleSystem_(particleSystem), engine_(engine)
 {
@@ -47,11 +83,7 @@ void ParticleEditor::ShowEditor()
             }
 
             // プリセット選択
-            ImGui::AlignTextToFramePadding();
-            ImGui::TextUnformatted("プリセット");
-            ImGui::SameLine();
-            ImGui::SetNextItemWidth(-FLT_MIN);
-            ImGui::Combo("##Preset", &selectedPresetIdx_, presetNames.data(), (int)presetNames.size());
+            ImGui::Combo(LeftLabel("プリセット").c_str(), &selectedPresetIdx_, presetNames.data(), (int)presetNames.size());
 
             const std::string& selectedPresetName = presetNameStrings[selectedPresetIdx_];
 
@@ -148,7 +180,7 @@ void ParticleEditor::ShowEditor()
 
             if (ImGui::CollapsingHeader("基本設定"))
             {
-                bool intensityChanged = ImGui::DragFloat("発光強度", &config.intensity, 0.1f, 0.0f);
+                bool intensityChanged = ImGui::DragFloat(LeftLabel("発光強度").c_str(), &config.intensity, 0.1f, 0.0f);
 
                 ImGui::Separator();
 
@@ -162,7 +194,7 @@ void ParticleEditor::ShowEditor()
 
                 int currentBlendMode = static_cast<int>(config.blendMode);
 
-                if (ImGui::Combo("ブレンドモード", &currentBlendMode, blendModeItems, IM_ARRAYSIZE(blendModeItems)))
+                if (ImGui::Combo(LeftLabel("ブレンドモード").c_str(), &currentBlendMode, blendModeItems, IM_ARRAYSIZE(blendModeItems)))
                 {
                     config.blendMode = static_cast<BlendMode>(currentBlendMode);
                 }
@@ -175,12 +207,12 @@ void ParticleEditor::ShowEditor()
                 bool valueChanged = false;
 
                 // エミッター基本設定
-                valueChanged |= ImGui::DragFloat3("位置", &emitterConfig.position.x, 0.1f);
+                valueChanged |= ImGui::DragFloat3(LeftLabel("位置").c_str(), &emitterConfig.position.x, 0.1f);
                 ImGui::Separator();
-                valueChanged |= ImGui::DragFloat3("追従オフセット", &emitterConfig.followOffset.x, 0.1f);
+                valueChanged |= ImGui::DragFloat3(LeftLabel("追従オフセット").c_str(), &emitterConfig.followOffset.x, 0.1f);
 
                 ImGui::Separator();
-                bool intervalEdited = ImGui::DragFloat("発生間隔 (秒)", &emitterConfig.spawnInterval, 0.01f);
+                bool intervalEdited = ImGui::DragFloat(LeftLabel("発生間隔 (秒)").c_str(), &emitterConfig.spawnInterval, 0.01f);
                 valueChanged |= intervalEdited;
                 if (ImGui::IsItemDeactivatedAfterEdit())
                 {
@@ -198,16 +230,16 @@ void ParticleEditor::ShowEditor()
                         valueChanged = false;
                     }
                 }
-                valueChanged |= ImGui::DragFloat("生存時間", &emitterConfig.lifetime, 0.01f, 0.0f, 10.0f);
+                valueChanged |= ImGui::DragFloat(LeftLabel("生存時間").c_str(), &emitterConfig.lifetime, 0.01f, 0.0f, 10.0f);
                 ImGui::Separator();
-                valueChanged |= ImGui::DragInt("発生数", &emitterConfig.amount, 1, 0);
+                valueChanged |= ImGui::DragInt(LeftLabel("発生数").c_str(), &emitterConfig.amount, 1, 0);
                 ImGui::Separator();
-                valueChanged |= ImGui::DragFloat("再生時間", &emitterConfig.duration, 0.001f);
+                valueChanged |= ImGui::DragFloat(LeftLabel("再生時間").c_str(), &emitterConfig.duration, 0.001f);
 
                 ImGui::Separator();
-                valueChanged |= ImGui::Checkbox("ループ", &emitterConfig.looping);
+                valueChanged |= ImGui::Checkbox(LeftLabel("ループ").c_str(), &emitterConfig.looping);
                 ImGui::Separator();
-                valueChanged |= ImGui::Checkbox("生成時に再生", &emitterConfig.playOnAwake);
+                valueChanged |= ImGui::Checkbox(LeftLabel("生成時に再生").c_str(), &emitterConfig.playOnAwake);
 
                 // 設定変更をライブ反映
                 if (valueChanged)
@@ -224,14 +256,14 @@ void ParticleEditor::ShowEditor()
                 {
                     auto& vel = config.velocity;
 
-                    ImGui::Checkbox("有効##Velocity", &vel.enabled);
-                    ImGui::DragFloat("速度", &vel.speed, 0.01f, 0.0f, 1000.0f);
-                    ImGui::Checkbox("ランダム方向", &vel.randomDirection);
+                    ImGui::Checkbox(LeftLabel("有効##Velocity").c_str(), &vel.enabled);
+                    ImGui::DragFloat(LeftLabel("速度").c_str(), &vel.speed, 0.01f, 0.0f, 1000.0f);
+                    ImGui::Checkbox(LeftLabel("ランダム方向").c_str(), &vel.randomDirection);
 
                     if (vel.randomDirection)
-                        ImGui::SliderFloat("拡散角度", &vel.angleRange, 0.0f, 360.0f, "%.0f 度");
+                        ImGui::SliderFloat(LeftLabel("拡散角度").c_str(), &vel.angleRange, 0.0f, 360.0f, "%.0f 度");
 
-                    ImGui::DragFloat3("方向", &vel.direction.x, 0.01f);
+                    ImGui::DragFloat3(LeftLabel("方向").c_str(), &vel.direction.x, 0.01f);
 
                     ImGui::TreePop();
                 }
@@ -242,15 +274,15 @@ void ParticleEditor::ShowEditor()
                 if (ImGui::TreeNode("物理モジュール"))
                 {
                     auto& phys = config.physics;
-                    ImGui::Checkbox("有効##Physics", &phys.enabled);
-                    ImGui::DragFloat3("重力", &phys.gravity.x, 0.1f);
-                    ImGui::DragFloat("空気抵抗", &phys.drag, 0.001f, 0.0f, 1.0f);
+                    ImGui::Checkbox(LeftLabel("有効##Physics").c_str(), &phys.enabled);
+                    ImGui::DragFloat3(LeftLabel("重力").c_str(), &phys.gravity.x, 0.1f);
+                    ImGui::DragFloat(LeftLabel("空気抵抗").c_str(), &phys.drag, 0.001f, 0.0f, 1.0f);
 
                     ImGui::Separator();
-                    ImGui::Checkbox("風の影響を受ける", &phys.affectedByWind);
+                    ImGui::Checkbox(LeftLabel("風の影響を受ける").c_str(), &phys.affectedByWind);
                     if (phys.affectedByWind)
                     {
-                        ImGui::DragFloat("風の影響度", &phys.windInfluence, 0.01f, 0.0f, 10.0f);
+                        ImGui::DragFloat(LeftLabel("風の影響度").c_str(), &phys.windInfluence, 0.01f, 0.0f, 10.0f);
                     }
 
                     ImGui::TreePop();
@@ -263,26 +295,26 @@ void ParticleEditor::ShowEditor()
                 {
                     auto& rot = config.rotation;
 
-                    ImGui::Checkbox("有効##Rotation", &rot.enabled);
+                    ImGui::Checkbox(LeftLabel("有効##Rotation").c_str(), &rot.enabled);
                     ImGui::Separator();
-                    ImGui::Checkbox("ビルボード", &rot.isBillboard);
+                    ImGui::Checkbox(LeftLabel("ビルボード").c_str(), &rot.isBillboard);
                     ImGui::Separator();
 
                     ImGui::Text("初期角度");
-                    ImGui::DragFloat3("最小##StartRotMin", &rot.minStartRotation.x, 1.0f);
-                    ImGui::DragFloat3("最大##StartRotMax", &rot.maxStartRotation.x, 1.0f);
+                    ImGui::DragFloat3(LeftLabel("最小##StartRotMin").c_str(), &rot.minStartRotation.x, 1.0f);
+                    ImGui::DragFloat3(LeftLabel("最大##StartRotMax").c_str(), &rot.maxStartRotation.x, 1.0f);
 
                     ImGui::Separator();
                     ImGui::Text("回転速度");
                     if (rot.isBillboard)
                     {
-                        ImGui::DragFloat("最小速度 (2D)", &rot.minAngularVelocity2D, 1.0f);
-                        ImGui::DragFloat("最大速度 (2D)", &rot.maxAngularVelocity2D, 1.0f);
+                        ImGui::DragFloat(LeftLabel("最小速度 (2D)").c_str(), &rot.minAngularVelocity2D, 1.0f);
+                        ImGui::DragFloat(LeftLabel("最大速度 (2D)").c_str(), &rot.maxAngularVelocity2D, 1.0f);
                     }
                     else
                     {
-                        ImGui::DragFloat3("最小速度 (3D)", &rot.minAngularVelocity3D.x, 1.0f);
-                        ImGui::DragFloat3("最大速度 (3D)", &rot.maxAngularVelocity3D.x, 1.0f);
+                        ImGui::DragFloat3(LeftLabel("最小速度 (3D)").c_str(), &rot.minAngularVelocity3D.x, 1.0f);
+                        ImGui::DragFloat3(LeftLabel("最大速度 (3D)").c_str(), &rot.maxAngularVelocity3D.x, 1.0f);
                     }
 
                     ImGui::TreePop();
@@ -298,7 +330,7 @@ void ParticleEditor::ShowEditor()
                     const char* shapeTypes[] = { "点", "ボックス", "球" };
                     int currentShapeType = (int)shape.type;
 
-                    if (ImGui::Combo("形状タイプ", &currentShapeType, shapeTypes, IM_ARRAYSIZE(shapeTypes)))
+                    if (ImGui::Combo(LeftLabel("形状タイプ").c_str(), &currentShapeType, shapeTypes, IM_ARRAYSIZE(shapeTypes)))
                         shape.type = (ShapeModule::Type)currentShapeType;
 
                     ImGui::Separator();
@@ -306,11 +338,11 @@ void ParticleEditor::ShowEditor()
                     switch (shape.type)
                     {
                     case ShapeModule::Type::Box:
-                        ImGui::DragFloat3("ボックスサイズ", &shape.boxSize.x, 0.1f);
+                        ImGui::DragFloat3(LeftLabel("ボックスサイズ").c_str(), &shape.boxSize.x, 0.1f);
                         break;
                     case ShapeModule::Type::Sphere:
-                        ImGui::DragFloat3("半径", &shape.radius.x, 0.1f);
-                        ImGui::Checkbox("縁から放出", &shape.emitFromEdge);
+                        ImGui::DragFloat3(LeftLabel("半径").c_str(), &shape.radius.x, 0.1f);
+                        ImGui::Checkbox(LeftLabel("縁から放出").c_str(), &shape.emitFromEdge);
                         break;
                     case ShapeModule::Type::Point:
                         break;
@@ -331,31 +363,31 @@ void ParticleEditor::ShowEditor()
                 {
                     auto& color = config.colorOverLifetime;
 
-                    ImGui::Checkbox("有効##Color", &color.enabled);
+                    ImGui::Checkbox(LeftLabel("有効##Color").c_str(), &color.enabled);
 
                     const char* modes[] = { "単一", "ランダム2種" };
                     int mode = (int)color.mode;
-                    if (ImGui::Combo("モード", &mode, modes, IM_ARRAYSIZE(modes)))
+                    if (ImGui::Combo(LeftLabel("モード").c_str(), &mode, modes, IM_ARRAYSIZE(modes)))
                         color.mode = (ColorOverLifetimeModule::Mode)mode;
 
                     // グラデーション1
                     Vector4 start1 = Math::Uint32ToColorVector(color.startColor);
-                    if (ImGui::ColorEdit4("開始色 1", &start1.x))
+                    if (ImGui::ColorEdit4(LeftLabel("開始色 1").c_str(), &start1.x))
                         color.startColor = Math::ColorVectorToUint32(start1);
 
                     Vector4 end1 = Math::Uint32ToColorVector(color.endColor);
-                    if (ImGui::ColorEdit4("終了色 1", &end1.x))
+                    if (ImGui::ColorEdit4(LeftLabel("終了色 1").c_str(), &end1.x))
                         color.endColor = Math::ColorVectorToUint32(end1);
 
                     // グラデーション2
                     if (color.mode == ColorOverLifetimeModule::Mode::RandomBetweenTwo)
                     {
                         Vector4 start2 = Math::Uint32ToColorVector(color.startColor2);
-                        if (ImGui::ColorEdit4("開始色 2", &start2.x))
+                        if (ImGui::ColorEdit4(LeftLabel("開始色 2").c_str(), &start2.x))
                             color.startColor2 = Math::ColorVectorToUint32(start2);
 
                         Vector4 end2 = Math::Uint32ToColorVector(color.endColor2);
-                        if (ImGui::ColorEdit4("終了色 2", &end2.x))
+                        if (ImGui::ColorEdit4(LeftLabel("終了色 2").c_str(), &end2.x))
                             color.endColor2 = Math::ColorVectorToUint32(end2);
                     }
 
@@ -371,14 +403,14 @@ void ParticleEditor::ShowEditor()
                 {
                     auto& size = config.sizeOverLifetime;
 
-                    ImGui::Checkbox("有効##Size", &size.enabled);
-                    ImGui::DragFloat3("開始サイズ", &size.startScale.x, 0.01f);
-                    ImGui::DragFloat3("終了サイズ", &size.endScale.x, 0.01f);
+                    ImGui::Checkbox(LeftLabel("有効##Size").c_str(), &size.enabled);
+                    ImGui::DragFloat3(LeftLabel("開始サイズ").c_str(), &size.startScale.x, 0.01f);
+                    ImGui::DragFloat3(LeftLabel("終了サイズ").c_str(), &size.endScale.x, 0.01f);
 
                     ImGui::Separator();
-                    ImGui::Checkbox("振動", &size.oscillate);
+                    ImGui::Checkbox(LeftLabel("振動").c_str(), &size.oscillate);
                     if (size.oscillate)
-                        ImGui::DragFloat("周波数", &size.frequency, 0.1f, 0.0f, 100.0f);
+                        ImGui::DragFloat(LeftLabel("周波数").c_str(), &size.frequency, 0.1f, 0.0f, 100.0f);
 
                     ImGui::TreePop();
                 }
@@ -388,19 +420,19 @@ void ParticleEditor::ShowEditor()
                 {
                     auto& attraction = config.attraction;
 
-                    ImGui::Checkbox("有効##Attraction", &attraction.enabled);
+                    ImGui::Checkbox(LeftLabel("有効##Attraction").c_str(), &attraction.enabled);
 
                     if (attraction.enabled)
                     {
-                        ImGui::DragFloat("引力の強さ", &attraction.strength, 0.1f, -500.0f, 500.0f);
+                        ImGui::DragFloat(LeftLabel("引力の強さ").c_str(), &attraction.strength, 0.1f, -500.0f, 500.0f);
 
                         ImGui::Separator();
                         ImGui::Text("静的ターゲット (ターゲット未設定時)");
-                        ImGui::DragFloat3("座標##AttractionTarget", &attraction.target.x, 0.1f);
+                        ImGui::DragFloat3(LeftLabel("座標##AttractionTarget").c_str(), &attraction.target.x, 0.1f);
 
                         ImGui::Separator();
                         ImGui::Text("動的ターゲット (SetTargetToFollow使用時)");
-                        ImGui::DragFloat3("オフセット##AttractionOffset", &attraction.offset.x, 0.1f);
+                        ImGui::DragFloat3(LeftLabel("オフセット##AttractionOffset").c_str(), &attraction.offset.x, 0.1f);
                     }
                     ImGui::TreePop();
                 }
@@ -410,14 +442,14 @@ void ParticleEditor::ShowEditor()
                 {
                     auto& trail = config.trail;
 
-                    ImGui::Checkbox("有効##Trail", &trail.enabled);
+                    ImGui::Checkbox(LeftLabel("有効##Trail").c_str(), &trail.enabled);
 
                     if (trail.enabled)
                     {
-                        ImGui::DragFloat("太さ", &trail.width, 0.1f, 0.1f, 10.0f);
-                        ImGui::DragFloat("発光強度", &trail.emissiveIntensity, 0.1f, 0.0f, 100.0f);
-                        ImGui::DragFloat("寿命", &trail.lifetime, 0.1f, 0.1f, 5.0f);
-                        ImGui::DragFloat("最小頂点距離", &trail.minVertexDistance, 0.01f, 0.01f, 10.0f);
+                        ImGui::DragFloat(LeftLabel("太さ").c_str(), &trail.width, 0.1f, 0.1f, 10.0f);
+                        ImGui::DragFloat(LeftLabel("発光強度").c_str(), &trail.emissiveIntensity, 0.1f, 0.0f, 100.0f);
+                        ImGui::DragFloat(LeftLabel("寿命").c_str(), &trail.lifetime, 0.1f, 0.1f, 5.0f);
+                        ImGui::DragFloat(LeftLabel("最小頂点距離").c_str(), &trail.minVertexDistance, 0.01f, 0.01f, 10.0f);
 
                         ImGui::Separator();
 
@@ -428,28 +460,28 @@ void ParticleEditor::ShowEditor()
 
                         const char* jitterModes[] = { "滑らか", "ランダム" };
                         int currentJitter = static_cast<int>(trail.jitterMode);
-                        if (ImGui::Combo("揺れタイプ", &currentJitter, jitterModes, IM_ARRAYSIZE(jitterModes)))
+                        if (ImGui::Combo(LeftLabel("揺れタイプ").c_str(), &currentJitter, jitterModes, IM_ARRAYSIZE(jitterModes)))
                         {
                             trail.jitterMode = static_cast<JitterMode>(currentJitter);
                         }
 
                         ImGui::Text("ジッター (形状変形)");
-                        ImGui::DragFloat("強さ", &trail.jitterStrength, 0.1f, 0.0f, 50.0f);
-                        ImGui::DragFloat("周波数", &trail.jitterFrequency, 0.1f, 0.1f, 100.0f);
-                        ImGui::DragFloat("変動速度", &trail.jitterSpeed, 0.1f, 0.0f, 100.0f);
-                        ImGui::DragFloat("位相 (位置ずらし)", &trail.jitterPhase, 0.01f, -10.0f, 10.0f);
+                        ImGui::DragFloat(LeftLabel("強さ").c_str(), &trail.jitterStrength, 0.1f, 0.0f, 50.0f);
+                        ImGui::DragFloat(LeftLabel("周波数").c_str(), &trail.jitterFrequency, 0.1f, 0.1f, 100.0f);
+                        ImGui::DragFloat(LeftLabel("変動速度").c_str(), &trail.jitterSpeed, 0.1f, 0.0f, 100.0f);
+                        ImGui::DragFloat(LeftLabel("位相 (位置ずらし)").c_str(), &trail.jitterPhase, 0.01f, -10.0f, 10.0f);
 
                         ImGui::Separator();
 
                         ImGui::Text("太さの変化");
-                        ImGui::DragFloat("先端スケール", &trail.headWidthScale, 0.01f, 0.0f, 5.0f);
-                        ImGui::DragFloat("末尾スケール", &trail.tailWidthScale, 0.01f, 0.0f, 5.0f);
+                        ImGui::DragFloat(LeftLabel("先端スケール").c_str(), &trail.headWidthScale, 0.01f, 0.0f, 5.0f);
+                        ImGui::DragFloat(LeftLabel("末尾スケール").c_str(), &trail.tailWidthScale, 0.01f, 0.0f, 5.0f);
 
                         ImGui::Separator();
 
                         const char* alignModes[] = { "カメラ向き", "回転追従" };
                         int currentAlign = static_cast<int>(trail.alignment);
-                        if (ImGui::Combo("向きの制御", &currentAlign, alignModes, IM_ARRAYSIZE(alignModes)))
+                        if (ImGui::Combo(LeftLabel("向きの制御").c_str(), &currentAlign, alignModes, IM_ARRAYSIZE(alignModes)))
                         {
                             trail.alignment = static_cast<TrailAlignment>(currentAlign);
                         }
@@ -457,8 +489,8 @@ void ParticleEditor::ShowEditor()
                         ImGui::Separator();
 
                         ImGui::Text("カラー推移");
-                        ImGui::ColorEdit4("開始色 (根元)", &trail.startColor.x);
-                        ImGui::ColorEdit4("終了色 (先端)", &trail.endColor.x);
+                        ImGui::ColorEdit4(LeftLabel("開始色 (根元)").c_str(), &trail.startColor.x);
+                        ImGui::ColorEdit4(LeftLabel("終了色 (先端)").c_str(), &trail.endColor.x);
                     }
 
                     ImGui::TreePop();
@@ -470,24 +502,24 @@ void ParticleEditor::ShowEditor()
                 {
                     auto& noise = config.noise;
 
-                    ImGui::Checkbox("有効##Noise", &noise.enabled);
+                    ImGui::Checkbox(LeftLabel("有効##Noise").c_str(), &noise.enabled);
                     if (noise.enabled)
                     {
                         const char* typeNames[] = { "Simplex", "Curl " };
                         int currentType = static_cast<int>(noise.type);
-                        if (ImGui::Combo("タイプ", &currentType, typeNames, IM_ARRAYSIZE(typeNames)))
+                        if (ImGui::Combo(LeftLabel("タイプ").c_str(), &currentType, typeNames, IM_ARRAYSIZE(typeNames)))
                         {
                             noise.type = static_cast<NoiseModule::NoiseType>(currentType);
                         }
 
-                        ImGui::DragFloat("強度", &noise.strength, 0.1f, 0.0f, 100.0f);
+                        ImGui::DragFloat(LeftLabel("強度").c_str(), &noise.strength, 0.1f, 0.0f, 100.0f);
 
-                        ImGui::DragFloat("周波数", &noise.frequency, 0.002f, 0.001f, 0.5f, "%.3f");
-                        ImGui::DragFloat("スクロール速度", &noise.scrollSpeed, 0.01f, 0.0f, 10.0f);
+                        ImGui::DragFloat(LeftLabel("周波数").c_str(), &noise.frequency, 0.002f, 0.001f, 0.5f, "%.3f");
+                        ImGui::DragFloat(LeftLabel("スクロール速度").c_str(), &noise.scrollSpeed, 0.01f, 0.0f, 10.0f);
 
                         if (noise.type == NoiseModule::NoiseType::Simplex)
                         {
-                            ImGui::Checkbox("XYZ軸で分離", &noise.separateAxes);
+                            ImGui::Checkbox(LeftLabel("XYZ軸で分離").c_str(), &noise.separateAxes);
                         }
                     }
 

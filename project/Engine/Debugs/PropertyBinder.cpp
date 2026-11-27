@@ -383,6 +383,7 @@ namespace
         rotationEulers_.clear();
         revertInfos_.clear();
         undoValues_.clear();
+        selfLabeledKeys_.clear();
         revertMenuKey_.clear();
         revertMenuSavedValue_.reset();
         modelBindMap_.clear();
@@ -739,7 +740,7 @@ namespace
         // ラムダ式内でonChangeをキャプチャ
         items_[key] = [=](const std::string& nameOverride)
             {
-                std::string label = (nameOverride.empty() ? key : nameOverride) + "###" + key;
+                std::string label = MakeLabel(key, nameOverride);
 
                 // 値が変更されたら
                 if (ImGui::DragFloat3(label.c_str(), &ptr->x, speed, min, max))
@@ -770,8 +771,48 @@ namespace
             return false;
         }
 
-        bool isChanged = it->second(name);
+        bool isChanged = false;
 #ifdef ENABLE_IMGUI
+        if (selfLabeledKeys_.contains(key))
+        {
+            isChanged = it->second(name);
+        }
+        else
+        {
+            // 項目名を左の列に描き、入力欄はその右の残りの幅いっぱいに伸ばす
+            std::string displayName = name.empty() ? key : name;
+            if (const size_t hiddenStart = displayName.find("##"); hiddenStart != std::string::npos)
+            {
+                displayName.resize(hiddenStart);
+            }
+
+            const ImGuiStyle& style = ImGui::GetStyle();
+            const float fontSize = ImGui::GetFontSize();
+            const float labelColumnWidth = std::clamp(ImGui::GetContentRegionAvail().x * 0.4f, fontSize * 5.0f, fontSize * 16.0f);
+            const float startX = ImGui::GetCursorPosX();
+
+            ImGui::Dummy(ImVec2(labelColumnWidth - style.ItemSpacing.x, ImGui::GetFrameHeight()));
+            const ImVec2 labelMin = ImGui::GetItemRectMin();
+            const ImVec2 labelMax = ImGui::GetItemRectMax();
+            const ImVec2 textSize = ImGui::CalcTextSize(displayName.c_str());
+
+            ImGui::RenderTextEllipsis(ImGui::GetWindowDrawList(),
+                ImVec2(labelMin.x, labelMin.y + style.FramePadding.y), labelMax, labelMax.x,
+                displayName.c_str(), nullptr, &textSize);
+            if (textSize.x > labelMax.x - labelMin.x && ImGui::IsItemHovered())
+            {
+                ImGui::SetTooltip("%s", displayName.c_str());
+            }
+
+            ImGui::SameLine(startX + labelColumnWidth);
+            ImGui::PushItemWidth(-FLT_MIN);
+            const bool wasLabelDrawnSeparately = isLabelDrawnSeparately_;
+            isLabelDrawnSeparately_ = true;
+            isChanged = it->second(name);
+            isLabelDrawnSeparately_ = wasLabelDrawnSeparately;
+            ImGui::PopItemWidth();
+        }
+
         // 自分で触ったら、戻す前の値は使わない
         if (isChanged)
         {
@@ -781,6 +822,8 @@ namespace
         {
             isChanged = true;
         }
+#else
+        isChanged = it->second(name);
 #endif
         return isChanged;
     }

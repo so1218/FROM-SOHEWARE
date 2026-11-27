@@ -104,7 +104,12 @@ private:
     // key が保存されている場所を表す文字列
     std::string DescribeKey(const std::string& key) const;
 
+    // ImGui の項目に渡すラベル。Draw が項目名を左に描いているときは、項目名を出さずに ID だけにする
     std::string MakeLabel(const std::string& key, const std::string& nameOverride) const {
+        if (isLabelDrawnSeparately_)
+        {
+            return "###" + key;
+        }
         return (nameOverride.empty() ? key : nameOverride) + "###" + key;
     }
 
@@ -156,6 +161,11 @@ private:
     // まとめて戻す前の値
     static std::vector<SavedValueChange>& GetBulkUndo();
     static std::vector<SavedValueChange> CollectChangesFromSaved(const std::vector<std::string>& groupPath);
+
+    // Draw が項目名を左に描いている間は true
+    bool isLabelDrawnSeparately_ = false;
+    // 自分で項目名を描く項目 (テクスチャの選択など)。Draw は項目名を左に描かない
+    std::unordered_set<std::string> selfLabeledKeys_;
 
     // 元に戻す機能
     struct RevertInfo
