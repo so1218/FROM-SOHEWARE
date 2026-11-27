@@ -1,7 +1,7 @@
 #pragma once
 #include "EnvironmentProp.h"
 
-// プレハブ単位の共有データ
+// 同じプレハブのプロップで共有するもの
 struct PropGroup
 {
     std::string prefabName;
@@ -10,12 +10,12 @@ struct PropGroup
     std::vector<std::unique_ptr<EnvironmentProp>> instances;
     std::unique_ptr<FS::PropertyBinder> binder;
 
-    // グループ全体のデフォルトコライダー設定
+    // このプレハブの当たり判定の初期設定
     bool defaultHasCollider = true;
     int defaultColliderType = 0;
 };
 
-// マップ上の環境配置物（プロップ）を一括管理するマネージャークラス
+// ステージのプロップをまとめて持ち、配置を編集する
 class EnvironmentPropManager : public FS::GameObject
 {
 public:
@@ -27,20 +27,20 @@ public:
     void Draw() override;
     void DebugGui() override;
 
-    // 指定プレハブのインスタンスを追加
+    // プレハブのプロップを 1 つ足す
     void AddPropToGroup(const std::string& prefabName);
 
-    // プロップの削除
+    // 番号を指定してプロップを消す
     void RemoveEnvironmentProp(int targetId);
 
     // 拾って消えたプロップを、置いたときの状態に戻す
     void ResetProps();
 
 private:
-    // グループの新規作成とモデル読み込み
+    // プレハブのグループを作り、モデルを読み込む
     void CreateGroup(const std::string& prefabName, const std::string& fallbackModelName);
 
-    // UI操作等によるモデル差し替えの遅延実行
+    // ImGui で選んだモデルへの差し替えを、次のフレームの頭で行う
     void ExecutePrefabModelChange();
 
 private:
@@ -48,7 +48,7 @@ private:
     std::string managerGroupName_;
     std::unordered_map<std::string, PropGroup> groups_;
 
-    // モデル遅延変更用
+    // 次のフレームで差し替えるモデル
     std::string pendingModelChangePrefab_;
     std::string pendingModelChangeNewName_;
 

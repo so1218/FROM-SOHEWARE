@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "WeatherEffectManager.h"
+#include "GameRandom.h"
 #include "EnvironmentManager.h"
 #include "TimeManager.h"
 #include "AudioPlayer.h"
@@ -15,9 +16,6 @@ WeatherEffectManager::WeatherEffectManager(FS::Engine* engine, FS::Camera* camer
     cameraManager_ = cameraManager;
     player_ = player;
     terrain_ = terrain;
-
-    std::random_device seedGen;
-    randomEngine_.seed(seedGen());
 
     lightningSystem_ = std::make_unique<LightningSystem>(engine_);
     binder_ = std::make_unique<FS::PropertyBinder>(engine_, "WeatherEffect");
@@ -184,7 +182,7 @@ void WeatherEffectManager::Update()
             std::uniform_int_distribution<int> distCount(minStrikeCount_, maxStrikeCount_);
 
             // 今回落とす雷の本数を決定。エディタで最大数を増やしたときはここでエミッターが増える
-            int strikeCount = distCount(randomEngine_);
+            int strikeCount = distCount(GameRandom::GetEngine());
             PrepareThunderStrikeEmitters(strikeCount);
 
             // カメラシェイク用に最もプレイヤーに近い雷の距離を記録
@@ -193,8 +191,8 @@ void WeatherEffectManager::Update()
             // 決定した本数分ループして雷を落とす
             for (int i = 0; i < strikeCount; ++i)
             {
-                float angle = distAngle(randomEngine_);
-                float radius = distRadius(randomEngine_);
+                float angle = distAngle(GameRandom::GetEngine());
+                float radius = distRadius(GameRandom::GetEngine());
 
                 if (radius < closestRadius) {
                     closestRadius = radius;
@@ -219,7 +217,7 @@ void WeatherEffectManager::Update()
 
                 // 落ちた所の草に火がつく
                 std::uniform_real_distribution<float> distIgnite(0.0f, 1.0f);
-                if (thunderIgniteRadius_ > 0.0f && distIgnite(randomEngine_) < thunderIgniteChance_)
+                if (thunderIgniteRadius_ > 0.0f && distIgnite(GameRandom::GetEngine()) < thunderIgniteChance_)
                 {
                     engine_->GetRendererManager()->SubmitGrassIgnition(endPos, thunderIgniteRadius_);
                 }
@@ -240,7 +238,7 @@ void WeatherEffectManager::Update()
 
             // 次の雷までのインターバルを設定
             std::uniform_real_distribution<float> dist(thunderMinInterval_, thunderMaxInterval_);
-            thunderIntervalTimer_ = dist(randomEngine_);
+            thunderIntervalTimer_ = dist(GameRandom::GetEngine());
         }
     }
 }

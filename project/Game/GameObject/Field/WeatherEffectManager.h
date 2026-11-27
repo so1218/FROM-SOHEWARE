@@ -46,7 +46,6 @@ private:
     float flashDuration_ = 0.4f;      
     float maxFlashIntensity_ = 10.0f;  
 
-    std::mt19937 randomEngine_;
 
     std::unique_ptr<FS::LightningSystem> lightningSystem_;
 

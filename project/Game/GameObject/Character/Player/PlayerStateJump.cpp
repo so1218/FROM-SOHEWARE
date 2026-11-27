@@ -23,6 +23,6 @@ void PlayerStateJump::Update(Player* player)
     {
         player->SnapToGround();
         player->GetStateMachine()->ChangeState<PlayerStateNormal>();
-        AudioPlayer::GetInstance().Play("playerLand", 0.4f);
+        AudioPlayer::GetInstance().Play("playerFootImpact", 0.4f);
     }
 }

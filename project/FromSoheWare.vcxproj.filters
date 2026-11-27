@@ -339,6 +339,9 @@
     <ClInclude Include="Game\Global\GameDefine.h">
       <Filter>Game\Global</Filter>
     </ClInclude>
+    <ClInclude Include="Game\Global\GameRandom.h">
+      <Filter>Game\Global</Filter>
+    </ClInclude>
     <ClInclude Include="Game\Scene\TestScene\TestScene.h">
       <Filter>Game\Scene\TestScene</Filter>
     </ClInclude>

@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "PlayerWeapon.h"
+#include "GameRandom.h"
 #include "Engine.h"
 #include "CollisionManager.h"
 #include "Enemy.h"
@@ -21,7 +22,7 @@ namespace
 }
 
 PlayerWeapon::PlayerWeapon(FS::Engine* engine)
-    : engine_(engine), random_(std::random_device{}())
+    : engine_(engine)
 {
     model_ = std::make_unique<FS::Model>(engine_, "P365");
     magazineModel_ = std::make_unique<FS::Model>(engine_, "cube");
@@ -307,8 +308,8 @@ bool PlayerWeapon::Fire(Camera* camera, float focusRatio, float maxDamageMultipl
     Vector3 baseForward = camera->GetWorldTransform().rotation_.RotateVector({ 0.0f, 0.0f, 1.0f }).Normalize();
 
     float currentSpread = maxBulletSpread * (1.0f - focusRatio);
-    float randPitch = (((float)rand() / RAND_MAX) * 2.0f - 1.0f) * currentSpread;
-    float randYaw = (((float)rand() / RAND_MAX) * 2.0f - 1.0f) * currentSpread;
+    float randPitch = GameRandom::Range(-currentSpread, currentSpread);
+    float randYaw = GameRandom::Range(-currentSpread, currentSpread);
 
     Quaternion spreadRot = Quaternion::QuaternionFromEuler({ randPitch, randYaw, 0.0f });
     Vector3 finalRayDir = spreadRot.RotateVector(baseForward).Normalize();
@@ -474,12 +475,12 @@ void PlayerWeapon::Eject(const EjectSettings& settings, const std::string& model
     // 向きはカメラを基準にする
     const Quaternion& directionBasis = camera_ ? camera_->GetWorldTransform().rotation_ : gunRotation;
     const Vector3 baseDirection = directionBasis.RotateVector(settings.direction).Normalize();
-    const Vector3 direction = (baseDirection + Vector3(spread(random_), spread(random_), spread(random_))).Normalize();
+    const Vector3 direction = (baseDirection + Vector3(spread(GameRandom::GetEngine()), spread(GameRandom::GetEngine()), spread(GameRandom::GetEngine()))).Normalize();
     ejectedObject.velocity = direction * settings.speed;
 
     std::uniform_real_distribution<float> axis(-1.0f, 1.0f);
-    ejectedObject.spinAxis = Vector3(axis(random_), axis(random_), axis(random_)).Normalize();
-    ejectedObject.spinSpeed = settings.spinSpeed * std::uniform_real_distribution<float>(0.6f, 1.4f)(random_);
+    ejectedObject.spinAxis = Vector3(axis(GameRandom::GetEngine()), axis(GameRandom::GetEngine()), axis(GameRandom::GetEngine())).Normalize();
+    ejectedObject.spinSpeed = settings.spinSpeed * std::uniform_real_distribution<float>(0.6f, 1.4f)(GameRandom::GetEngine());
 
     ejectedObjects_.push_back(std::move(ejectedObject));
 }

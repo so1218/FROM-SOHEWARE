@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "CoinManager.h"
+#include "GameRandom.h"
 #include "Player.h"
 #include "Terrain.h"
 #include "TimeManager.h"
@@ -9,7 +10,7 @@
 using namespace FS;
 
 CoinManager::CoinManager(Engine* engine, Player* player, const Terrain* terrain)
-    : engine_(engine), player_(player), terrain_(terrain), random_(std::random_device{}())
+    : engine_(engine), player_(player), terrain_(terrain)
 {
     sourceModel_ = std::make_unique<Model>(engine_, "cylinder");
     sourceModel_->MakeMaterialUnique();
@@ -116,7 +117,7 @@ void CoinManager::UpdateCoin(Coin& coin, float deltaTime, const PlayerArea& play
 
         // 上に飛び出しつつ、横にばらける
         std::uniform_real_distribution<float> spread(-config_.spreadSpeed, config_.spreadSpeed);
-        coin.velocity = { spread(random_), config_.ejectSpeed, spread(random_) };
+        coin.velocity = { spread(GameRandom::GetEngine()), config_.ejectSpeed, spread(GameRandom::GetEngine()) };
         coin.state = State::Flying;
     }
 

@@ -33,7 +33,7 @@ void EnvironmentProp::Initialize()
     const std::string childGroupName = "Prop_" + std::to_string(id_);
     binder_ = std::make_unique<FS::PropertyBinder>(engine_, parentGroupName_, childGroupName);
 
-    // マスターモデルが存在する場合、メッシュおよびマテリアルデータのみを共有
+    // 元のモデルがあれば、形とマテリアルだけ借りる
     if (masterModel_ != nullptr)
     {
         modelName_ = masterModel_->GetName();
@@ -47,7 +47,7 @@ void EnvironmentProp::Initialize()
 
 void EnvironmentProp::SetupProperties()
 {
-    // 既存のエミッターをリセット
+    // 作り直す前に、前のエミッターを消す
     if (activeEmitter_)
     {
         activeEmitter_->Destroy();
@@ -64,7 +64,7 @@ void EnvironmentProp::SetupProperties()
     auto* gv = FS::GlobalVariables::GetInstance();
     const auto& groupPath = binder_->GetGroupPath();
 
-    // カスタム名の読み込みおよび初期設定
+    // 名前を付けていれば読み込む
     std::string loadedCustomName = gv->GetStringValue(groupPath, "CustomName");
     if (!loadedCustomName.empty())
     {
@@ -75,7 +75,7 @@ void EnvironmentProp::SetupProperties()
         gv->SetValue(groupPath, "CustomName", propCustomName_);
     }
 
-    // PropertyBinder へのパラメータ登録
+    // 保存する値の登録
     binder_->Bind("Position", &model_->GetTransform().translation_, { 0.0f, 0.0f, 0.0f });
     binder_->BindRotation("Rotation", &model_->GetTransform().rotation_, 0.01f);
     binder_->Bind("Scale", &model_->GetTransform().scale_, { 1.0f, 1.0f, 1.0f });
@@ -95,7 +95,7 @@ void EnvironmentProp::SetupProperties()
     binder_->Bind("LightRadius", &lightRadius_, 10.0f);
     binder_->Bind("LightVolumetricScatteringIntensity", &lightVolumetricScatteringIntensity_, 1.0f);
 
-    // パーティクル設定 1
+    // パーティクル 1 つ目
     binder_->Bind("HasParticle", &hasParticle_, false);
     binder_->Bind("IsParticleFollowing", &isParticleFollowing_, true);
     std::string loadedParticle = gv->GetStringValue(groupPath, "ParticleName");
@@ -108,7 +108,7 @@ void EnvironmentProp::SetupProperties()
         gv->SetValue(groupPath, "ParticleName", particleName_);
     }
 
-    // パーティクル設定 2
+    // パーティクル 2 つ目
     binder_->Bind("HasParticle2", &hasParticle2_, false);
     binder_->Bind("IsParticleFollowing2", &isParticleFollowing2_, true);
     std::string loadedParticle2 = gv->GetStringValue(groupPath, "ParticleName2");
@@ -127,7 +127,7 @@ void EnvironmentProp::SetupProperties()
 void EnvironmentProp::ApplySettings()
 {
     // コライダーの生成・破棄。形を変えたときは作り直す
-    const FS::CollisionShapeType shape = (colliderType_ == 0) ? FS::CollisionShapeType::Sphere : FS::CollisionShapeType::Box;
+    const FS::CollisionShapeType shape = (GetColliderType() == PropColliderType::Sphere) ? FS::CollisionShapeType::Sphere : FS::CollisionShapeType::Box;
     if (collider_ && (!hasCollider_ || collider_->GetType() != shape))
     {
         RemoveCollider(collider_);
@@ -140,7 +140,7 @@ void EnvironmentProp::ApplySettings()
         collider_->SetCollisionMask(CollisionLayer::Player);
     }
 
-    // パーティクルエミッターの動的割り当て
+    // パーティクルも設定に合わせる
     UpdateParticleEmitter(hasParticle_, particleName_, isParticleFollowing_, activeEmitter_);
     UpdateParticleEmitter(hasParticle2_, particleName2_, isParticleFollowing2_, activeEmitter2_);
 }
@@ -185,10 +185,10 @@ void EnvironmentProp::Update()
 {
     if (!IsActive()) return;
 
-    // マテリアルカラーの適用
+    // 調整中に変えた色をすぐ反映する
     model_->SetBaseColor(baseColor_);
 
-    // 物理・判定用コライダーの形状パラメータ同期
+    // 調整中に変えた当たり判定の大きさをすぐ反映する
     if (hasCollider_ && collider_)
     {
         if (collider_->GetType() == FS::CollisionShapeType::Sphere)
@@ -202,7 +202,7 @@ void EnvironmentProp::Update()
         collider_->SetCenterOffset(colliderOffset_);
     }
 
-    // 動的ポイントライトのワールド座標および描画パラメータ同期
+    // 光る設定なら、毎フレーム点光源を出す
     if (hasLight_)
     {
         engine_->GetLightManager()->SubmitPointLight(
@@ -214,7 +214,7 @@ void EnvironmentProp::Update()
         );
     }
 
-    // ゲームオブジェクト基底のTransformとモデルTransformの同期
+    // GameObject の位置をモデルに合わせる
     SetTransform(model_->GetTransform());
 }
 
@@ -233,7 +233,7 @@ void EnvironmentProp::DebugGui()
     ImGui::PushID(id_);
 
     // -------------------------------------------------------------
-    // トランスフォーム & 外観設定
+    // 位置と見た目
     // -------------------------------------------------------------
     if (ImGui::TreeNodeEx("トランスフォーム & 外観", ImGuiTreeNodeFlags_DefaultOpen))
     {
@@ -252,7 +252,7 @@ void EnvironmentProp::DebugGui()
     if (ImGui::TreeNodeEx("振る舞い", ImGuiTreeNodeFlags_DefaultOpen))
     {
         const char* behaviorNames[] = { "なし", "回収時消滅", "押し戻し" };
-        int currentBehavior = static_cast<int>(propBehavior_);
+        int currentBehavior = propBehavior_;
 
         if (ImGui::Combo("挙動タイプ", &currentBehavior, behaviorNames, IM_ARRAYSIZE(behaviorNames)))
         {
@@ -265,7 +265,7 @@ void EnvironmentProp::DebugGui()
     ImGui::Spacing();
 
     // -------------------------------------------------------------
-    // コライダー設定
+    // 当たり判定
     // -------------------------------------------------------------
     if (ImGui::TreeNodeEx("コライダー", ImGuiTreeNodeFlags_DefaultOpen))
     {
@@ -283,7 +283,7 @@ void EnvironmentProp::DebugGui()
                 ApplySettings();
             }
 
-            if (colliderType_ == 0)
+            if (GetColliderType() == PropColliderType::Sphere)
             {
                 if (binder_->Draw("ColliderRadius", "球半径")) ApplySettings();
             }
@@ -301,7 +301,7 @@ void EnvironmentProp::DebugGui()
     ImGui::Spacing();
 
     // -------------------------------------------------------------
-    // ライト設定
+    // 点光源
     // -------------------------------------------------------------
     if (ImGui::TreeNodeEx("ポイントライト", ImGuiTreeNodeFlags_DefaultOpen))
     {
@@ -325,11 +325,11 @@ void EnvironmentProp::DebugGui()
     ImGui::Spacing();
 
     // -------------------------------------------------------------
-    // パーティクル設定
+    // パーティクル
     // -------------------------------------------------------------
     if (ImGui::TreeNodeEx("パーティクルエミッター", ImGuiTreeNodeFlags_DefaultOpen))
     {
-        // 登録済みパーティクルプリセット一覧を取得
+        // 選べるパーティクルの一覧
         std::vector<std::string> presetNames = engine_->GetParticleSystem()->GetPresetNames();
 
         auto drawParticleUI = [&](
@@ -352,7 +352,7 @@ void EnvironmentProp::DebugGui()
                 {
                     ImGui::Indent();
 
-                    // トランスフォーム追従の切り替え
+                    // プロップに付いていくか
                     if (binder_->Draw(bindFollow, "トランスフォーム追従"))
                     {
                         if (activeEmit)
@@ -363,7 +363,7 @@ void EnvironmentProp::DebugGui()
                         ApplySettings();
                     }
 
-                    // パーティクル選択 
+                    // どのパーティクルを出すか
                     std::string comboLabel = "アセット名##" + std::string(idSuffix);
                     ImGui::SetNextItemWidth(200.0f);
 
@@ -375,11 +375,11 @@ void EnvironmentProp::DebugGui()
 
                             if (ImGui::Selectable(preset.c_str(), isSelected))
                             {
-                                // パーティクル名が変更されたら適用
+                                // 選び直したら作り直す
                                 partName = preset;
                                 FS::GlobalVariables::GetInstance()->SetValue(binder_->GetGroupPath(), jsonKey, partName);
 
-                                // 古いエミッターを破棄して新しいエミッターをリロード
+                                // 古いエミッターを消して、新しいものを作る
                                 if (activeEmit)
                                 {
                                     activeEmit->Destroy();
@@ -424,12 +424,12 @@ void EnvironmentProp::OnCollisionStay(FS::Collider* mine, FS::Collider* other)
     FS::GameObject* hitObj = other->GetOwner();
     if (!hitObj || !hitObj->CompareTag(ObjectTag::Player)) return;
 
-    // 回収時消滅挙動
-    if (propBehavior_ == static_cast<int>(PropBehavior::Disappear))
+    // 拾ったら消える
+    if (GetBehavior() == PropBehavior::Disappear)
     {
         SetActive(false);
 
-        // アタッチされているエミッターの解放
+        // 付いていたパーティクルも消す
         if (activeEmitter_)
         {
             activeEmitter_->Destroy();
@@ -442,16 +442,16 @@ void EnvironmentProp::OnCollisionStay(FS::Collider* mine, FS::Collider* other)
             activeEmitter2_ = nullptr;
         }
     }
-    // 押し戻し挙動
-    else if (propBehavior_ == static_cast<int>(PropBehavior::PushBack))
+    // 押し戻す
+    else if (GetBehavior() == PropBehavior::PushBack)
     {
         FS::Vector3 pushVector;
         if (mine->CalculatePushBackVector(other, pushVector))
         {
             hitObj->GetTransform().translation_ += pushVector;
 
-            // 上方向に押し戻された場合
-            if (pushVector.y > 0.0f && hitObj->CompareTag(ObjectTag::Player))
+            // 上に押し戻されたら、プロップの上に立っている
+            if (pushVector.y > 0.0f)
             {
                 Player* player = static_cast<Player*>(hitObj);
                 player->SetVelocityY(0.0f);       
@@ -471,11 +471,11 @@ void EnvironmentProp::ReassignID(int newID)
     id_ = newID;
     const std::string childGroupName = "Prop_" + std::to_string(id_);
 
-    // ID変更に伴い、データバインダーおよび保存先パラメータの再構成
+    // 番号が変わったので、PropertyBinder を新しい保存先で作り直す
     binder_ = std::make_unique<FS::PropertyBinder>(engine_, parentGroupName_, childGroupName);
 
     SetupProperties();
 
-    // 更新されたグループパスで設定データを即座に永続化
+    // 新しい保存先にすぐ書いておく
     FS::GlobalVariables::GetInstance()->SaveFile(binder_->GetGroupPath());
 }

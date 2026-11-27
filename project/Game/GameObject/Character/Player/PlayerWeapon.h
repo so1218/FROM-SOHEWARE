@@ -3,7 +3,6 @@
 #include "PropertyBinder.h"
 #include "ParticleEmitter.h"
 #include "Model.h"
-#include <random>
 
 namespace FS
 {
@@ -162,7 +161,6 @@ private:
     std::unique_ptr<FS::Model> magazineModel_;
     std::unique_ptr<FS::Model> casingModel_;   
     std::vector<EjectedObject> ejectedObjects_;
-    std::mt19937 random_;
 
     Config config_;
     FS::Matrix4x4 currentHandMatrix_;

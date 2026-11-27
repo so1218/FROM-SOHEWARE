@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "FollowCamera.h"
+#include "GameRandom.h"
 #include "Player.h"
 #include "GameInput.h"
 #include "ImGuiManager.h"
@@ -308,7 +309,7 @@ void FollowCamera::AddRecoil(float pitchAmount, float yawAmount)
     recoilPitch_ -= pitchAmount;
 
     // 左右のランダムブレを加える
-    float randYaw = (((float)rand() / RAND_MAX) * 2.0f - 1.0f) * yawAmount;
+    float randYaw = GameRandom::Range(-yawAmount, yawAmount);
     recoilYaw_ += randYaw;
 }
 

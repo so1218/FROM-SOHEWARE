@@ -12,7 +12,13 @@ enum class PropBehavior
     PushBack = 2,     // 押し戻し
 };
 
-/// ステージ上の配置物（プロップ）を管理するクラス
+enum class PropColliderType
+{
+    Sphere = 0,
+    Box = 1,
+};
+
+// ステージに置く小物 (プロップ) 1 つ分
 class EnvironmentProp : public FS::GameObject
 {
 public:
@@ -28,26 +34,24 @@ public:
     void OnCollisionStay(FS::Collider* mine, FS::Collider* other) override;
     void OnCollisionExit(FS::Collider* mine, FS::Collider* other) override;
 
-    // 各種コンポーネントの生成・破棄状態を適用
+    // 設定に合わせて、当たり判定とパーティクルを作ったり消したりする
     void ApplySettings();
 
     // 拾って消えていたら、もう一度出してパーティクルも付け直す
     void ResetState();
 
-    // シーンの途中でこのプロップを消す前に呼ぶ。付いていくエミッターが、消えたモデルの位置を読まないようにする
-    // シーンを抜けるときはエミッターが先にまとめて消えているので、デストラクターでは触らない
+    // シーンの途中でこのプロップを消す前に呼ぶ
     void ReleaseEmitters();
 
-    // JSONへマテリアルパラメータを同期
+    // 今のマテリアルの値を保存データに書く
     void SyncMaterialsToJSON();
 
-    // 参照元モデルの変更とモデルデータの再割り当て
+    // 形を借りる元のモデルを差し替える
     void ChangeMasterModel(FS::Model* newMaster);
 
-    // ID更新およびプロパティ保存先パスの再設定
+    // 番号を変え、保存先もその番号に移す
     void ReassignID(int newID);
 
-    // ゲッター / セッター
     int GetID() const { return id_; }
     FS::Model* GetModel() const { return model_.get(); }
     FS::WorldTransform& GetTransformRef() { return model_->GetTransform(); }
@@ -61,10 +65,13 @@ public:
     const std::string& GetPrefabName() const { return prefabName_; }
 
 private:
-    // プロパティ自動バインドの初期化
+    PropBehavior GetBehavior() const { return static_cast<PropBehavior>(propBehavior_); }
+    PropColliderType GetColliderType() const { return static_cast<PropColliderType>(colliderType_); }
+
+    // 保存する値を PropertyBinder に登録する
     void SetupProperties();
 
-    // パーティクルエミッターの生成・破棄制御
+    // パーティクルを使う設定なら作り、使わない設定なら消す
     void UpdateParticleEmitter(
         bool hasParticle,
         const std::string& particleName,
@@ -87,28 +94,28 @@ private:
 
     FS::Vector4 baseColor_ = { 1.0f, 1.0f, 1.0f, 1.0f };
 
-    // Behavior & Collision
-    int propBehavior_ = 0;
+    // 振る舞いと当たり判定。ImGui の選択と保存は int で行うので int で持ち、使うときは GetBehavior / GetColliderType で読む
+    int propBehavior_ = static_cast<int>(PropBehavior::None);
     bool hasCollider_ = false;
-    int colliderType_ = 0;
+    int colliderType_ = static_cast<int>(PropColliderType::Sphere);
     float colliderRadius_ = 1.0f;
     FS::Vector3 colliderSize_ = { 1.0f, 1.0f, 1.0f };
     FS::Vector3 colliderOffset_ = { 0.0f, 0.0f, 0.0f };
 
-    // Light Properties
+    // 点光源
     bool hasLight_ = false;
     FS::Vector4 lightColor_ = { 1.0f, 0.5f, 0.0f, 1.0f };
     float lightIntensity_ = 5.0f;
     float lightRadius_ = 10.0f;
     float lightVolumetricScatteringIntensity_ = 1.0f;
 
-    // Particle Slot 1
+    // パーティクル 1 つ目
     bool hasParticle_ = false;
     std::string particleName_ = "enemyAura";
     FS::ParticleEmitter* activeEmitter_ = nullptr;
     bool isParticleFollowing_ = true;
 
-    // Particle Slot 2
+    // パーティクル 2 つ目
     bool hasParticle2_ = false;
     std::string particleName2_ = "enemyAura";
     FS::ParticleEmitter* activeEmitter2_ = nullptr;

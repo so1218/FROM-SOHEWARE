@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "ZombieBehavior.h"
+#include "GameRandom.h"
 #include "Enemy.h"
 #include "Player.h"
 #include "GameDefine.h"
@@ -39,7 +40,7 @@ float HorizontalDistance(const Vector3& from, const Vector3& to)
 }
 
 ZombieBehavior::ZombieBehavior(const ZombieConfig& config, const Terrain* terrain, const AnimationModel* materialSource, const Vector3& spawnPosition, float spawnYaw)
-    : config_(config), terrain_(terrain), materialSource_(materialSource), spawnPosition_(spawnPosition), spawnYaw_(spawnYaw), random_(std::random_device{}())
+    : config_(config), terrain_(terrain), materialSource_(materialSource), spawnPosition_(spawnPosition), spawnYaw_(spawnYaw)
 {
 }
 
@@ -100,7 +101,7 @@ void ZombieBehavior::Initialize(Enemy* owner)
     AudioPlayer::GetInstance().Play3D("zombieEmerge", spawnPosition_,
         { .volume = config_.emergeSoundVolume, .maxDistance = config_.emergeSoundMaxDistance });
     // 出てきてすぐ吠えないよう、最初も間を空ける
-    roarTimer_ = RandomRange(config_.roarMinInterval, std::max(config_.roarMinInterval, config_.roarMaxInterval));
+    roarTimer_ = GameRandom::Range(config_.roarMinInterval, std::max(config_.roarMinInterval, config_.roarMaxInterval));
 }
 
 float ZombieBehavior::MeasureHeadHeight()
@@ -318,8 +319,8 @@ void ZombieBehavior::UpdateWander(Enemy* owner, float deltaTime)
     PlayAnimation(kIdleAnimation, true, 1.0f);
     if (stateTimer_ >= kWanderPauseTime)
     {
-        const float angle = RandomRange(0.0f, Math::PI * 2.0f);
-        const float distance = RandomRange(config_.wanderRadius * 0.3f, config_.wanderRadius);
+        const float angle = GameRandom::Range(0.0f, Math::PI * 2.0f);
+        const float distance = GameRandom::Range(config_.wanderRadius * 0.3f, config_.wanderRadius);
         wanderTarget_ = { position.x + std::cos(angle) * distance, position.y, position.z + std::sin(angle) * distance };
         stateTimer_ = 0.0f;
     }
@@ -492,15 +493,10 @@ void ZombieBehavior::UpdateRoar(Enemy* owner, float deltaTime)
     {
         return;
     }
-    roarTimer_ = RandomRange(config_.roarMinInterval, std::max(config_.roarMinInterval, config_.roarMaxInterval));
+    roarTimer_ = GameRandom::Range(config_.roarMinInterval, std::max(config_.roarMinInterval, config_.roarMaxInterval));
 
     AudioPlayer::GetInstance().Play3D("zombieRoar", owner->GetTransform().translation_,
         { .volume = config_.roarVolume, .maxDistance = config_.roarMaxDistance });
-}
-
-float ZombieBehavior::RandomRange(float min, float max)
-{
-    return std::uniform_real_distribution<float>(min, max)(random_);
 }
 
 void ZombieBehavior::OnDeath(Enemy* owner)
@@ -582,7 +578,7 @@ void ZombieBehavior::UpdateBurning(Enemy* owner, float deltaTime)
     if (!burn_.IsBurning())
     {
         // ゾンビごとにずらしておき、何体も同時に燃え始めても音がそろわないようにする
-        burnSparkTimer_ = RandomRange(0.0f, config_.burnSparkInterval);
+        burnSparkTimer_ = GameRandom::Range(0.0f, config_.burnSparkInterval);
         return;
     }
 
@@ -592,7 +588,7 @@ void ZombieBehavior::UpdateBurning(Enemy* owner, float deltaTime)
     {
         return;
     }
-    burnSparkTimer_ = config_.burnSparkInterval * RandomRange(0.7f, 1.3f);
+    burnSparkTimer_ = config_.burnSparkInterval * GameRandom::Range(0.7f, 1.3f);
 
     if (!player_ || config_.burnSparkHearingDistance <= 0.0f)
     {

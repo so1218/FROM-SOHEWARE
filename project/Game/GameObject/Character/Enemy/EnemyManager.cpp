@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "EnemyManager.h"
+#include "GameRandom.h"
 #include "CoinManager.h"
 #include "Player.h"
 #include "GameDefine.h"
@@ -127,8 +128,8 @@ bool EnemyManager::FindFieldPointAround(const Vector3& origin, float minDistance
 
     for (int attempt = 0; attempt < kFloatingSpawnAttemptCount; ++attempt)
     {
-        const float angle = angleRange(random_);
-        const float distance = distanceRange(random_);
+        const float angle = angleRange(GameRandom::GetEngine());
+        const float distance = distanceRange(GameRandom::GetEngine());
         const Vector3 candidate = { origin.x + std::cos(angle) * distance, 0.0f, origin.z + std::sin(angle) * distance };
         if (std::abs(candidate.x - center.x) <= halfSize.x && std::abs(candidate.z - center.y) <= halfSize.y)
         {
@@ -355,8 +356,8 @@ bool EnemyManager::FindZombieSpawnPosition(const Vector3& playerPosition, Vector
 
     for (int attempt = 0; attempt < kZombieSpawnAttemptCount; ++attempt)
     {
-        const float angle = angleRange(random_);
-        const float distance = distanceRange(random_);
+        const float angle = angleRange(GameRandom::GetEngine());
+        const float distance = distanceRange(GameRandom::GetEngine());
         const Vector3 candidate = { playerPosition.x + std::cos(angle) * distance, 0.0f, playerPosition.z + std::sin(angle) * distance };
 
         // 歩ける地形の外には出さない

@@ -104,5 +104,4 @@ private:
     std::vector<bool> isSparklePlaying_;
     int nextBurstId_ = 0;
     float elapsedTime_ = 0.0f;
-    std::mt19937 random_;
 };

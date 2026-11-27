@@ -75,5 +75,4 @@ private:
     std::unique_ptr<FS::AnimationModel> zombieMaterialSource_;
     float zombieSpawnTimer_ = 0.0f;
     bool hasZombieAssets_ = false;
-    std::mt19937 random_{ std::random_device{}() };
 };

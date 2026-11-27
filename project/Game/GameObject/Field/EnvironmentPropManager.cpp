@@ -19,12 +19,12 @@ void EnvironmentPropManager::Initialize()
 
     auto* gv = FS::GlobalVariables::GetInstance();
 
-    // 永続化されたプロップデータの復元
+    // 保存してあるプロップを作り直す
     for (int i = 0; i < propCount_; ++i)
     {
         const std::string childGroupName = "Prop_" + std::to_string(i);
 
-        // プレハブ名の取得
+        // どのプレハブか
         std::string prefabName = gv->GetStringValue({ managerGroupName_, childGroupName }, "PrefabName");
         std::string fallbackModel = prefabName;
 
@@ -37,7 +37,7 @@ void EnvironmentPropManager::Initialize()
 
         CreateGroup(prefabName, fallbackModel);
 
-        // プロップの生成とマスターモデルの参照割り当て
+        // プロップを作り、元のモデルを渡す
         auto prop = std::make_unique<EnvironmentProp>(engine_, i, managerGroupName_);
         prop->SetPrefabName(prefabName);
         prop->SetMasterModel(groups_[prefabName].masterModel.get());
@@ -58,7 +58,7 @@ void EnvironmentPropManager::CreateGroup(const std::string& prefabName, const st
     const std::string masterGroupName = "Master_" + prefabName;
     auto* gv = FS::GlobalVariables::GetInstance();
 
-    // グループで使用するモデル名の読み込みおよび初期設定
+    // このグループで使うモデル名を読む
     std::string loadedModel = gv->GetStringValue({ managerGroupName_, masterGroupName }, "ModelName");
     if (!loadedModel.empty())
     {
@@ -73,7 +73,7 @@ void EnvironmentPropManager::CreateGroup(const std::string& prefabName, const st
     newGroup.masterModel = std::make_unique<FS::Model>(engine_, newGroup.modelName);
     newGroup.binder = std::make_unique<FS::PropertyBinder>(engine_, managerGroupName_, masterGroupName);
 
-    // ImGui描画フレーム内での即時モデル構築による不整合を防ぐため、遅延適用用の変数へ書き込み
+    // ImGui の描画中にモデルを作り直すと表示が崩れるので、ここでは覚えておくだけにする
     newGroup.binder->BindModelName("ModelName", &newGroup.modelName, newGroup.modelName,
         [this, prefabName](const std::string& newName) {
             this->pendingModelChangePrefab_ = prefabName;
@@ -85,7 +85,7 @@ void EnvironmentPropManager::CreateGroup(const std::string& prefabName, const st
 
 void EnvironmentPropManager::Update()
 {
-    // フレーム先頭でのモデル遅延再構築の適用
+    // ImGui で選ばれたモデルへの差し替えは、フレームの頭で行う
     ExecutePrefabModelChange();
 
     for (auto& [prefabName, group] : groups_)
@@ -137,7 +137,7 @@ void EnvironmentPropManager::AddPropToGroup(const std::string& prefabName)
     newProp->AttachToManager(GetManager(), 0); 
     newProp->Initialize();
 
-    // 永続化用データストアへ新規インスタンスを記録
+    // 保存データにも足しておく
     FS::GlobalVariables::GetInstance()->SetValue(
         { managerGroupName_, "Prop_" + std::to_string(newIndex) }, "PrefabName", prefabName
     );
@@ -150,12 +150,12 @@ void EnvironmentPropManager::AddPropToGroup(const std::string& prefabName)
 
 void EnvironmentPropManager::RemoveEnvironmentProp(int targetId)
 {
-    // 末尾ノードの削除と永続化データのクリア
+    // 番号を詰めると最後の番号が空くので、その保存データを消す
     const int lastIndex = propCount_ - 1;
     const std::string lastGroupName = "Prop_" + std::to_string(lastIndex);
     FS::GlobalVariables::GetInstance()->ClearGroup({ managerGroupName_, lastGroupName });
 
-    // 指定IDインスタンスの削除
+    // 指定した番号のプロップを消す
     for (auto& [prefabName, group] : groups_)
     {
         auto it = std::remove_if(group.instances.begin(), group.instances.end(),
@@ -172,7 +172,7 @@ void EnvironmentPropManager::RemoveEnvironmentProp(int targetId)
         }
     }
 
-    // 後続オブジェクトのID繰り上げおよび設定データの再同期
+    // 後ろのプロップの番号を 1 つずつ詰め、保存データも合わせる
     for (auto& [prefabName, group] : groups_)
     {
         for (auto& prop : group.instances)
@@ -193,7 +193,7 @@ void EnvironmentPropManager::RemoveEnvironmentProp(int targetId)
     propCount_--;
     FS::GlobalVariables::GetInstance()->SetValue({ managerGroupName_ }, "PropCount", propCount_);
 
-    // 削除対象が選択中だった場合のポインタクリア
+    // 選んでいたプロップを消したら、選択を外す
     if (selectedProp_ != nullptr && selectedProp_->GetID() == targetId)
     {
         selectedProp_ = nullptr;
@@ -210,7 +210,7 @@ void EnvironmentPropManager::ExecutePrefabModelChange()
         auto& group = it->second;
         group.modelName = pendingModelChangeNewName_;
 
-        // マスターモデルの生成と参照共有の全インスタンス再同期
+        // 元のモデルを作り直し、同じグループの全プロップにもう一度渡す
         group.masterModel = std::make_unique<FS::Model>(engine_, group.modelName);
         for (auto& prop : group.instances)
         {
@@ -228,7 +228,7 @@ void EnvironmentPropManager::DebugGui()
 
     int deleteRequestID = -1;
 
-    // プレハブグループごとの描画
+    // プレハブのグループごとに表示
     for (auto& [prefabName, group] : groups_)
     {
         ImGui::PushID(prefabName.c_str());
@@ -239,7 +239,7 @@ void EnvironmentPropManager::DebugGui()
         {
             ImGui::Indent();
 
-            // 共通マテリアル設定
+            // グループ共通のマテリアル
             if (ImGui::TreeNode("共通マテリアル設定 (Prefab)"))
             {
                 group.binder->Draw("ModelName", "ベース3Dモデル");
@@ -258,7 +258,7 @@ void EnvironmentPropManager::DebugGui()
             ImGui::Separator();
             ImGui::TextDisabled("配置済みインスタンス一覧");
 
-            // 各インスタンスの描画
+            // グループの中のプロップ
             for (size_t i = 0; i < group.instances.size(); ++i)
             {
                 auto& prop = group.instances[i];
@@ -270,13 +270,13 @@ void EnvironmentPropManager::DebugGui()
                 const std::string instName = "[" + std::to_string(prop->GetID()) + "] " + prop->GetDisplayName();
                 const bool isOpen = ImGui::TreeNodeEx(instName.c_str(), flags);
 
-                // ノードクリック時にギズモ操作対象として選択
+                // クリックしたら、ギズモで動かせるようにする
                 if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
                 {
                     selectedProp_ = prop.get();
                 }
 
-                // ツリーが開かれたら直接パラメータUIを表示 
+                // 開いたら、そのプロップの設定を出す
                 if (isOpen)
                 {
                     ImGui::Spacing();
@@ -306,7 +306,7 @@ void EnvironmentPropManager::DebugGui()
         ImGui::PopID();
     }
 
-    // 削除リクエストの集約処理
+    // 消すボタンが押されたプロップは、一覧を出し終わってから消す
     if (deleteRequestID != -1)
     {
         RemoveEnvironmentProp(deleteRequestID);
@@ -314,7 +314,7 @@ void EnvironmentPropManager::DebugGui()
 
     ImGui::Separator();
 
-    // 新規プレハブ構築UI
+    // 新しいプレハブを作る
     if (ImGui::TreeNode("新規 Prefab の登録"))
     {
         static char newPrefabName[128] = "MyNewPrefab";
@@ -332,7 +332,7 @@ void EnvironmentPropManager::DebugGui()
 
     ImGui::End();
 
-    // 選択オブジェクトへの3Dギズモ描画およびトランスフォーム同期
+    // 選んでいるプロップをギズモで動かす
     if (selectedProp_ != nullptr)
     {
         auto& targetTransform = selectedProp_->GetTransformRef();
@@ -342,7 +342,7 @@ void EnvironmentPropManager::DebugGui()
 
         FS::ImGuiManager::DrawGizmo(targetTransform);
 
-        // ギズモ操作によるトランスフォーム変更を検知してデータストアへ永続化
+        // 動かしたら保存データにも書く
         if (oldPos != targetTransform.translation_ ||
             std::abs(FS::Quaternion::Dot(oldRotation, targetTransform.rotation_)) < 0.99999f ||
             oldScale != targetTransform.scale_)
@@ -356,7 +356,7 @@ void EnvironmentPropManager::DebugGui()
         }
     }
 
-    // モデル非同期差し替えの適用
+    // ImGui で選ばれたモデルに差し替える
     ExecutePrefabModelChange();
 }
 
@@ -369,7 +369,7 @@ void EnvironmentProp::SyncMaterialsToJSON()
     const size_t count = model_->GetMaterialCount();
     for (size_t i = 0; i < count; ++i)
     {
-        // 複数マテリアル保持時はインデックス付きプレフィックスを自動生成
+        // マテリアルが複数あるときは、保存のキーに番号を付けて分ける
         const std::string matPrefix = (count == 1) ? prefix : prefix + "Mat" + std::to_string(i) + "_";
 
         FS::MaterialHandle* handle = model_->GetMaterialHandle(i);
@@ -377,19 +377,19 @@ void EnvironmentProp::SyncMaterialsToJSON()
 
         if (!handle || !matData) continue;
 
-        // テクスチャ名
+        // テクスチャ
         gv->SetValue(groupPath, matPrefix + "AlbedoMap", handle->textureName);
         gv->SetValue(groupPath, matPrefix + "EnvMapTex", handle->envMapName);
         gv->SetValue(groupPath, matPrefix + "NormalMapTex", handle->normalMapName);
         gv->SetValue(groupPath, matPrefix + "DissolveTex", handle->dissolveMapName);
         gv->SetValue(groupPath, matPrefix + "ToonRampTex", handle->toonRampName);
 
-        // UVトランスフォーム
+        // UV の移動・回転・拡大
         gv->SetValue(groupPath, matPrefix + "UVTrans", handle->uvTransformData.translation);
         gv->SetValue(groupPath, matPrefix + "UVRot", handle->uvTransformData.rotation);
         gv->SetValue(groupPath, matPrefix + "UVScale", handle->uvTransformData.scale);
 
-        // 基本色・ライティング設定
+        // 色とライティング
         gv->SetValue(groupPath, matPrefix + "Color", matData->color);
         gv->SetValue(groupPath, matPrefix + "Lighting", matData->enableLighting);
         gv->SetValue(groupPath, matPrefix + "LightMode", matData->lightMode);
@@ -397,40 +397,40 @@ void EnvironmentProp::SyncMaterialsToJSON()
         gv->SetValue(groupPath, matPrefix + "Shininess", matData->shininess);
         gv->SetValue(groupPath, matPrefix + "EnvMapInt", matData->environmentMapIntensity);
 
-        // PBR・エミッシブ設定
+        // PBR と発光
         gv->SetValue(groupPath, matPrefix + "Roughness", matData->roughness);
         gv->SetValue(groupPath, matPrefix + "Metalness", matData->metalness);
         gv->SetValue(groupPath, matPrefix + "SpecColor", matData->specularColor);
         gv->SetValue(groupPath, matPrefix + "Emissive", matData->emissiveIntensity);
         gv->SetValue(groupPath, matPrefix + "AlphaThres", matData->alphaTestThreshold);
 
-        // シャドウ設定
+        // 影
         gv->SetValue(groupPath, matPrefix + "AddShadow", matData->addShadow);
         gv->SetValue(groupPath, matPrefix + "ShadowBias", matData->shadowBias);
         gv->SetValue(groupPath, matPrefix + "ShadowDens", matData->shadowDensity);
         gv->SetValue(groupPath, matPrefix + "ShadowEnv", matData->shadowEnvStrength);
         gv->SetValue(groupPath, matPrefix + "ShadowSoft", matData->shadowSoftness);
 
-        // リムライト設定
+        // リムライト
         gv->SetValue(groupPath, matPrefix + "RimEnable", matData->enableRim);
         gv->SetValue(groupPath, matPrefix + "RimUseDir", matData->rimUseLightDir);
         gv->SetValue(groupPath, matPrefix + "RimPower", matData->rimPower);
         gv->SetValue(groupPath, matPrefix + "RimInten", matData->rimIntensity);
         gv->SetValue(groupPath, matPrefix + "RimColor", matData->rimColor);
 
-        // ディゾルブ設定
+        // ディゾルブ
         gv->SetValue(groupPath, matPrefix + "DisEnable", matData->enableDissolve);
         gv->SetValue(groupPath, matPrefix + "DisThres", matData->dissolveThreshold);
         gv->SetValue(groupPath, matPrefix + "EdgeWidth", matData->edgeWidth);
         gv->SetValue(groupPath, matPrefix + "EdgeInten", matData->edgeIntensity);
         gv->SetValue(groupPath, matPrefix + "EdgeColor", matData->edgeColor);
 
-        // ノーマルマップ設定
+        // 法線マップ
         gv->SetValue(groupPath, matPrefix + "NormEnable", matData->enableNormalMap);
         gv->SetValue(groupPath, matPrefix + "NormTile", matData->normalTiling);
         gv->SetValue(groupPath, matPrefix + "NormInten", matData->normalIntensity);
 
-        // アウトライン設定
+        // 輪郭線
         gv->SetValue(groupPath, matPrefix + "OutlineEnable", matData->enableOutline);
         gv->SetValue(groupPath, matPrefix + "OutlineWidth", matData->outlineWidth);
         gv->SetValue(groupPath, matPrefix + "OutlineColor", matData->outlineColor);
@@ -442,20 +442,20 @@ void EnvironmentProp::ChangeMasterModel(FS::Model* newMaster)
 {
     masterModel_ = newMaster;
 
-    // 現在のトランスフォーム状態を退避
+    // 作り直す前に位置を覚えておく
     const auto currentTransform = model_->GetTransform();
 
-    // 新しいマスターモデルに合わせたモデルインスタンスの再構築
+    // 新しい元のモデルで、モデルを作り直す
     modelName_ = masterModel_->GetName();
     model_ = std::make_unique<FS::Model>(engine_, modelName_);
 
-    // メッシュ・マテリアルデータの参照共有
+    // 形とマテリアルを借りる
     model_->ShareModelDataFrom(masterModel_);
     model_->ShareMaterialsFrom(masterModel_);
 
-    // 退避データの復元
+    // 覚えておいた位置に戻す
     model_->SetTransform(currentTransform);
 
-    // インスタンス再生成に伴う PropertyBinder の再割り当て
+    // モデルを作り直したので、PropertyBinder も登録し直す
     SetupProperties();
 }

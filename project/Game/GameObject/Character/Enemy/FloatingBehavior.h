@@ -3,7 +3,6 @@
 #include "IEnemyBehavior.h"
 #include "PropertyBinder.h"
 #include "Model.h"
-#include <random>
 
 namespace FS { class Terrain; }
 
@@ -183,7 +182,6 @@ private:
     FS::Vector3 GetThrusterLocalPosition(int thrusterIndex) const;
     void UpdateThrusters(Enemy* owner);
 
-    float RandomRange(float min, float max);
     void ReleaseEffects();
 
     const FloatingEnemyConfig& config_;
@@ -200,7 +198,6 @@ private:
     int shotsFired_ = 0;             
     int lastPlayerShotCount_ = 0;    
     float hiddenTimer_ = 0.0f;      
-    std::mt19937 random_;
 
     // 移動
     FS::Vector3 velocity_ = { 0.0f, 0.0f, 0.0f };

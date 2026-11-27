@@ -5,7 +5,6 @@
 #include "AnimationModel.h"
 #include "ParticleEmitter.h"
 #include "BurnStatus.h"
-#include <random>
 
 namespace FS { class Terrain; }
 
@@ -155,7 +154,6 @@ private:
     void FaceDirection(Enemy* owner, const FS::Vector3& direction, float deltaTime);
     float GetGroundHeight(float x, float z) const;
     void PlayAnimation(const char* name, bool isLoop, float speed);
-    float RandomRange(float min, float max);
     void ReleaseEffects();
     // 足元の炎で燃え、継続ダメージを受ける
     void UpdateBurning(Enemy* owner, float deltaTime);
@@ -199,5 +197,4 @@ private:
     FS::Vector3 lastKnownPlayerPosition_ = { 0.0f, 0.0f, 0.0f };
     FS::Vector3 wanderTarget_ = { 0.0f, 0.0f, 0.0f };
 
-    std::mt19937 random_;
 };

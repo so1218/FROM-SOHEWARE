@@ -246,6 +246,7 @@
     <ClInclude Include="Game\GameObject\Field\TreeField.h" />
     <ClInclude Include="Game\GameObject\Field\WeatherEffectManager.h" />
     <ClInclude Include="Game\Global\GameDefine.h" />
+    <ClInclude Include="Game\Global\GameRandom.h" />
     <ClInclude Include="Game\Global\CollisionConfig.h" />
     <ClInclude Include="Game\Scene\TestScene\TestScene.h" />
     <ClInclude Include="Game\GameObject\Field\Ground.h" />

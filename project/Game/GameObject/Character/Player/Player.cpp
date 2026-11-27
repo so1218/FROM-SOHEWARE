@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "Player.h"
+#include "GameRandom.h"
 #include "CollisionConfig.h"
 #include "AnimationModel.h"
 #include "GameInput.h"
@@ -31,746 +32,751 @@ using namespace FS;
 Player::Player(Engine* engine, Camera* camera, Terrain* terrain, TreeField* treeField) :
 engine_(engine), camera_(camera), terrain_(terrain), treeField_(treeField)
 {
-	SetTag(ObjectTag::Player);
+    SetTag(ObjectTag::Player);
 
-	animationModel_ = std::make_unique<AnimationModel>(engine_, "humanMesh", "humanRun");
+    animationModel_ = std::make_unique<AnimationModel>(engine_, "humanMesh", "humanRun");
 
-	weapon_ = std::make_unique<PlayerWeapon>(engine_);
-	ammoDisplay_ = std::make_unique<PlayerAmmoDisplay>(engine_);
-	moneyDisplay_ = std::make_unique<PlayerMoneyDisplay>(engine_);
-	reticle_ = std::make_unique<PlayerReticle>(engine_);
-	stamina_ = std::make_unique<PlayerStamina>(engine_);
-	health_ = std::make_unique<PlayerHealth>(engine_);
-	concealment_ = std::make_unique<PlayerConcealment>(engine_);
-	burn_ = std::make_unique<PlayerBurn>(engine_);
+    weapon_ = std::make_unique<PlayerWeapon>(engine_);
+    ammoDisplay_ = std::make_unique<PlayerAmmoDisplay>(engine_);
+    moneyDisplay_ = std::make_unique<PlayerMoneyDisplay>(engine_);
+    reticle_ = std::make_unique<PlayerReticle>(engine_);
+    stamina_ = std::make_unique<PlayerStamina>(engine_);
+    health_ = std::make_unique<PlayerHealth>(engine_);
+    concealment_ = std::make_unique<PlayerConcealment>(engine_);
+    burn_ = std::make_unique<PlayerBurn>(engine_);
 
-	binder_ = std::make_unique<PropertyBinder>(engine, "Player");
-	collider_ = AddBoxCollider(colliderSize_);
-	collider_->SetCollisionLayer(CollisionLayer::Player);
-	collider_->SetCollisionMask(CollisionLayer::Enemy | CollisionLayer::Prop);
+    binder_ = std::make_unique<PropertyBinder>(engine, "Player");
+    collider_ = AddBoxCollider(colliderSize_);
+    collider_->SetCollisionLayer(CollisionLayer::Player);
+    collider_->SetCollisionMask(CollisionLayer::Enemy | CollisionLayer::Prop);
 }
 
 Player::~Player()
 {
-	// 当たった瞬間に遅くした時間を、次のシーンに残さない
-	EndHitStop();
+    // 当たった瞬間に遅くした時間を、次のシーンに残さない
+    EndHitStop();
 }
 
 void Player::Initialize()
 {
-	moveDirection_ = { 0.0f, 0.0f, 0.0f };
+    moveDirection_ = { 0.0f, 0.0f, 0.0f };
 
-	animationModel_->Play("humanRun");
+    animationModel_->Play("humanRun");
 
-	// PropertyBinder への登録
-	binder_->BindAnimationModel("PlayerModel", animationModel_.get());
-	binder_->Bind("RunSpeed", &config.runSpeed, 0.2f, 0.01f);
-	binder_->Bind("RotationSpeed", &config.rotationSpeed, 10.0f, 0.1f);
-	binder_->Bind("IdleAnimSpeed", &config.idleAnimSpeed, 1.0f, 0.05f);
-	binder_->Bind("RunAnimSpeed", &config.runAnimSpeed, 1.0f, 0.05f);
-	binder_->Bind("JumpAnimSpeed", &config.jumpAnimSpeed, 1.0f, 0.05f);
-	binder_->Bind("IdleToRunBlendTime", &config.idleToRunBlendTime, 0.15f, 0.01f);
-	binder_->Bind("RunToIdleBlendTime", &config.runToIdleBlendTime, 0.2f, 0.01f);
-	binder_->Bind("JumpBlendTime", &config.jumpBlendTime, 0.1f, 0.01f);
-	binder_->Bind("JumpInitialVelocity", &config.jumpInitialVelocity, 10.0f, 0.1f);
-	binder_->Bind("Gravity", &config.gravity, 29.8f, 0.1f);
-	binder_->Bind("AirControlRate", &config.airControlRate, 0.8f, 0.05f);
+    // PropertyBinder への登録
+    binder_->BindAnimationModel("PlayerModel", animationModel_.get());
+    binder_->Bind("RunSpeed", &config.runSpeed, 0.2f, 0.01f);
+    binder_->Bind("RotationSpeed", &config.rotationSpeed, 10.0f, 0.1f);
+    binder_->Bind("IdleAnimSpeed", &config.idleAnimSpeed, 1.0f, 0.05f);
+    binder_->Bind("RunAnimSpeed", &config.runAnimSpeed, 1.0f, 0.05f);
+    binder_->Bind("JumpAnimSpeed", &config.jumpAnimSpeed, 1.0f, 0.05f);
+    binder_->Bind("IdleToRunBlendTime", &config.idleToRunBlendTime, 0.15f, 0.01f);
+    binder_->Bind("RunToIdleBlendTime", &config.runToIdleBlendTime, 0.2f, 0.01f);
+    binder_->Bind("JumpBlendTime", &config.jumpBlendTime, 0.1f, 0.01f);
+    binder_->Bind("JumpInitialVelocity", &config.jumpInitialVelocity, 10.0f, 0.1f);
+    binder_->Bind("Gravity", &config.gravity, 29.8f, 0.1f);
+    binder_->Bind("AirControlRate", &config.airControlRate, 0.8f, 0.05f);
 
-	binder_->Bind("AimMoveSpeed", &config.aimMoveSpeed, 0.08f, 0.005f);
-	binder_->Bind("AimIdleAnimSpeed", &config.aimIdleAnimSpeed, 0.5f);
-	binder_->Bind("AimWalkAnimSpeed", &config.aimWalkAnimSpeed, 0.8f);
-	binder_->Bind("AimBlendTime", &config.aimBlendTime, 0.1f);
+    binder_->Bind("AimMoveSpeed", &config.aimMoveSpeed, 0.08f, 0.005f);
+    binder_->Bind("AimIdleAnimSpeed", &config.aimIdleAnimSpeed, 0.5f);
+    binder_->Bind("AimWalkAnimSpeed", &config.aimWalkAnimSpeed, 0.8f);
+    binder_->Bind("AimBlendTime", &config.aimBlendTime, 0.1f);
 
-	binder_->Bind("ColliderOffset", &colliderOffset_, { 0.0f, 1.0f, 0.0f });
-	binder_->Bind("ColliderSize", &colliderSize_, { 1.0f, 2.0f, 1.0f });
+    binder_->Bind("ColliderOffset", &colliderOffset_, { 0.0f, 1.0f, 0.0f });
+    binder_->Bind("ColliderSize", &colliderSize_, { 1.0f, 2.0f, 1.0f });
 
-	binder_->Bind("InteractionRadius", &interactionRadius_, 1.5f, 0.1f);
-	binder_->Bind("InteractionForce", &interactionForce_, 1.0f, 0.1f);
-	binder_->Bind("MaxVerticalDist", &maxVerticalDist_, 2.0f, 0.1f);
+    binder_->Bind("InteractionRadius", &interactionRadius_, 1.5f, 0.1f);
+    binder_->Bind("InteractionForce", &interactionForce_, 1.0f, 0.1f);
+    binder_->Bind("MaxVerticalDist", &maxVerticalDist_, 2.0f, 0.1f);
 
-	binder_->Bind("MaxDamageMultiplier", &config.maxDamageMultiplier, 1.5f, 0.05f, 1.0f, 3.0f);
-	binder_->Bind("MaxBulletSpread", &config.maxBulletSpread, 0.04f, 0.001f, 0.0f, 0.2f);
+    binder_->Bind("MaxDamageMultiplier", &config.maxDamageMultiplier, 1.5f, 0.05f, 1.0f, 3.0f);
+    binder_->Bind("MaxBulletSpread", &config.maxBulletSpread, 0.04f, 0.001f, 0.0f, 0.2f);
 
-	binder_->Bind("SprintSpeedRate", &config.sprintSpeedRate, 1.5f, 0.01f, 1.0f, 5.0f);
-	binder_->Bind("SprintAnimSpeed", &config.sprintAnimSpeed, 1.3f, 0.01f, 0.1f, 5.0f);
-	binder_->Bind("SprintStaminaPerSecond", &config.sprintStaminaPerSecond, 20.0f, 0.5f, 0.0f, 500.0f);
-	binder_->Bind("DodgeDistance", &config.dodgeDistance, 12.0f, 0.1f, 0.0f, 100.0f);
-	binder_->Bind("DodgeDuration", &config.dodgeDuration, 0.4f, 0.01f, 0.05f, 3.0f);
-	binder_->Bind("DodgeStaminaCost", &config.dodgeStaminaCost, 30.0f, 0.5f, 0.0f, 500.0f);
-	binder_->Bind("DodgeAnimSpeed", &config.dodgeAnimSpeed, 1.6f, 0.01f, 0.1f, 5.0f);
+    binder_->Bind("SprintSpeedRate", &config.sprintSpeedRate, 1.5f, 0.01f, 1.0f, 5.0f);
+    binder_->Bind("SprintAnimSpeed", &config.sprintAnimSpeed, 1.3f, 0.01f, 0.1f, 5.0f);
+    binder_->Bind("SprintStaminaPerSecond", &config.sprintStaminaPerSecond, 20.0f, 0.5f, 0.0f, 500.0f);
+    binder_->Bind("DodgeDistance", &config.dodgeDistance, 12.0f, 0.1f, 0.0f, 100.0f);
+    binder_->Bind("DodgeDuration", &config.dodgeDuration, 0.4f, 0.01f, 0.05f, 3.0f);
+    binder_->Bind("DodgeStaminaCost", &config.dodgeStaminaCost, 30.0f, 0.5f, 0.0f, 500.0f);
+    binder_->Bind("DodgeAnimSpeed", &config.dodgeAnimSpeed, 1.6f, 0.01f, 0.1f, 5.0f);
 
-	binder_->Bind("HitKnockbackDistance", &config.hitKnockbackDistance, 3.0f, 0.1f, 0.0f, 50.0f);
-	binder_->Bind("HitKnockbackTime", &config.hitKnockbackTime, 0.25f, 0.01f, 0.01f, 2.0f);
-	binder_->Bind("HitStunTime", &config.hitStunTime, 0.4f, 0.01f, 0.0f, 3.0f);
-	binder_->Bind("HitInvulnerableTime", &config.hitInvulnerableTime, 0.8f, 0.01f, 0.0f, 5.0f);
-	binder_->Bind("DamagedSoundVolume", &config.damagedSoundVolume, 0.6f, 0.01f, 0.0f, 2.0f);
-	binder_->Bind("HitCameraShake", &config.hitCameraShake, 0.04f, 0.001f, 0.0f, 0.5f);
-	binder_->Bind("HitStopTime", &config.hitStopTime, 0.05f, 0.005f, 0.0f, 0.5f);
-	binder_->Bind("HitStopTimeScale", &config.hitStopTimeScale, 0.05f, 0.01f, 0.0f, 1.0f);
-	binder_->Bind("JumpStaminaCost", &config.jumpStaminaCost, 15.0f, 0.5f, 0.0f, 500.0f);
-	binder_->Bind("CrouchSpeed", &config.crawlSpeed, 0.1f, 0.005f, 0.0f, 5.0f);
-	binder_->Bind("CrouchWalkAnimSpeed", &config.crawlWalkAnimSpeed, 0.7f, 0.01f, 0.1f, 5.0f);
-	binder_->Bind("CrouchIdleAnimSpeed", &config.crawlIdleAnimSpeed, 1.0f, 0.01f, 0.1f, 5.0f);
-	binder_->Bind("CrouchBlendTime", &config.crawlBlendTime, 0.2f, 0.01f, 0.0f, 2.0f);
-	binder_->Bind("CrouchColliderHeightRate", &config.crawlColliderHeightRate, 0.6f, 0.01f, 0.1f, 1.0f);
-	concealment_->BindProperties(*binder_);
-	burn_->BindProperties(*binder_);
-	stamina_->BindProperties(*binder_);
-	health_->BindProperties(*binder_);
-	ammoDisplay_->BindProperties(*binder_);
-	moneyDisplay_->BindProperties(*binder_);
-	binder_->Bind("SpawnPosition", &spawnPosition_, { 0.0f, 0.0f, 0.0f }, 0.1f, [this]() { PlaceAtSpawn(); });
-	binder_->Bind("SpawnRotationY", &spawnRotationY_, 0.0f, 0.5f, -360.0f, 360.0f, [this]() { PlaceAtSpawn(); });
+    binder_->Bind("HitKnockbackDistance", &config.hitKnockbackDistance, 3.0f, 0.1f, 0.0f, 50.0f);
+    binder_->Bind("HitKnockbackTime", &config.hitKnockbackTime, 0.25f, 0.01f, 0.01f, 2.0f);
+    binder_->Bind("HitStunTime", &config.hitStunTime, 0.4f, 0.01f, 0.0f, 3.0f);
+    binder_->Bind("HitInvulnerableTime", &config.hitInvulnerableTime, 0.8f, 0.01f, 0.0f, 5.0f);
+    binder_->Bind("DamagedSoundVolume", &config.damagedSoundVolume, 0.6f, 0.01f, 0.0f, 2.0f);
+    binder_->Bind("HitCameraShake", &config.hitCameraShake, 0.04f, 0.001f, 0.0f, 0.5f);
+    binder_->Bind("HitStopTime", &config.hitStopTime, 0.05f, 0.005f, 0.0f, 0.5f);
+    binder_->Bind("HitStopTimeScale", &config.hitStopTimeScale, 0.05f, 0.01f, 0.0f, 1.0f);
+    binder_->Bind("JumpStaminaCost", &config.jumpStaminaCost, 15.0f, 0.5f, 0.0f, 500.0f);
+    binder_->Bind("CrouchSpeed", &config.crawlSpeed, 0.1f, 0.005f, 0.0f, 5.0f);
+    binder_->Bind("CrouchWalkAnimSpeed", &config.crawlWalkAnimSpeed, 0.7f, 0.01f, 0.1f, 5.0f);
+    binder_->Bind("CrouchIdleAnimSpeed", &config.crawlIdleAnimSpeed, 1.0f, 0.01f, 0.1f, 5.0f);
+    binder_->Bind("CrouchBlendTime", &config.crawlBlendTime, 0.2f, 0.01f, 0.0f, 2.0f);
+    binder_->Bind("CrouchColliderHeightRate", &config.crawlColliderHeightRate, 0.6f, 0.01f, 0.1f, 1.0f);
+    concealment_->BindProperties(*binder_);
+    burn_->BindProperties(*binder_);
+    stamina_->BindProperties(*binder_);
+    health_->BindProperties(*binder_);
+    ammoDisplay_->BindProperties(*binder_);
+    moneyDisplay_->BindProperties(*binder_);
+    binder_->Bind("SpawnPosition", &spawnPosition_, { 0.0f, 0.0f, 0.0f }, 0.1f, [this]() { PlaceAtSpawn(); });
+    binder_->Bind("SpawnRotationY", &spawnRotationY_, 0.0f, 0.5f, -360.0f, 360.0f, [this]() { PlaceAtSpawn(); });
 
-	stateMachine_ = std::make_unique<StateMachine<Player>>(this);
-	ResetToSpawn();
+    stateMachine_ = std::make_unique<StateMachine<Player>>(this);
+    ResetToSpawn();
 
-	weapon_->Initialize();
-	reticle_->Initialize();
+    weapon_->Initialize();
+    reticle_->Initialize();
 }
 
 // 更新処理
 void Player::Update()
 {
-	float deltaTime = TimeManager::GetInstance()->GetDeltaTime();
+    float deltaTime = TimeManager::GetInstance()->GetDeltaTime();
 
-	UpdateHitStop();
-	invulnerableTimer_ = std::max(invulnerableTimer_ - deltaTime, 0.0f);
+    UpdateHitStop();
+    invulnerableTimer_ = std::max(invulnerableTimer_ - deltaTime, 0.0f);
 
-	moveDirection_ = ReadMoveInput();
-	UpdateSprintInput();
-	if (IsReloadInputTriggered())
-	{
-		weapon_->StartReload();
-	}
-	if (isControllable_ && GameInput::IsTriggered(GameAction::SwitchAmmo))
-	{
-		weapon_->ToggleAmmoType();
-	}
-	stateMachine_->Update();
-	stamina_->Update();
-	health_->Update();
-	isGroundedOnObject_ = false;
+    moveDirection_ = ReadMoveInput();
+    UpdateSprintInput();
+    if (IsReloadInputTriggered())
+    {
+        weapon_->StartReload();
+    }
+    if (isControllable_ && GameInput::IsTriggered(GameAction::SwitchAmmo))
+    {
+        weapon_->ToggleAmmoType();
+    }
+    stateMachine_->Update();
+    stamina_->Update();
+    health_->Update();
+    isGroundedOnObject_ = false;
 
-	// 衝突判定・境界チェック
-	if (treeField_)
-	{
-		Vector3 pos = GetTransform().translation_;
-		// 木の幹とは、箱の幅の半分を半径とする円で判定する
-		float playerRadius = colliderSize_.x * 0.5f;
+    // 衝突判定・境界チェック
+    if (treeField_)
+    {
+        Vector3 pos = GetTransform().translation_;
+        // 木の幹とは、箱の幅の半分を半径とする円で判定する
+        float playerRadius = colliderSize_.x * 0.5f;
 
-		if (treeField_->ResolveCollision(pos, playerRadius))
-		{
-			GetTransform().translation_ = pos;
-		}
-	}
+        if (treeField_->ResolveCollision(pos, playerRadius))
+        {
+            GetTransform().translation_ = pos;
+        }
+    }
 
-	{
-		Vector3& pos = GetTransform().translation_;
-		pos.x = std::clamp(pos.x, -511.0f, 511.0f);
-		pos.z = std::clamp(pos.z, -511.0f, 511.0f);
-	}
+    // 地形の外へ出ないよう、端から少し内側までに収める
+    if (terrain_ && terrain_->HasHeightData())
+    {
+        constexpr float kFieldEdgeMargin = 1.0f;
+        const Vector2 center = terrain_->GetCenterXZ();
+        const Vector2 halfSize = terrain_->GetSizeXZ() * 0.5f - Vector2(kFieldEdgeMargin, kFieldEdgeMargin);
+        Vector3& pos = GetTransform().translation_;
+        pos.x = std::clamp(pos.x, center.x - halfSize.x, center.x + halfSize.x);
+        pos.z = std::clamp(pos.z, center.y - halfSize.y, center.y + halfSize.y);
+    }
 
-	concealment_->Update(GetTransform().translation_, GetColliderCenter(), IsCrawling(), isControllable_);
+    concealment_->Update(GetTransform().translation_, GetColliderCenter(), IsCrawling(), isControllable_);
 
-	// 隠れているときの画面の縁より炎を優先するので、隠れる処理のあとに進める
-	const int burnDamage = burn_->Update(GetTransform().translation_, animationModel_.get(), isControllable_);
-	if (burnDamage > 0)
-	{
-		TakeBurnDamage(burnDamage);
-	}
-	health_->SetBurning(burn_->IsBurning());
+    // 隠れているときの画面の縁より炎を優先するので、隠れる処理のあとに進める
+    const int burnDamage = burn_->Update(GetTransform().translation_, animationModel_.get(), isControllable_);
+    if (burnDamage > 0)
+    {
+        TakeBurnDamage(burnDamage);
+    }
+    health_->SetBurning(burn_->IsBurning());
 
-	collider_->SetCenterOffset(GetCurrentColliderOffset());
-	collider_->SetSize(GetCurrentColliderSize());
+    collider_->SetCenterOffset(GetCurrentColliderOffset());
+    collider_->SetSize(GetCurrentColliderSize());
 
-	// 基本アニメーションの更新
-	animationModel_->Update();
-	animationModel_->GetTransform().translation_ = GetTransform().translation_;
-	animationModel_->GetTransform().rotation_ = GetTransform().rotation_;
+    // 基本アニメーションの更新
+    animationModel_->Update();
+    animationModel_->GetTransform().translation_ = GetTransform().translation_;
+    animationModel_->GetTransform().rotation_ = GetTransform().rotation_;
 
-	// エイム時の姿勢更新
-	float cameraPitch = 0.0f;
-	bool isAiming = followCamera_ ? followCamera_->IsAiming() : false;
+    // エイム時の姿勢更新
+    float cameraPitch = 0.0f;
+    bool isAiming = followCamera_ ? followCamera_->IsAiming() : false;
 
-	if (isAiming && camera_)
-	{
-		Vector3 camForward = camera_->GetWorldTransform().rotation_.RotateVector({ 0.0f, 0.0f, 1.0f });
-		cameraPitch = std::asin(std::clamp(camForward.y, -1.0f, 1.0f));
-	}
+    if (isAiming && camera_)
+    {
+        Vector3 camForward = camera_->GetWorldTransform().rotation_.RotateVector({ 0.0f, 0.0f, 1.0f });
+        cameraPitch = std::asin(std::clamp(camForward.y, -1.0f, 1.0f));
+    }
 
-	if (isAiming && std::abs(cameraPitch) > 0.001f)
-	{
-		Quaternion pitchOffset = Quaternion::QuaternionFromEuler({ -cameraPitch * 0.5f, 0.0f, 0.0f });
-		Quaternion neckOffset = Quaternion::QuaternionFromEuler({ -cameraPitch * 0.3f, 0.0f, 0.0f });
+    if (isAiming && std::abs(cameraPitch) > 0.001f)
+    {
+        Quaternion pitchOffset = Quaternion::QuaternionFromEuler({ -cameraPitch * 0.5f, 0.0f, 0.0f });
+        Quaternion neckOffset = Quaternion::QuaternionFromEuler({ -cameraPitch * 0.3f, 0.0f, 0.0f });
 
-		animationModel_->AddJointRotationOffset("mixamorig1:Spine1", pitchOffset);
-		animationModel_->AddJointRotationOffset("mixamorig1:Spine2", pitchOffset);
-		animationModel_->AddJointRotationOffset("mixamorig1:Neck", neckOffset);
+        animationModel_->AddJointRotationOffset("mixamorig1:Spine1", pitchOffset);
+        animationModel_->AddJointRotationOffset("mixamorig1:Spine2", pitchOffset);
+        animationModel_->AddJointRotationOffset("mixamorig1:Neck", neckOffset);
 
-		animationModel_->PostUpdateSkeleton();
-	}
+        animationModel_->PostUpdateSkeleton();
+    }
 
-	// 武器の更新
-	Matrix4x4 rightHandMatrix = animationModel_->GetJointWorldMatrix("mixamorig1:RightHand");
-	if (weapon_)
-	{
-		weapon_->Update(rightHandMatrix, camera_);
-	}
+    // 武器の更新
+    Matrix4x4 rightHandMatrix = animationModel_->GetJointWorldMatrix("mixamorig1:RightHand");
+    if (weapon_)
+    {
+        weapon_->Update(rightHandMatrix, camera_);
+    }
 
-	// レティクルの更新
-	bool isMoving = moveDirection_.LengthSq() > 0.001f;
-	if (reticle_)
-	{
-		reticle_->Update(isMoving, isAiming);
-	}
+    // レティクルの更新
+    bool isMoving = moveDirection_.LengthSq() > 0.001f;
+    if (reticle_)
+    {
+        reticle_->Update(isMoving, isAiming);
+    }
 
-	// インタラクションデータの送信
-	Vector3 currentPos = GetTransform().translation_;
-	Vector3 velocity = { 0.0f, 0.0f, 0.0f };
-	if (deltaTime > 0.0001f) {
-		velocity = (currentPos - prevPosition_) / deltaTime;
-	}
-	prevPosition_ = currentPos;
+    // インタラクションデータの送信
+    Vector3 currentPos = GetTransform().translation_;
+    Vector3 velocity = { 0.0f, 0.0f, 0.0f };
+    if (deltaTime > 0.0001f) {
+        velocity = (currentPos - prevPosition_) / deltaTime;
+    }
+    prevPosition_ = currentPos;
 
-	InteractionEntity entity{};
-	entity.position = currentPos;
-	entity.radius = interactionRadius_;
-	entity.velocity = velocity;
-	entity.maxVerticalDist = maxVerticalDist_;
-	entity.forceMultiplier = interactionForce_;
+    InteractionEntity entity{};
+    entity.position = currentPos;
+    entity.radius = interactionRadius_;
+    entity.velocity = velocity;
+    entity.maxVerticalDist = maxVerticalDist_;
+    entity.forceMultiplier = interactionForce_;
 
-	engine_->GetRendererManager()->SubmitInteractionEntity(entity);
-	engine_->GetRendererManager()->SetWorldInteractionCenter({ currentPos.x, currentPos.z });
+    engine_->GetRendererManager()->SubmitInteractionEntity(entity);
+    engine_->GetRendererManager()->SetWorldInteractionCenter({ currentPos.x, currentPos.z });
 }
 
 // 入力から移動方向を取得
 Vector3 Player::ReadMoveInput() const
 {
-	if (!isControllable_)
-	{
-		return { 0.0f, 0.0f, 0.0f };
-	}
+    if (!isControllable_)
+    {
+        return { 0.0f, 0.0f, 0.0f };
+    }
 
-	const Vector2 moveAxis = GameInput::GetMoveAxis();
-	const float inputMagnitude = std::sqrt(moveAxis.x * moveAxis.x + moveAxis.y * moveAxis.y);
-	if (inputMagnitude <= 0.0f)
-	{
-		return Vector3::Zero();
-	}
+    const Vector2 moveAxis = GameInput::GetMoveAxis();
+    const float inputMagnitude = std::sqrt(moveAxis.x * moveAxis.x + moveAxis.y * moveAxis.y);
+    if (inputMagnitude <= 0.0f)
+    {
+        return Vector3::Zero();
+    }
 
-	const float dirX = moveAxis.x / inputMagnitude;
-	const float dirY = moveAxis.y / inputMagnitude;
+    const float dirX = moveAxis.x / inputMagnitude;
+    const float dirY = moveAxis.y / inputMagnitude;
 
-	// カメラ基準の水平移動方向を算出
-	const auto& camRot = camera_->GetWorldTransform().rotation_;
-	Vector3 cameraForward = camRot.RotateVector({ 0.0f, 0.0f, 1.0f });
-	Vector3 cameraRight = camRot.RotateVector({ 1.0f, 0.0f, 0.0f });
+    // カメラ基準の水平移動方向を算出
+    const auto& camRot = camera_->GetWorldTransform().rotation_;
+    Vector3 cameraForward = camRot.RotateVector({ 0.0f, 0.0f, 1.0f });
+    Vector3 cameraRight = camRot.RotateVector({ 1.0f, 0.0f, 0.0f });
 
-	cameraForward.y = 0.0f;
-	cameraRight.y = 0.0f;
-	cameraForward = cameraForward.Normalize();
-	cameraRight = cameraRight.Normalize();
+    cameraForward.y = 0.0f;
+    cameraRight.y = 0.0f;
+    cameraForward = cameraForward.Normalize();
+    cameraRight = cameraRight.Normalize();
 
-	return (cameraForward * dirY + cameraRight * dirX).Normalize() * inputMagnitude;
+    return (cameraForward * dirY + cameraRight * dirX).Normalize() * inputMagnitude;
 }
 
 void Player::UpdateRotation(const Vector3& moveDir)
 {
-	float deltaTime = TimeManager::GetInstance()->GetDeltaTime();
-	if (moveDir.Length() > 0.0f) 
-	{
-		lastMoveDirection_ = moveDir;
-	}
+    float deltaTime = TimeManager::GetInstance()->GetDeltaTime();
+    if (moveDir.Length() > 0.0f) 
+    {
+        lastMoveDirection_ = moveDir;
+    }
 
-	if (lastMoveDirection_.Length() > 0.001f)
-	{
-		float targetAngleY = std::atan2(lastMoveDirection_.x, lastMoveDirection_.z);
-		Quaternion targetRotation = Quaternion::QuaternionFromEuler({ 0.0f, targetAngleY, 0.0f });
+    if (lastMoveDirection_.Length() > 0.001f)
+    {
+        float targetAngleY = std::atan2(lastMoveDirection_.x, lastMoveDirection_.z);
+        Quaternion targetRotation = Quaternion::QuaternionFromEuler({ 0.0f, targetAngleY, 0.0f });
 
-		Quaternion currentRotation = GetTransform().rotation_;
-		float slerpFactor = Math::Clamp(config.rotationSpeed * deltaTime, 0.0f, 1.0f);
-		GetTransform().rotation_ = Quaternion::Slerp(currentRotation, targetRotation, slerpFactor);
-	}
+        Quaternion currentRotation = GetTransform().rotation_;
+        float slerpFactor = Math::Clamp(config.rotationSpeed * deltaTime, 0.0f, 1.0f);
+        GetTransform().rotation_ = Quaternion::Slerp(currentRotation, targetRotation, slerpFactor);
+    }
 }
 
 void Player::ApplyHorizontalMovement(const Vector3& moveDir, float speed)
 {
-	GetTransform().translation_ += moveDir * speed * TimeManager::GetInstance()->GetDeltaTime();
+    GetTransform().translation_ += moveDir * speed * TimeManager::GetInstance()->GetDeltaTime();
 }
 
 void Player::ApplyGravity()
 {
-	float deltaTime = TimeManager::GetInstance()->GetDeltaTime();
-	velocityY_ -= config.gravity * deltaTime;
-	GetTransform().translation_.y += velocityY_ * deltaTime;
+    float deltaTime = TimeManager::GetInstance()->GetDeltaTime();
+    velocityY_ -= config.gravity * deltaTime;
+    GetTransform().translation_.y += velocityY_ * deltaTime;
 }
 
 void Player::SnapToGround()
 {
-	// オブジェクトに乗っている場合
-	if (isGroundedOnObject_) return;
+    // オブジェクトに乗っている場合
+    if (isGroundedOnObject_) return;
 
-	if (!terrain_) return;
+    if (!terrain_) return;
 
-	float groundHeight = 0.0f;
-	if (terrain_->GetHeightAt(GetTransform().translation_.x, GetTransform().translation_.z, groundHeight))
-	{
-		// 地形より十分高い位置にいる場合は地面へ落とさない
-		if (GetTransform().translation_.y <= groundHeight + 0.5f)
-		{
-			GetTransform().translation_.y = groundHeight;
-			velocityY_ = 0.0f;
-		}
-	}
+    float groundHeight = 0.0f;
+    if (terrain_->GetHeightAt(GetTransform().translation_.x, GetTransform().translation_.z, groundHeight))
+    {
+        // 地形より十分高い位置にいる場合は地面へ落とさない
+        if (GetTransform().translation_.y <= groundHeight + 0.5f)
+        {
+            GetTransform().translation_.y = groundHeight;
+            velocityY_ = 0.0f;
+        }
+    }
 }
 
 bool Player::IsGrounded() const
 {
-	// プロップの上に乗っている場合
-	if (isGroundedOnObject_) return true;
+    // プロップの上に乗っている場合
+    if (isGroundedOnObject_) return true;
 
-	// 地形の上に乗っている場合
-	if (!terrain_) return true;
+    // 地形の上に乗っている場合
+    if (!terrain_) return true;
 
-	float groundHeight = 0.0f;
-	if (terrain_->GetHeightAt(GetTransform().translation_.x, GetTransform().translation_.z, groundHeight))
-	{
-		return GetTransform().translation_.y <= groundHeight + 0.1f;
-	}
+    float groundHeight = 0.0f;
+    if (terrain_->GetHeightAt(GetTransform().translation_.x, GetTransform().translation_.z, groundHeight))
+    {
+        return GetTransform().translation_.y <= groundHeight + 0.1f;
+    }
 
-	return false;
+    return false;
 }
 
 void Player::UpdateAimRotation()
 {
-	float deltaTime = TimeManager::GetInstance()->GetDeltaTime();
+    float deltaTime = TimeManager::GetInstance()->GetDeltaTime();
 
-	// カメラの前方ベクトル
-	Vector3 cameraForward = camera_->GetWorldTransform().rotation_.RotateVector({ 0.0f, 0.0f, 1.0f });
-	cameraForward.y = 0.0f;
+    // カメラの前方ベクトル
+    Vector3 cameraForward = camera_->GetWorldTransform().rotation_.RotateVector({ 0.0f, 0.0f, 1.0f });
+    cameraForward.y = 0.0f;
 
-	if (cameraForward.LengthSq() > 0.001f)
-	{
-		cameraForward = cameraForward.Normalize();
-		float targetAngleY = std::atan2(cameraForward.x, cameraForward.z);
-		Quaternion targetRotation = Quaternion::QuaternionFromEuler({ 0.0f, targetAngleY, 0.0f });
+    if (cameraForward.LengthSq() > 0.001f)
+    {
+        cameraForward = cameraForward.Normalize();
+        float targetAngleY = std::atan2(cameraForward.x, cameraForward.z);
+        Quaternion targetRotation = Quaternion::QuaternionFromEuler({ 0.0f, targetAngleY, 0.0f });
 
-		// カメラの向きに補間
-		Quaternion currentRotation = GetTransform().rotation_;
-		GetTransform().rotation_ = Quaternion::Slerp(currentRotation, targetRotation, 15.0f * deltaTime);
-	}
+        // カメラの向きに補間
+        Quaternion currentRotation = GetTransform().rotation_;
+        GetTransform().rotation_ = Quaternion::Slerp(currentRotation, targetRotation, 15.0f * deltaTime);
+    }
 }
 
 void Player::FireWeapon()
 {
-	if (!weapon_ || !camera_) return;
+    if (!weapon_ || !camera_) return;
 
-	// 弾切れで撃とうとしたらリロードを始める
-	if (weapon_->GetAmmo() == 0)
-	{
-		weapon_->StartReload();
-		return;
-	}
-	if (!weapon_->CanFire())
-	{
-		return;
-	}
+    // 弾切れで撃とうとしたらリロードを始める
+    if (weapon_->GetAmmo() == 0)
+    {
+        weapon_->StartReload();
+        return;
+    }
+    if (!weapon_->CanFire())
+    {
+        return;
+    }
 
-	CollisionManager* colManager = GetManager() ? GetManager()->GetCollisionManager() : nullptr;
+    CollisionManager* colManager = GetManager() ? GetManager()->GetCollisionManager() : nullptr;
 
-	// レティクルから現在のフォーカス率を取得して射撃に渡す
-	float focusRatio = reticle_->GetFocusRatio();
+    // レティクルから現在のフォーカス率を取得して射撃に渡す
+    float focusRatio = reticle_->GetFocusRatio();
 
-	if (weapon_->Fire(camera_, focusRatio, config.maxDamageMultiplier, config.maxBulletSpread, colManager, treeField_, terrain_))
-	{
-		if (reticle_)
-		{
-			reticle_->OnShootRecoil(); // 射撃時の反動拡散
-		}
-		if (followCamera_)
-		{
-			followCamera_->AddRecoil(0.08f, 0.03f);
-		}
-		GameInput::StartVibration(0.6f, 0.6f, 0.25f);
-		++shotCount_;
-	}
+    if (weapon_->Fire(camera_, focusRatio, config.maxDamageMultiplier, config.maxBulletSpread, colManager, treeField_, terrain_))
+    {
+        if (reticle_)
+        {
+            reticle_->OnShootRecoil(); // 射撃時の反動拡散
+        }
+        if (followCamera_)
+        {
+            followCamera_->AddRecoil(0.08f, 0.03f);
+        }
+        GameInput::StartVibration(0.6f, 0.6f, 0.25f);
+        ++shotCount_;
+    }
 }
 
 void Player::TakeDamage(int damage)
 {
-	if (IsDead() || stateMachine_->IsCurrentState<PlayerStateDodge>())
-	{
-		return;
-	}
+    if (IsDead() || stateMachine_->IsCurrentState<PlayerStateDodge>())
+    {
+        return;
+    }
 
-	health_->TakeDamage(damage);
-	GameInput::StartVibration(0.5f, 0.5f, 0.15f);
+    health_->TakeDamage(damage);
+    GameInput::StartVibration(0.5f, 0.5f, 0.15f);
 
-	if (health_->IsDead())
-	{
-		StartDeath();
-		return;
-	}
-	PlayDamagedSound();
+    if (health_->IsDead())
+    {
+        StartDeath();
+        return;
+    }
+    PlayDamagedSound();
 }
 
 void Player::PlayDamagedSound()
 {
-	// 倒れたときは倒れたときの音だけを鳴らす
-	AudioPlayer& audioPlayer = AudioPlayer::GetInstance();
-	if (audioPlayer.HasSound("playerDamaged"))
-	{
-		audioPlayer.Play("playerDamaged", config.damagedSoundVolume);
-	}
+    // 倒れたときは倒れたときの音だけを鳴らす
+    AudioPlayer& audioPlayer = AudioPlayer::GetInstance();
+    if (audioPlayer.HasSound("playerDamaged"))
+    {
+        audioPlayer.Play("playerDamaged", config.damagedSoundVolume);
+    }
 }
 
 void Player::TakeBurnDamage(int damage)
 {
-	if (IsDead())
-	{
-		return;
-	}
+    if (IsDead())
+    {
+        return;
+    }
 
-	// 全体を赤くする被弾の色は出さず、炎の画面の縁で知らせる
-	health_->TakeDamage(damage, false);
-	burn_->OnDamaged();
-	GameInput::StartVibration(burn_->GetVibrationStrength(), burn_->GetVibrationStrength(), burn_->GetVibrationTime());
+    // 全体を赤くする被弾の色は出さず、炎の画面の縁で知らせる
+    health_->TakeDamage(damage, false);
+    burn_->OnDamaged();
+    GameInput::StartVibration(burn_->GetVibrationStrength(), burn_->GetVibrationStrength(), burn_->GetVibrationTime());
 
-	// 上下と左右に小さく揺らす
-	if (followCamera_)
-	{
-		const float shake = burn_->GetCameraShake();
-		const float pitch = (static_cast<float>(rand()) / RAND_MAX * 2.0f - 1.0f) * shake;
-		followCamera_->AddRecoil(pitch, shake);
-	}
+    // 上下と左右に小さく揺らす
+    if (followCamera_)
+    {
+        const float shake = burn_->GetCameraShake();
+        const float pitch = GameRandom::Range(-shake, shake);
+        followCamera_->AddRecoil(pitch, shake);
+    }
 
-	if (health_->IsDead())
-	{
-		StartDeath();
-	}
+    if (health_->IsDead())
+    {
+        StartDeath();
+    }
 }
 
 void Player::TakeHit(int damage, const Vector3& knockbackDirection)
 {
-	// 囲まれて続けざまに殴られないよう、殴られた直後は効かない
-	if (IsDead() || invulnerableTimer_ > 0.0f || stateMachine_->IsCurrentState<PlayerStateDodge>())
-	{
-		return;
-	}
+    // 囲まれて続けざまに殴られないよう、殴られた直後は効かない
+    if (IsDead() || invulnerableTimer_ > 0.0f || stateMachine_->IsCurrentState<PlayerStateDodge>())
+    {
+        return;
+    }
 
-	health_->TakeDamage(damage);
-	GameInput::StartVibration(0.7f, 0.7f, 0.2f);
+    health_->TakeDamage(damage);
+    GameInput::StartVibration(0.7f, 0.7f, 0.2f);
 
-	if (health_->IsDead())
-	{
-		StartDeath();
-		return;
-	}
-	PlayDamagedSound();
+    if (health_->IsDead())
+    {
+        StartDeath();
+        return;
+    }
+    PlayDamagedSound();
 
-	invulnerableTimer_ = config.hitInvulnerableTime;
-	weapon_->CancelReload();
-	stateMachine_->ChangeState<PlayerStateHurt>(knockbackDirection);
+    invulnerableTimer_ = config.hitInvulnerableTime;
+    weapon_->CancelReload();
+    stateMachine_->ChangeState<PlayerStateHurt>(knockbackDirection);
 
-	if (followCamera_)
-	{
-		followCamera_->SetAiming(false);
-		const float pitch = (static_cast<float>(rand()) / RAND_MAX * 2.0f - 1.0f) * config.hitCameraShake;
-		const float yaw = (static_cast<float>(rand()) / RAND_MAX * 2.0f - 1.0f) * config.hitCameraShake;
-		followCamera_->AddRecoil(pitch, yaw);
-	}
+    if (followCamera_)
+    {
+        followCamera_->SetAiming(false);
+        const float pitch = GameRandom::Range(-config.hitCameraShake, config.hitCameraShake);
+        const float yaw = GameRandom::Range(-config.hitCameraShake, config.hitCameraShake);
+        followCamera_->AddRecoil(pitch, yaw);
+    }
 
-	StartHitStop();
+    StartHitStop();
 }
 
 void Player::StartHitStop()
 {
-	TimeManager* timeManager = TimeManager::GetInstance();
-	// ポーズ中や、もう止めているときは重ねない
-	if (isHitStopActive_ || config.hitStopTime <= 0.0f || timeManager->GetTimeScale() <= 0.0f)
-	{
-		return;
-	}
+    TimeManager* timeManager = TimeManager::GetInstance();
+    // ポーズ中や、もう止めているときは重ねない
+    if (isHitStopActive_ || config.hitStopTime <= 0.0f || timeManager->GetTimeScale() <= 0.0f)
+    {
+        return;
+    }
 
-	timeScaleBeforeHitStop_ = timeManager->GetTimeScale();
-	timeManager->SetTimeScale(timeScaleBeforeHitStop_ * config.hitStopTimeScale);
-	hitStopTimer_ = config.hitStopTime;
-	isHitStopActive_ = true;
+    timeScaleBeforeHitStop_ = timeManager->GetTimeScale();
+    timeManager->SetTimeScale(timeScaleBeforeHitStop_ * config.hitStopTimeScale);
+    hitStopTimer_ = config.hitStopTime;
+    isHitStopActive_ = true;
 }
 
 void Player::UpdateHitStop()
 {
-	TimeManager* timeManager = TimeManager::GetInstance();
-	// ポーズで止まっている間は数えない
-	if (!isHitStopActive_ || timeManager->GetTimeScale() <= 0.0f)
-	{
-		return;
-	}
+    TimeManager* timeManager = TimeManager::GetInstance();
+    // ポーズで止まっている間は数えない
+    if (!isHitStopActive_ || timeManager->GetTimeScale() <= 0.0f)
+    {
+        return;
+    }
 
-	hitStopTimer_ -= timeManager->GetUnscaledDeltaTime();
-	if (hitStopTimer_ <= 0.0f)
-	{
-		EndHitStop();
-	}
+    hitStopTimer_ -= timeManager->GetUnscaledDeltaTime();
+    if (hitStopTimer_ <= 0.0f)
+    {
+        EndHitStop();
+    }
 }
 
 void Player::EndHitStop()
 {
-	if (!isHitStopActive_)
-	{
-		return;
-	}
-	TimeManager::GetInstance()->SetTimeScale(timeScaleBeforeHitStop_);
-	isHitStopActive_ = false;
+    if (!isHitStopActive_)
+    {
+        return;
+    }
+    TimeManager::GetInstance()->SetTimeScale(timeScaleBeforeHitStop_);
+    isHitStopActive_ = false;
 }
 
 bool Player::IsDead() const
 {
-	return health_->IsDead();
+    return health_->IsDead();
 }
 
 void Player::StartDeath()
 {
-	if (followCamera_)
-	{
-		followCamera_->SetAiming(false);
-	}
-	CancelSprintInput();
-	GameInput::StartVibration(0.8f, 0.8f, 0.4f);
+    if (followCamera_)
+    {
+        followCamera_->SetAiming(false);
+    }
+    CancelSprintInput();
+    GameInput::StartVibration(0.8f, 0.8f, 0.4f);
 
-	// 素材を入れたときだけ鳴らす
-	AudioPlayer& audioPlayer = AudioPlayer::GetInstance();
-	if (audioPlayer.HasSound("playerDeath"))
-	{
-		audioPlayer.Play("playerDeath", 0.6f);
-	}
+    // 素材を入れたときだけ鳴らす
+    AudioPlayer& audioPlayer = AudioPlayer::GetInstance();
+    if (audioPlayer.HasSound("playerDeath"))
+    {
+        audioPlayer.Play("playerDeath", 0.6f);
+    }
 
-	stateMachine_->ChangeState<PlayerStateDeath>();
+    stateMachine_->ChangeState<PlayerStateDeath>();
 }
 
 void Player::ResetToSpawn()
 {
-	PlaceAtSpawn();
-	velocityY_ = 0.0f;
-	moveDirection_ = { 0.0f, 0.0f, 0.0f };
-	health_->Refill();
-	burn_->Reset();
-	stamina_->Refill();
-	weapon_->Refill();
-	weapon_->ResetAmmoType();
-	EndHitStop();
-	invulnerableTimer_ = 0.0f;
-	money_ = 0;
-	moneyDisplay_->Reset();
-	reticle_->Reset();
-	concealment_->Reset();
-	// 押したままのダッシュは、押し直すまで効かない
-	CancelSprintInput();
-	prevAnimNormalizedTime_ = 0.0f;
-	if (followCamera_)
-	{
-		followCamera_->SetAiming(false);
-	}
-	stateMachine_->ChangeState<PlayerStateNormal>();
+    PlaceAtSpawn();
+    velocityY_ = 0.0f;
+    moveDirection_ = { 0.0f, 0.0f, 0.0f };
+    health_->Refill();
+    burn_->Reset();
+    stamina_->Refill();
+    weapon_->Refill();
+    weapon_->ResetAmmoType();
+    EndHitStop();
+    invulnerableTimer_ = 0.0f;
+    money_ = 0;
+    moneyDisplay_->Reset();
+    reticle_->Reset();
+    concealment_->Reset();
+    // 押したままのダッシュは、押し直すまで効かない
+    CancelSprintInput();
+    prevAnimNormalizedTime_ = 0.0f;
+    if (followCamera_)
+    {
+        followCamera_->SetAiming(false);
+    }
+    stateMachine_->ChangeState<PlayerStateNormal>();
 }
 
 void Player::AddMoney(int amount)
 {
-	money_ += amount;
-	moneyDisplay_->OnGain(amount);
+    money_ += amount;
+    moneyDisplay_->OnGain(amount);
 }
 
 bool Player::TrySpend(int amount)
 {
-	if (money_ < amount)
-	{
-		return false;
-	}
-	money_ -= amount;
-	return true;
+    if (money_ < amount)
+    {
+        return false;
+    }
+    money_ -= amount;
+    return true;
 }
 
 void Player::PlaceAtSpawn()
 {
-	const float yaw = spawnRotationY_ * Math::PI / 180.0f;
+    const float yaw = spawnRotationY_ * Math::PI / 180.0f;
 
-	GetTransform().translation_ = spawnPosition_;
-	GetTransform().SetRotation(Quaternion::QuaternionFromEuler({ 0.0f, yaw, 0.0f }));
-	// 止まっている間も最後に動いた方向へ向き直るので、そちらも合わせる
-	lastMoveDirection_ = { std::sin(yaw), 0.0f, std::cos(yaw) };
-	prevPosition_ = spawnPosition_;
+    GetTransform().translation_ = spawnPosition_;
+    GetTransform().SetRotation(Quaternion::QuaternionFromEuler({ 0.0f, yaw, 0.0f }));
+    // 止まっている間も最後に動いた方向へ向き直るので、そちらも合わせる
+    lastMoveDirection_ = { std::sin(yaw), 0.0f, std::cos(yaw) };
+    prevPosition_ = spawnPosition_;
 }
 
 void Player::UpdateFootstepEvents()
 {
-	if (!animationModel_) return;
+    if (!animationModel_) return;
 
-	// 現在のアニメーション進捗率
-	float currentNormalizedTime = animationModel_->GetNormalizedTime();
+    // 現在のアニメーション進捗率
+    float currentNormalizedTime = animationModel_->GetNormalizedTime();
 
-	// humanRun アニメーションの足がつくタイミング
-	const float leftFootStepTime = 0.10f;
-	const float rightFootStepTime = 0.60f;
+    // humanRun アニメーションの足がつくタイミング
+    const float leftFootStepTime = 0.10f;
+    const float rightFootStepTime = 0.60f;
 
-	// アニメーションが1周して0.0に戻った場合の補正
-	if (currentNormalizedTime < prevAnimNormalizedTime_)
-	{
-		prevAnimNormalizedTime_ -= 1.0f;
-	}
+    // アニメーションが1周して0.0に戻った場合の補正
+    if (currentNormalizedTime < prevAnimNormalizedTime_)
+    {
+        prevAnimNormalizedTime_ -= 1.0f;
+    }
 
-	// 前フレームと現在フレームの間で接地タイミングを跨いだか判定
-	bool isLeftFoot = (prevAnimNormalizedTime_ < leftFootStepTime && currentNormalizedTime >= leftFootStepTime);
-	bool isRightFoot = (prevAnimNormalizedTime_ < rightFootStepTime && currentNormalizedTime >= rightFootStepTime);
+    // 前フレームと現在フレームの間で接地タイミングを跨いだか判定
+    bool isLeftFoot = (prevAnimNormalizedTime_ < leftFootStepTime && currentNormalizedTime >= leftFootStepTime);
+    bool isRightFoot = (prevAnimNormalizedTime_ < rightFootStepTime && currentNormalizedTime >= rightFootStepTime);
 
-	if (isLeftFoot)
-	{
-		AudioPlayer::GetInstance().Play("playerRunning", 0.15f);
-	}
-	if (isRightFoot)
-	{
-		AudioPlayer::GetInstance().Play("playerRunning", 0.3f);
-	}
+    if (isLeftFoot)
+    {
+        AudioPlayer::GetInstance().Play("playerRunning", 0.15f);
+    }
+    if (isRightFoot)
+    {
+        AudioPlayer::GetInstance().Play("playerRunning", 0.3f);
+    }
 
-	// 次フレームのために正規化した進捗率を保持
-	prevAnimNormalizedTime_ = std::fmod(currentNormalizedTime, 1.0f);
-	if (prevAnimNormalizedTime_ < 0.0f) prevAnimNormalizedTime_ += 1.0f;
+    // 次フレームのために正規化した進捗率を保持
+    prevAnimNormalizedTime_ = std::fmod(currentNormalizedTime, 1.0f);
+    if (prevAnimNormalizedTime_ < 0.0f) prevAnimNormalizedTime_ += 1.0f;
 }
 
 void Player::ResetFootstepState()
 {
-	if (animationModel_)
-	{
-		prevAnimNormalizedTime_ = animationModel_->GetNormalizedTime();
-	}
-	else
-	{
-		prevAnimNormalizedTime_ = 0.0f;
-	}
+    if (animationModel_)
+    {
+        prevAnimNormalizedTime_ = animationModel_->GetNormalizedTime();
+    }
+    else
+    {
+        prevAnimNormalizedTime_ = 0.0f;
+    }
 }
 
 void Player::UpdateSprintInput()
 {
-	const bool isSprintTriggered = GameInput::IsTriggered(GameAction::Sprint);
+    const bool isSprintTriggered = GameInput::IsTriggered(GameAction::Sprint);
 
-	if (isSprintTriggered && GameInput::IsUsingController())
-	{
-		isControllerSprintLatched_ = !isControllerSprintLatched_;
-	}
-	if (!IsMoving())
-	{
-		isControllerSprintLatched_ = false;
-	}
+    if (isSprintTriggered && GameInput::IsUsingController())
+    {
+        isControllerSprintLatched_ = !isControllerSprintLatched_;
+    }
+    if (!IsMoving())
+    {
+        isControllerSprintLatched_ = false;
+    }
 
-	// 取り消したあとは、ボタンを押し直すまでダッシュしない
-	if (isSprintTriggered || !GameInput::IsPressed(GameAction::Sprint))
-	{
-		isSprintRepressRequired_ = false;
-	}
+    // 取り消したあとは、ボタンを押し直すまでダッシュしない
+    if (isSprintTriggered || !GameInput::IsPressed(GameAction::Sprint))
+    {
+        isSprintRepressRequired_ = false;
+    }
 
-	isSprintInputActive_ = isControllable_ && !isSprintRepressRequired_
-		&& (GameInput::IsPressed(GameAction::Sprint) || isControllerSprintLatched_);
+    isSprintInputActive_ = isControllable_ && !isSprintRepressRequired_
+        && (GameInput::IsPressed(GameAction::Sprint) || isControllerSprintLatched_);
 }
 
 void Player::CancelSprintInput()
 {
-	isControllerSprintLatched_ = false;
-	isSprintRepressRequired_ = true;
-	isSprintInputActive_ = false;
+    isControllerSprintLatched_ = false;
+    isSprintRepressRequired_ = true;
+    isSprintInputActive_ = false;
 }
 
 bool Player::TryStartDodge()
 {
-	if (!IsDodgeInputTriggered() || !stamina_->TryConsume(config.dodgeStaminaCost))
-		return false;
+    if (!IsDodgeInputTriggered() || !stamina_->TryConsume(config.dodgeStaminaCost))
+        return false;
 
-	stateMachine_->ChangeState<PlayerStateDodge>();
-	return true;
+    stateMachine_->ChangeState<PlayerStateDodge>();
+    return true;
 }
 
 bool Player::TryStartJump()
 {
-	if (!IsJumpInputTriggered() || !stamina_->TryConsume(config.jumpStaminaCost))
-		return false;
+    if (!IsJumpInputTriggered() || !stamina_->TryConsume(config.jumpStaminaCost))
+        return false;
 
-	velocityY_ = config.jumpInitialVelocity;
-	stateMachine_->ChangeState<PlayerStateJump>();
-	AudioPlayer::GetInstance().Play("playerLand", 0.8f);
+    velocityY_ = config.jumpInitialVelocity;
+    stateMachine_->ChangeState<PlayerStateJump>();
+    AudioPlayer::GetInstance().Play("playerFootImpact", 0.8f);
 
-	return true;
+    return true;
 }
 
 bool Player::IsDodgeInputTriggered() const
 {
-	return isControllable_ && GameInput::IsTriggered(GameAction::Dodge);
+    return isControllable_ && GameInput::IsTriggered(GameAction::Dodge);
 }
 
 bool Player::IsAimInputActive() const
 {
-	return isControllable_ && GameInput::IsPressed(GameAction::Aim);
+    return isControllable_ && GameInput::IsPressed(GameAction::Aim);
 }
 
 bool Player::IsJumpInputTriggered() const
 {
-	return isControllable_ && GameInput::IsTriggered(GameAction::Jump);
+    return isControllable_ && GameInput::IsTriggered(GameAction::Jump);
 }
 
 bool Player::IsReloadInputTriggered() const
 {
-	// よろけている間はリロードできない
-	return isControllable_ && !stateMachine_->IsCurrentState<PlayerStateHurt>() && GameInput::IsTriggered(GameAction::Reload);
+    // よろけている間はリロードできない
+    return isControllable_ && !stateMachine_->IsCurrentState<PlayerStateHurt>() && GameInput::IsTriggered(GameAction::Reload);
 }
 
 bool Player::IsCrawlInputTriggered() const
 {
-	return isControllable_ && GameInput::IsTriggered(GameAction::Crawl);
+    return isControllable_ && GameInput::IsTriggered(GameAction::Crawl);
 }
 
 bool Player::IsCrawling() const
 {
-	return stateMachine_ && stateMachine_->IsCurrentState<PlayerStateCrawl>();
+    return stateMachine_ && stateMachine_->IsCurrentState<PlayerStateCrawl>();
 }
 
 void Player::StandUp()
 {
-	if (IsCrawling())
-	{
-		stateMachine_->ChangeState<PlayerStateNormal>();
-	}
+    if (IsCrawling())
+    {
+        stateMachine_->ChangeState<PlayerStateNormal>();
+    }
 }
 
 bool Player::IsHidden() const
 {
-	return concealment_->IsHidden();
+    return concealment_->IsHidden();
 }
 
 void Player::SetGrassField(const GrassField* grassField)
 {
-	concealment_->SetGrassField(grassField);
+    concealment_->SetGrassField(grassField);
 }
 
 Vector3 Player::GetCurrentColliderSize() const
 {
-	if (!IsCrawling())
-	{
-		return colliderSize_;
-	}
-	return { colliderSize_.x, colliderSize_.y * config.crawlColliderHeightRate, colliderSize_.z };
+    if (!IsCrawling())
+    {
+        return colliderSize_;
+    }
+    return { colliderSize_.x, colliderSize_.y * config.crawlColliderHeightRate, colliderSize_.z };
 }
 
 Vector3 Player::GetCurrentColliderOffset() const
 {
-	// 足元の高さは変えずに低くする
-	if (!IsCrawling())
-	{
-		return colliderOffset_;
-	}
-	return { colliderOffset_.x, colliderOffset_.y * config.crawlColliderHeightRate, colliderOffset_.z };
+    // 足元の高さは変えずに低くする
+    if (!IsCrawling())
+    {
+        return colliderOffset_;
+    }
+    return { colliderOffset_.x, colliderOffset_.y * config.crawlColliderHeightRate, colliderOffset_.z };
 }
 
 bool Player::IsShootInputTriggered() const
 {
-	return isControllable_ && GameInput::IsTriggered(GameAction::Shoot);
+    return isControllable_ && GameInput::IsTriggered(GameAction::Shoot);
 }
 
 void Player::OnCollisionEnter(Collider* mine, Collider* other)
@@ -780,173 +786,173 @@ void Player::OnCollisionEnter(Collider* mine, Collider* other)
 
 void Player::Draw()
 {
-	animationModel_->GetTransform().translation_ = GetTransform().translation_;
+    animationModel_->GetTransform().translation_ = GetTransform().translation_;
 
-	animationModel_->Draw();
+    animationModel_->Draw();
 
-	weapon_->Draw();
+    weapon_->Draw();
 
-	if (isControllable_)
-	{
-		reticle_->Draw(weapon_->GetAmmoType() == PlayerWeapon::AmmoType::Incendiary);
-		ammoDisplay_->Draw(*weapon_);
-		moneyDisplay_->Draw(money_);
-		stamina_->DrawGauge(health_->GetGaugeOffset(), health_->GetGaugeSize());
-		health_->DrawHUD();
-	}
+    if (isControllable_)
+    {
+        reticle_->Draw(weapon_->GetAmmoType() == PlayerWeapon::AmmoType::Incendiary);
+        ammoDisplay_->Draw(*weapon_);
+        moneyDisplay_->Draw(money_);
+        stamina_->DrawGauge(health_->GetGaugeOffset(), health_->GetGaugeSize());
+        health_->DrawHUD();
+    }
 }
 
 void Player::DebugGui()
 {
-	ImGui::Begin("プレイヤー");
+    ImGui::Begin("プレイヤー");
 
-	binder_->DrawAnimationModel("PlayerModel", "プレイヤーインスペクター");
+    binder_->DrawAnimationModel("PlayerModel", "プレイヤーインスペクター");
 
-	ImGui::Separator();
+    ImGui::Separator();
 
-	weapon_->DebugGui();
-	reticle_->DebugGui();
+    weapon_->DebugGui();
+    reticle_->DebugGui();
 
-	if (ImGui::CollapsingHeader("残弾表示"))
-	{
-		ammoDisplay_->DrawProperties(*binder_);
-	}
+    if (ImGui::CollapsingHeader("残弾表示"))
+    {
+        ammoDisplay_->DrawProperties(*binder_);
+    }
 
-	if (ImGui::CollapsingHeader("所持金"))
-	{
-		ImGui::Text("所持金: %d", money_);
-		moneyDisplay_->DrawProperties(*binder_);
-	}
+    if (ImGui::CollapsingHeader("所持金"))
+    {
+        ImGui::Text("所持金: %d", money_);
+        moneyDisplay_->DrawProperties(*binder_);
+    }
 
-	if (ImGui::CollapsingHeader("動き"))
-	{
-		binder_->Draw("RunSpeed", "走り速度");
-		binder_->Draw("RotationSpeed", "回転の速さ");
-	}
+    if (ImGui::CollapsingHeader("動き"))
+    {
+        binder_->Draw("RunSpeed", "走り速度");
+        binder_->Draw("RotationSpeed", "回転の速さ");
+    }
 
-	ImGui::Text("状態: %s", stateMachine_->GetCurrentStateName());
+    ImGui::Text("状態: %s", stateMachine_->GetCurrentStateName());
 
-	if (ImGui::CollapsingHeader("ダッシュ"))
-	{
-		binder_->Draw("SprintSpeedRate", "速さの倍率 (走りに対して)");
-		binder_->Draw("SprintAnimSpeed", "アニメ速度");
-		binder_->Draw("SprintStaminaPerSecond", "1 秒あたりのスタミナ消費");
-	}
+    if (ImGui::CollapsingHeader("ダッシュ"))
+    {
+        binder_->Draw("SprintSpeedRate", "速さの倍率 (走りに対して)");
+        binder_->Draw("SprintAnimSpeed", "アニメ速度");
+        binder_->Draw("SprintStaminaPerSecond", "1 秒あたりのスタミナ消費");
+    }
 
-	if (ImGui::CollapsingHeader("這う・隠れる"))
-	{
-		binder_->Draw("CrouchSpeed", "移動の速さ");
-		binder_->Draw("CrouchWalkAnimSpeed", "歩きアニメ速度");
-		binder_->Draw("CrouchIdleAnimSpeed", "待機アニメ速度");
-		binder_->Draw("CrouchBlendTime", "アニメの補間時間 (秒)");
-		binder_->Draw("CrouchColliderHeightRate", "当たり判定の高さの倍率");
-		concealment_->DrawProperties(*binder_);
-	}
+    if (ImGui::CollapsingHeader("這う・隠れる"))
+    {
+        binder_->Draw("CrouchSpeed", "移動の速さ");
+        binder_->Draw("CrouchWalkAnimSpeed", "歩きアニメ速度");
+        binder_->Draw("CrouchIdleAnimSpeed", "待機アニメ速度");
+        binder_->Draw("CrouchBlendTime", "アニメの補間時間 (秒)");
+        binder_->Draw("CrouchColliderHeightRate", "当たり判定の高さの倍率");
+        concealment_->DrawProperties(*binder_);
+    }
 
-	if (ImGui::CollapsingHeader("燃える"))
-	{
-		burn_->DrawProperties(*binder_);
-	}
+    if (ImGui::CollapsingHeader("燃える"))
+    {
+        burn_->DrawProperties(*binder_);
+    }
 
-	if (ImGui::CollapsingHeader("回避"))
-	{
-		binder_->Draw("DodgeDistance", "移動距離");
-		binder_->Draw("DodgeDuration", "かかる時間 (秒)");
-		binder_->Draw("DodgeStaminaCost", "スタミナ消費");
-		binder_->Draw("DodgeAnimSpeed", "アニメ速度");
-	}
+    if (ImGui::CollapsingHeader("回避"))
+    {
+        binder_->Draw("DodgeDistance", "移動距離");
+        binder_->Draw("DodgeDuration", "かかる時間 (秒)");
+        binder_->Draw("DodgeStaminaCost", "スタミナ消費");
+        binder_->Draw("DodgeAnimSpeed", "アニメ速度");
+    }
 
-	if (ImGui::CollapsingHeader("殴られたとき"))
-	{
-		binder_->Draw("HitKnockbackDistance", "押し飛ばされる距離");
-		binder_->Draw("HitKnockbackTime", "押し飛ばされる時間 (秒)");
-		binder_->Draw("HitStunTime", "操作できない時間 (秒)");
-		binder_->Draw("HitInvulnerableTime", "次に殴られても効かない時間 (秒)");
-		binder_->Draw("DamagedSoundVolume", "殴られたり撃たれたりしたときの音の大きさ");
-		binder_->Draw("HitCameraShake", "カメラの揺れ (ラジアン)");
-		binder_->Draw("HitStopTime", "当たった瞬間に止める時間 (秒)");
-		binder_->Draw("HitStopTimeScale", "止めている間の時間の速さ");
-	}
+    if (ImGui::CollapsingHeader("殴られたとき"))
+    {
+        binder_->Draw("HitKnockbackDistance", "押し飛ばされる距離");
+        binder_->Draw("HitKnockbackTime", "押し飛ばされる時間 (秒)");
+        binder_->Draw("HitStunTime", "操作できない時間 (秒)");
+        binder_->Draw("HitInvulnerableTime", "次に殴られても効かない時間 (秒)");
+        binder_->Draw("DamagedSoundVolume", "殴られたり撃たれたりしたときの音の大きさ");
+        binder_->Draw("HitCameraShake", "カメラの揺れ (ラジアン)");
+        binder_->Draw("HitStopTime", "当たった瞬間に止める時間 (秒)");
+        binder_->Draw("HitStopTimeScale", "止めている間の時間の速さ");
+    }
 
-	if (ImGui::CollapsingHeader("初期位置"))
-	{
-		binder_->Draw("SpawnPosition", "位置 (倒れたときもここに戻る)");
-		binder_->Draw("SpawnRotationY", "向き (度)");
-		if (ImGui::Button("今の位置と向きを初期位置にする"))
-		{
-			const Vector3 forward = GetTransform().rotation_.RotateVector({ 0.0f, 0.0f, 1.0f });
-			spawnPosition_ = GetTransform().translation_;
-			spawnRotationY_ = std::atan2(forward.x, forward.z) * 180.0f / Math::PI;
+    if (ImGui::CollapsingHeader("初期位置"))
+    {
+        binder_->Draw("SpawnPosition", "位置 (倒れたときもここに戻る)");
+        binder_->Draw("SpawnRotationY", "向き (度)");
+        if (ImGui::Button("今の位置と向きを初期位置にする"))
+        {
+            const Vector3 forward = GetTransform().rotation_.RotateVector({ 0.0f, 0.0f, 1.0f });
+            spawnPosition_ = GetTransform().translation_;
+            spawnRotationY_ = std::atan2(forward.x, forward.z) * 180.0f / Math::PI;
 
-			// ボタンで変えた値は保存対象に書き込まないと残らない
-			GlobalVariables* globalVariables = GlobalVariables::GetInstance();
-			globalVariables->SetValue(binder_->GetGroupPath(), "SpawnPosition", spawnPosition_);
-			globalVariables->SetValue(binder_->GetGroupPath(), "SpawnRotationY", spawnRotationY_);
-		}
-		ImGui::SameLine();
-		if (ImGui::Button("初期位置に戻す"))
-		{
-			ResetToSpawn();
-		}
-	}
+            // ボタンで変えた値は保存対象に書き込まないと残らない
+            GlobalVariables* globalVariables = GlobalVariables::GetInstance();
+            globalVariables->SetValue(binder_->GetGroupPath(), "SpawnPosition", spawnPosition_);
+            globalVariables->SetValue(binder_->GetGroupPath(), "SpawnRotationY", spawnRotationY_);
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("初期位置に戻す"))
+        {
+            ResetToSpawn();
+        }
+    }
 
-	if (ImGui::CollapsingHeader("HP"))
-	{
-		health_->DrawProperties(*binder_);
-		if (!IsDead() && ImGui::Button("倒れる (ゲームオーバーの確認)"))
-		{
-			health_->TakeDamage(health_->GetCurrent(), false);
-			StartDeath();
-		}
-	}
+    if (ImGui::CollapsingHeader("HP"))
+    {
+        health_->DrawProperties(*binder_);
+        if (!IsDead() && ImGui::Button("倒れる (ゲームオーバーの確認)"))
+        {
+            health_->TakeDamage(health_->GetCurrent(), false);
+            StartDeath();
+        }
+    }
 
-	if (ImGui::CollapsingHeader("スタミナ"))
-	{
-		stamina_->DrawProperties(*binder_);
-	}
+    if (ImGui::CollapsingHeader("スタミナ"))
+    {
+        stamina_->DrawProperties(*binder_);
+    }
 
-	if (ImGui::CollapsingHeader("エイム設定"))
-	{
-		binder_->Draw("AimMoveSpeed", "エイム時移動速度");
-		binder_->Draw("AimIdleAnimSpeed", "エイム待機アニメ速度");
-		binder_->Draw("AimWalkAnimSpeed", "エイム歩きアニメ速度");
-		binder_->Draw("AimBlendTime", "エイム補間時間(秒)");
-		binder_->Draw("MaxDamageMultiplier", "フォーカス時威力倍率");
-		binder_->Draw("MaxBulletSpread", "最大弾道ブレ角");
-	}
+    if (ImGui::CollapsingHeader("エイム設定"))
+    {
+        binder_->Draw("AimMoveSpeed", "エイム時移動速度");
+        binder_->Draw("AimIdleAnimSpeed", "エイム待機アニメ速度");
+        binder_->Draw("AimWalkAnimSpeed", "エイム歩きアニメ速度");
+        binder_->Draw("AimBlendTime", "エイム補間時間(秒)");
+        binder_->Draw("MaxDamageMultiplier", "フォーカス時威力倍率");
+        binder_->Draw("MaxBulletSpread", "最大弾道ブレ角");
+    }
 
-	if (ImGui::CollapsingHeader("ジャンプ"))
-	{
-		binder_->Draw("JumpInitialVelocity", "ジャンプ初速");
-		binder_->Draw("Gravity", "重力加速度");
-		binder_->Draw("AirControlRate", "空中移動制御率");
-		binder_->Draw("JumpStaminaCost", "スタミナ消費");
-	}
+    if (ImGui::CollapsingHeader("ジャンプ"))
+    {
+        binder_->Draw("JumpInitialVelocity", "ジャンプ初速");
+        binder_->Draw("Gravity", "重力加速度");
+        binder_->Draw("AirControlRate", "空中移動制御率");
+        binder_->Draw("JumpStaminaCost", "スタミナ消費");
+    }
 
-	if (ImGui::CollapsingHeader("アニメーション調整"))
-	{
-		binder_->Draw("IdleAnimSpeed", "待機アニメ速度");
-		binder_->Draw("RunAnimSpeed", "走りアニメ速度");
-		binder_->Draw("JumpAnimSpeed", "ジャンプアニメ速度");
-		binder_->Draw("IdleToRunBlendTime", "待機→走り 補間時間");
-		binder_->Draw("RunToIdleBlendTime", "走り→待機 補間時間");
-		binder_->Draw("JumpBlendTime", "ジャンプ 補間時間");
-	}
+    if (ImGui::CollapsingHeader("アニメーション調整"))
+    {
+        binder_->Draw("IdleAnimSpeed", "待機アニメ速度");
+        binder_->Draw("RunAnimSpeed", "走りアニメ速度");
+        binder_->Draw("JumpAnimSpeed", "ジャンプアニメ速度");
+        binder_->Draw("IdleToRunBlendTime", "待機→走り 補間時間");
+        binder_->Draw("RunToIdleBlendTime", "走り→待機 補間時間");
+        binder_->Draw("JumpBlendTime", "ジャンプ 補間時間");
+    }
 
-	if (ImGui::CollapsingHeader("コライダー"))
-	{
-		binder_->Draw("ColliderOffset", "位置オフセット");
-		binder_->Draw("ColliderSize", "大きさ (幅・高さ・奥行き)");
-	}
+    if (ImGui::CollapsingHeader("コライダー"))
+    {
+        binder_->Draw("ColliderOffset", "位置オフセット");
+        binder_->Draw("ColliderSize", "大きさ (幅・高さ・奥行き)");
+    }
 
-	if (ImGui::CollapsingHeader("環境インタラクション"))
-	{
-		binder_->Draw("InteractionRadius", "干渉半径");
-		binder_->Draw("InteractionForce", "押し出し強度");
-		binder_->Draw("MaxVerticalDist", "有効高低差");
-	}
+    if (ImGui::CollapsingHeader("環境インタラクション"))
+    {
+        binder_->Draw("InteractionRadius", "干渉半径");
+        binder_->Draw("InteractionForce", "押し出し強度");
+        binder_->Draw("MaxVerticalDist", "有効高低差");
+    }
 
-	ImGui::Separator();
+    ImGui::Separator();
 
-	ImGui::End();
+    ImGui::End();
 }

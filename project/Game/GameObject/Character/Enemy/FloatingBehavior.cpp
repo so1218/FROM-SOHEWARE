@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "FloatingBehavior.h"
+#include "GameRandom.h"
 #include "Enemy.h"
 #include "Player.h"
 #include "GameDefine.h"
@@ -16,7 +17,7 @@ using namespace FS;
 
 FloatingBehavior::FloatingBehavior(const FloatingEnemyConfig& config, const Terrain* terrain, const TreeField* treeField, const Model* thrusterSourceModel,
     const Vector3& spawnPosition, const Vector3& firstWanderTarget)
-    : config_(config), thrusterSourceModel_(thrusterSourceModel), terrain_(terrain), treeField_(treeField), random_(std::random_device{}()),
+    : config_(config), thrusterSourceModel_(thrusterSourceModel), terrain_(terrain), treeField_(treeField),
     spawnPosition_(spawnPosition), wanderTarget_(firstWanderTarget), hasWanderTarget_(true)
 {
 }
@@ -225,10 +226,10 @@ void FloatingBehavior::UpdatePatrol(Enemy* owner, float deltaTime)
         const float offsetZ = wanderTarget_.z - position.z;
         if (offsetX * offsetX + offsetZ * offsetZ < kArriveDistance * kArriveDistance)
         {
-            wanderPauseTimer_ = RandomRange(config_.wanderPauseMinTime, std::max(config_.wanderPauseMinTime, config_.wanderPauseMaxTime));
+            wanderPauseTimer_ = GameRandom::Range(config_.wanderPauseMinTime, std::max(config_.wanderPauseMinTime, config_.wanderPauseMaxTime));
             const Vector3 forward = owner->GetTransform().rotation_.RotateVector({ 0.0f, 0.0f, -1.0f });
             scanAngle_ = std::atan2(forward.x, forward.z);
-            scanDirection_ = RandomRange(0.0f, 1.0f) < 0.5f ? -1.0f : 1.0f;
+            scanDirection_ = GameRandom::Range(0.0f, 1.0f) < 0.5f ? -1.0f : 1.0f;
         }
     }
 
@@ -272,8 +273,8 @@ void FloatingBehavior::ChooseWanderTarget(const Vector3& position)
     const float maxStep = std::max(config_.wanderMinStep, config_.wanderMaxStep);
     for (int attempt = 0; attempt < kAttemptCount; ++attempt)
     {
-        const float angle = RandomRange(0.0f, Math::PI * 2.0f);
-        const float step = RandomRange(minStep, maxStep);
+        const float angle = GameRandom::Range(0.0f, Math::PI * 2.0f);
+        const float step = GameRandom::Range(minStep, maxStep);
         const Vector3 candidate = { origin.x + std::cos(angle) * step, 0.0f, origin.z + std::sin(angle) * step };
         if (std::abs(candidate.x - center.x) <= halfSize.x && std::abs(candidate.z - center.y) <= halfSize.y)
         {
@@ -312,11 +313,11 @@ void FloatingBehavior::UpdateChase(Enemy* owner, float deltaTime)
     orbitChangeTimer_ -= deltaTime;
     if (orbitChangeTimer_ <= 0.0f)
     {
-        if (RandomRange(0.0f, 1.0f) < 0.5f)
+        if (GameRandom::Range(0.0f, 1.0f) < 0.5f)
         {
             orbitDirection_ = -orbitDirection_;
         }
-        orbitChangeTimer_ = RandomRange(1.5f, 4.0f);
+        orbitChangeTimer_ = GameRandom::Range(1.5f, 4.0f);
     }
     orbitAngle_ += config_.orbitSpeed * orbitDirection_ * deltaTime;
 
@@ -580,7 +581,7 @@ void FloatingBehavior::FaceDirection(Enemy* owner, const Vector3& direction, flo
 void FloatingBehavior::FireShot(Enemy* owner)
 {
     const Vector3 muzzle = GetMuzzlePosition(owner);
-    const Vector3 spread = { RandomRange(-config_.shotSpread, config_.shotSpread), RandomRange(-config_.shotSpread, config_.shotSpread), RandomRange(-config_.shotSpread, config_.shotSpread) };
+    const Vector3 spread = { GameRandom::Range(-config_.shotSpread, config_.shotSpread), GameRandom::Range(-config_.shotSpread, config_.shotSpread), GameRandom::Range(-config_.shotSpread, config_.shotSpread) };
     const Vector3 shotDirection = (aimDirection_ + spread).Normalize();
 
     // プレイヤーの銃と聞き分けられるよう、敵専用の銃声にする
@@ -733,11 +734,6 @@ Vector3 FloatingBehavior::GetThrusterLocalPosition(int thrusterIndex) const
     const float signX = (thrusterIndex & 1) ? -1.0f : 1.0f;
     const float signZ = (thrusterIndex & 2) ? -1.0f : 1.0f;
     return { config_.thrusterOffset.x * signX, config_.thrusterOffset.y, config_.thrusterOffset.z * signZ };
-}
-
-float FloatingBehavior::RandomRange(float min, float max)
-{
-    return std::uniform_real_distribution<float>(min, max)(random_);
 }
 
 // 調整中に ImGui で位置や大きさを変えても、すぐ当たり判定と見た目に反映されるよう毎フレーム設定する
