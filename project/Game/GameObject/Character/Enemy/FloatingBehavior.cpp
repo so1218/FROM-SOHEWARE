@@ -70,6 +70,7 @@ void FloatingBehavior::Initialize(Enemy* owner)
     }
     tracerEmitterPtr_ = particleSystem->SpawnEmitter("floatingTracer");
     chargeEmitterPtr_ = particleSystem->SpawnEmitter("floatingCharge");
+    thrusterHitZapEmitterPtr_ = particleSystem->SpawnEmitter("zombieHeadshotZap");
     if (chargeEmitterPtr_)
     {
         chargeEmitterPtr_->SetAttractionTarget(&chargeTarget_);
@@ -656,11 +657,21 @@ int FloatingBehavior::ModifyDamage(Enemy* owner, int damage, const Collider* hit
     }
 
     // 壊れたスラスターのコライダーは無効にしてあるので、当たるのは残っているものだけ
+    wasThrusterHit_ = false;
     for (int thrusterIndex = 0; thrusterIndex < kThrusterCount; ++thrusterIndex)
     {
         if (thrusterColliders_[thrusterIndex] != hitCollider)
         {
             continue;
+        }
+
+        wasThrusterHit_ = true;
+
+        // スラスターの真ん中で、電撃を一瞬だけ走らせる
+        if (thrusterHitZapEmitterPtr_)
+        {
+            thrusterHitZapEmitterPtr_->SetPosition(thrusterModels_[thrusterIndex]->GetTransform().translation_);
+            thrusterHitZapEmitterPtr_->Play();
         }
 
         thrusterHP_[thrusterIndex] -= damage;
@@ -686,7 +697,6 @@ void FloatingBehavior::DestroyThruster(Enemy* owner, int thrusterIndex)
     }
     AudioPlayer& audioPlayer = AudioPlayer::GetInstance();
     const Vector3& thrusterPosition = thrusterModels_[thrusterIndex]->GetTransform().translation_;
-    audioPlayer.Play3D("floatingEnemyDamaged", owner->GetTransform().translation_, { .volume = 0.6f, .maxDistance = 100.0f });
     const char* thrusterExplosionSound = audioPlayer.HasSound("floatingThrusterExplosion") ? "floatingThrusterExplosion" : "floatingEnemyExplosion";
     audioPlayer.Play3D(thrusterExplosionSound, thrusterPosition, { .volume = config_.thrusterExplosionVolume, .maxDistance = 150.0f });
 
@@ -807,7 +817,17 @@ void FloatingBehavior::OnDeath(Enemy* owner)
 
 void FloatingBehavior::OnTakeDamage(Enemy* owner, int damage, const Vector3& hitPoint, const Vector3& hitNormal)
 {
-    AudioPlayer::GetInstance().Play("floatingEnemyDamaged", 0.5f);
+    // 撃った手応えとして、距離に関係なく同じ大きさで鳴らす
+    // 本体は弾かれる音で効きにくいことを、スラスターは効いている音で弱点であることを伝える
+    if (wasThrusterHit_)
+    {
+        AudioPlayer::GetInstance().Play("floatingThrusterHit", config_.thrusterHitSoundVolume);
+    }
+    else
+    {
+        AudioPlayer::GetInstance().Play("floatingBodyHit", config_.bodyHitSoundVolume);
+    }
+    wasThrusterHit_ = false;
 }
 
 void FloatingBehavior::OnDespawn(Enemy* owner)
@@ -827,7 +847,7 @@ void FloatingBehavior::OnDespawn(Enemy* owner)
     }
 
     // 撃った演出は飛んでいる途中の粒が消えるまで残したいので、倒れたときではなく片付けるときに消す
-    for (ParticleEmitter** emitter : { &tracerEmitterPtr_, &chargeEmitterPtr_ })
+    for (ParticleEmitter** emitter : { &tracerEmitterPtr_, &chargeEmitterPtr_, &thrusterHitZapEmitterPtr_ })
     {
         if (*emitter)
         {
@@ -952,6 +972,8 @@ void FloatingEnemyConfig::Bind(PropertyBinder& binder)
     binder.Bind("ShotSoundVolume", &shotSoundVolume, 0.5f, 0.01f, 0.0f, 2.0f);
     binder.Bind("LockOnSoundVolume", &lockOnSoundVolume, 0.5f, 0.01f, 0.0f, 2.0f);
     binder.Bind("ThrusterExplosionVolume", &thrusterExplosionVolume, 0.3f, 0.01f, 0.0f, 2.0f);
+    binder.Bind("BodyHitSoundVolume", &bodyHitSoundVolume, 0.5f, 0.01f, 0.0f, 2.0f);
+    binder.Bind("ThrusterHitSoundVolume", &thrusterHitSoundVolume, 0.7f, 0.01f, 0.0f, 2.0f);
 
     binder.Bind("ThrusterOffset", &thrusterOffset, { 1.0f, 1.0f, 1.0f });
     binder.Bind("ThrusterScale", &thrusterScale, { 0.5f, 0.5f, 0.5f });
@@ -1063,6 +1085,8 @@ void FloatingEnemyConfig::Draw(PropertyBinder& binder)
         binder.Draw("ShotSoundVolume", "銃声 (floatingEnemyShot) の大きさ");
         binder.Draw("LockOnSoundVolume", "狙い始めの音 (floatingLockOn) の大きさ");
         binder.Draw("ThrusterExplosionVolume", "スラスターが壊れたときの爆発音 (floatingThrusterExplosion。無ければ floatingEnemyExplosion) の大きさ");
+        binder.Draw("BodyHitSoundVolume", "本体に当たったときの音 (floatingBodyHit) の大きさ");
+        binder.Draw("ThrusterHitSoundVolume", "スラスターに当たったときの音 (floatingThrusterHit) の大きさ");
         ImGui::TreePop();
     }
 

@@ -63,6 +63,8 @@ struct FloatingEnemyConfig
     float shotSoundVolume = 0.5f;        
     float lockOnSoundVolume = 0.5f;     
     float thrusterExplosionVolume = 0.3f;
+    float bodyHitSoundVolume = 0.5f;
+    float thrusterHitSoundVolume = 0.7f;
 
     // スラスター 
     FS::Vector3 thrusterOffset = { 1.0f, 1.0f, 1.0f };  
@@ -213,6 +215,8 @@ private:
     std::unique_ptr<FS::Model> thrusterModels_[kThrusterCount];
     float propellerAngle_ = 0.0f;
     int destroyedThrusterCount_ = 0;
+    // ModifyDamage で分かった当たった場所を、OnTakeDamage で音を選ぶのに使う
+    bool wasThrusterHit_ = false;
 
     // 今のライトの色と絞り
     FS::Vector4 currentSpotColor_ = { 0.0f, 0.0f, 0.0f, 1.0f };
@@ -235,6 +239,8 @@ private:
     FS::ParticleEmitter* tracerEmitterPtr_ = nullptr;
     // ためている間に銃口へ吸い込まれる粒
     FS::ParticleEmitter* chargeEmitterPtr_ = nullptr;
+    // スラスターに当たったときの電撃。弱点に当たったと分かるよう、ゾンビの頭に当てたときと同じものを使う
+    FS::ParticleEmitter* thrusterHitZapEmitterPtr_ = nullptr;
     FS::WorldTransform chargeTarget_;
     int soundHandleID_ = -1;
 };
