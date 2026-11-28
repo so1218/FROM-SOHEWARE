@@ -16,6 +16,7 @@ public:
     bool IsPressed() const;
     bool IsTriggered() const;
     bool IsReleased() const;
+    bool IsMouse() const { return source_ == Source::Mouse; }
 
 private:
     enum class Source

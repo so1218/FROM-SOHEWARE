@@ -33,8 +33,14 @@ bool IsReleased(GameAction action);
 
 // 移動の入力 
 FS::Vector2 GetMoveAxis();
-// 視点の入力
+// 視点の入力 
 FS::Vector2 GetLookAxis(float stickDeadzone);
+// マウスで視点を動かした量
+FS::Vector2 GetMouseLookDelta();
+// true の間は、カーソルを隠して閉じ込め、マウスで視点と銃を操作
+void SetCursorLocked(bool isLocked);
+// 閉じ込める範囲
+void SetCursorLockArea(const FS::Vector2& min, const FS::Vector2& size);
 // メニューの上下の入力
 float GetMenuVertical();
 // メニューの左右の入力

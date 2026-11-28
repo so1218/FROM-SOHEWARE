@@ -93,10 +93,13 @@ void Input::Update()
 
     UpdatePads();
     UpdateLastUsedDevice();
+    UpdateCursorLock();
 }
 
 void Input::Finalize()
 {
+    ApplyCursorLock(false);
+
     for (int i = 0; i < kMaxPadCount; ++i)
     {
         SetVibration(i, 0.0f, 0.0f);
@@ -149,6 +152,54 @@ void Input::UpdatePads()
                 SetVibration(i, 0.0f, 0.0f);
             }
         }
+    }
+}
+
+void Input::UpdateCursorLock()
+{
+    wasCursorLocked_ = isCursorLocked_;
+
+    // 別のウィンドウに切り替えたら、カーソルを返す
+    const bool shouldLock = isCursorLockRequested_ && GetForegroundWindow() == hwnd_;
+    if (shouldLock != isCursorLocked_)
+    {
+        ApplyCursorLock(shouldLock);
+    }
+    if (!isCursorLocked_)
+    {
+        return;
+    }
+
+    // ウィンドウを動かしたり大きさを変えたりしても外に出ないよう、毎フレーム範囲を合わせる
+    RECT clientRect = {};
+    GetClientRect(hwnd_, &clientRect);
+    if (cursorLockAreaSize_.x > 0.0f && cursorLockAreaSize_.y > 0.0f)
+    {
+        clientRect.left = static_cast<LONG>(cursorLockAreaMin_.x);
+        clientRect.top = static_cast<LONG>(cursorLockAreaMin_.y);
+        clientRect.right = static_cast<LONG>(cursorLockAreaMin_.x + cursorLockAreaSize_.x);
+        clientRect.bottom = static_cast<LONG>(cursorLockAreaMin_.y + cursorLockAreaSize_.y);
+    }
+    POINT topLeft = { clientRect.left, clientRect.top };
+    POINT bottomRight = { clientRect.right, clientRect.bottom };
+    ClientToScreen(hwnd_, &topLeft);
+    ClientToScreen(hwnd_, &bottomRight);
+    const RECT clipRect = { topLeft.x, topLeft.y, bottomRight.x, bottomRight.y };
+    ClipCursor(&clipRect);
+}
+
+void Input::ApplyCursorLock(bool isLocked)
+{
+    isCursorLocked_ = isLocked;
+    // ShowCursor は呼んだ回数を数えているので、表示の境目をまたぐまで呼ぶ
+    if (isLocked)
+    {
+        while (ShowCursor(FALSE) >= 0) {}
+    }
+    else
+    {
+        ClipCursor(nullptr);
+        while (ShowCursor(TRUE) < 0) {}
     }
 }
 

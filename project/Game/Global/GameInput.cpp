@@ -20,10 +20,10 @@ const std::vector<InputBinding>& GetBindings(GameAction action)
     {
         { GameAction::Sprint, { Key(DIK_LSHIFT), Pad(PadButton::L3) } },
         { GameAction::Dodge, { Key(DIK_LCONTROL), Pad(PadButton::B) } },
-        { GameAction::Aim, { Key(DIK_K), Pad(PadButton::LT) } },
+        { GameAction::Aim, { Mouse(Input::MouseButton::Right), Key(DIK_K), Pad(PadButton::LT) } },
         { GameAction::Jump, { Key(DIK_SPACE), Pad(PadButton::A) } },
         { GameAction::Reload,  { Key(DIK_R), Pad(PadButton::X) } },
-        { GameAction::Shoot,   { Key(DIK_J), Pad(PadButton::RT) } },
+        { GameAction::Shoot,   { Mouse(Input::MouseButton::Left), Key(DIK_J), Pad(PadButton::RT) } },
         { GameAction::Crawl,  { Key(DIK_C), Pad(PadButton::R3) } },
         { GameAction::SwitchAmmo, { Key(DIK_Q), Pad(PadButton::Y) } },
 
@@ -37,6 +37,12 @@ const std::vector<InputBinding>& GetBindings(GameAction action)
     const auto it = kBindings.find(action);
     assert(it != kBindings.end() && "GameAction を足したら kBindings にも割り当てを足す");
     return it->second;
+}
+
+// マウスのボタンは、カーソルを閉じ込めている間だけ使う
+bool IsBindingActive(const InputBinding& binding)
+{
+    return !binding.IsMouse() || Input::GetInstance().IsCursorLocked();
 }
 
 // 上下左右に割り当てるキー
@@ -73,13 +79,13 @@ namespace GameInput
 bool IsPressed(GameAction action)
 {
     const auto& bindings = GetBindings(action);
-    return std::any_of(bindings.begin(), bindings.end(), [](const InputBinding& binding) { return binding.IsPressed(); });
+    return std::any_of(bindings.begin(), bindings.end(), [](const InputBinding& binding) { return IsBindingActive(binding) && binding.IsPressed(); });
 }
 
 bool IsTriggered(GameAction action)
 {
     const auto& bindings = GetBindings(action);
-    return std::any_of(bindings.begin(), bindings.end(), [](const InputBinding& binding) { return binding.IsTriggered(); });
+    return std::any_of(bindings.begin(), bindings.end(), [](const InputBinding& binding) { return IsBindingActive(binding) && binding.IsTriggered(); });
 }
 
 bool IsReleased(GameAction action)
@@ -88,7 +94,7 @@ bool IsReleased(GameAction action)
     if (IsPressed(action)) return false;
 
     const auto& bindings = GetBindings(action);
-    return std::any_of(bindings.begin(), bindings.end(), [](const InputBinding& binding) { return binding.IsReleased(); });
+    return std::any_of(bindings.begin(), bindings.end(), [](const InputBinding& binding) { return IsBindingActive(binding) && binding.IsReleased(); });
 }
 
 Vector2 GetMoveAxis()
@@ -104,6 +110,22 @@ Vector2 GetLookAxis(float stickDeadzone)
 {
     const Vector2 look = Input::GetInstance().GetStick(Input::Stick::Right, stickDeadzone) + GetKeyDirection(kLookKeys);
     return { std::clamp(look.x, -1.0f, 1.0f), std::clamp(look.y, -1.0f, 1.0f) };
+}
+
+Vector2 GetMouseLookDelta()
+{
+    const Input& input = Input::GetInstance();
+    return input.IsCursorLocked() ? input.GetMouseDelta() : Vector2(0.0f, 0.0f);
+}
+
+void SetCursorLocked(bool isLocked)
+{
+    Input::GetInstance().SetCursorLocked(isLocked);
+}
+
+void SetCursorLockArea(const Vector2& min, const Vector2& size)
+{
+    Input::GetInstance().SetCursorLockArea(min, size);
 }
 
 float GetMenuVertical()

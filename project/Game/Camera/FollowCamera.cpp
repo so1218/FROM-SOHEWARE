@@ -40,6 +40,9 @@ void FollowCamera::Initialize()
 
     binder_->Bind("Rotate Speed Yaw", &rotateSpeedYaw_, 2.0f, 0.01f, 0.0f, 10.0f);
     binder_->Bind("Rotate Speed Pitch", &rotateSpeedPitch_, 2.0f, 0.01f, 0.0f, 10.0f);
+    binder_->Bind("Mouse Sensitivity", &mouseSensitivity_, 0.0025f, 0.0001f, 0.0001f, 0.02f);
+    binder_->Bind("Mouse Aim Sens Multiplier", &mouseAimSensitivityMultiplier_, 0.6f, 0.05f, 0.1f, 2.0f);
+    binder_->Bind("Mouse Invert Y", &isMouseYInverted_, false);
     binder_->Bind("Rotation Acceleration Time", &rotationAccelerationTime_, 0.1f, 0.005f, 0.0f, 1.0f);
     binder_->Bind("Rotation Deceleration Time", &rotationDecelerationTime_, 0.04f, 0.005f, 0.0f, 1.0f);
     binder_->Bind("Position Lerp Speed", &positionLerpSpeed_, 8.0f, 0.1f, 0.0f, 20.0f);
@@ -122,6 +125,16 @@ void FollowCamera::UpdateCamera(Camera* camera)
 
     currentYaw_ = std::remainder(currentYaw_ + yawRate_ * dt, Math::PI * 2.0f);
     currentPitch_ += pitchRate_ * dt;
+
+    // マウスは動かした量をそのまま角度にする
+    if (canLook)
+    {
+        const Vector2 mouseDelta = GameInput::GetMouseLookDelta();
+        const float mouseSensitivity = isAiming_ ? mouseSensitivity_ * mouseAimSensitivityMultiplier_ : mouseSensitivity_;
+        const float pitchSign = isMouseYInverted_ ? -1.0f : 1.0f;
+        currentYaw_ = std::remainder(currentYaw_ + mouseDelta.x * mouseSensitivity, Math::PI * 2.0f);
+        currentPitch_ += mouseDelta.y * mouseSensitivity * pitchSign;
+    }
 
     if (isDeathFocus_)
     {
@@ -246,6 +259,9 @@ void FollowCamera::DebugGui()
     {
         binder_->Draw("Rotate Speed Yaw", "左右回転速度");
         binder_->Draw("Rotate Speed Pitch", "上下回転速度");
+        binder_->Draw("Mouse Sensitivity", "マウス感度 (1 ピクセルで回す角度)");
+        binder_->Draw("Mouse Aim Sens Multiplier", "エイム時のマウス感度倍率");
+        binder_->Draw("Mouse Invert Y", "マウスの上下を反転");
         binder_->Draw("Rotation Acceleration Time", "回し始めの加速時間 (秒)");
         binder_->Draw("Rotation Deceleration Time", "止めるときの減速時間 (秒)");
         binder_->Draw("Position Lerp Speed", "追従スピード");

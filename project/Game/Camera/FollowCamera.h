@@ -109,6 +109,11 @@ private:
     float rotateSpeedYaw_ = 2.0f;
     float rotateSpeedPitch_ = 2.0f;
 
+    // マウスを 1 ピクセル動かしたときに回す角度
+    float mouseSensitivity_ = 0.0025f;
+    float mouseAimSensitivityMultiplier_ = 0.6f;
+    bool isMouseYInverted_ = false;
+
     FS::Terrain* terrain_ = nullptr;
     float minGroundOffset_ = 0.8f;
     float groundCheckRadius_ = 0.4f;

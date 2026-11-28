@@ -55,6 +55,8 @@ private:
     void RestartFromSpawn();
     // ポーズメニューの開け閉めに合わせてゲームを止める・動かす
     void UpdatePauseMenu();
+    // 遊んでいる間だけ、カーソルを隠して閉じ込める
+    void UpdateCursorLock();
     // 時計を最初の時刻・晴れに戻して止める
     void ResetGameClock();
     // 目的を見せてから本番を始める
@@ -91,6 +93,9 @@ private:
     Phase phase_ = Phase::Title;
 
     bool isPaused_ = false;
+    // エディターを出している間に、シーンのウィンドウを押してマウスで遊び始めたか
+    bool isEditorMouseCaptured_ = false;
+    bool wasGuiVisible_ = false;
     float timeScaleBeforePause_ = 1.0f;
 
     // ゲームの時計

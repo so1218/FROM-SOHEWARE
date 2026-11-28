@@ -33,6 +33,7 @@
 #include "RendererManager.h"
 #include "StageCatalog.h"
 #include "GameRecords.h"
+#include "GameInput.h"
 
 using namespace FS;
 
@@ -120,6 +121,7 @@ void PlayScene::OnInitialize()
 void PlayScene::OnUpdate()
 {
     UpdatePauseMenu();
+    UpdateCursorLock();
 
     switch (phase_)
     {
@@ -389,6 +391,35 @@ void PlayScene::UpdatePauseMenu()
     ApplyPhaseSettings();
 }
 
+void PlayScene::UpdateCursorLock()
+{
+    // ポーズ中はメニューを押せるようにカーソルを返す
+    const bool isInGame = (IsPlayablePhase(phase_) || phase_ == Phase::Intro) && !isPaused_;
+    const bool isGuiVisible = ImGuiManager::IsGuiVisible();
+
+    // エディターを出している間は、シーンのウィンドウを左クリックするとマウスで遊べる
+    if (!isInGame || isGuiVisible != wasGuiVisible_)
+    {
+        isEditorMouseCaptured_ = false;
+    }
+    else if (isGuiVisible && ImGuiManager::IsSceneHovered() && Input::GetInstance().IsMouseButtonTriggered(Input::MouseButton::Left))
+    {
+        isEditorMouseCaptured_ = true;
+    }
+    wasGuiVisible_ = isGuiVisible;
+
+    GameInput::SetCursorLocked(isInGame && (!isGuiVisible || isEditorMouseCaptured_));
+    // エディターを出している間は、ほかのウィンドウを押さないようシーンのウィンドウの中に閉じ込める
+    if (isGuiVisible)
+    {
+        GameInput::SetCursorLockArea(ImGuiManager::GetSceneViewportMin(), ImGuiManager::GetSceneViewportSize());
+    }
+    else
+    {
+        GameInput::SetCursorLockArea({ 0.0f, 0.0f }, { 0.0f, 0.0f });
+    }
+}
+
 void PlayScene::ChangePhase(Phase phase)
 {
     // 目的を見せている間とリザルトの間は敵に襲わせない
@@ -569,4 +600,7 @@ void PlayScene::OnFinalize()
     // 戦闘の BGM とヘリの音を次のシーンに残さない
     StopCombatBgm();
     StopHelicopterSound();
+
+    // カーソルを隠したまま次のシーンへ行かない
+    GameInput::SetCursorLocked(false);
 }

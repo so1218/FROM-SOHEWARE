@@ -72,6 +72,12 @@ public:
     Vector2 GetMouseDelta() const;
     // ホイールを回した量。奥に回すと正で、1 目盛りで 120
     float GetMouseWheel() const;
+    // true の間は、カーソルを隠してウィンドウの中から出ないようにする
+    void SetCursorLocked(bool isLocked) { isCursorLockRequested_ = isLocked; }
+    // 閉じ込める範囲をウィンドウの左上からのピクセルで決める
+    void SetCursorLockArea(const Vector2& min, const Vector2& size) { cursorLockAreaMin_ = min; cursorLockAreaSize_ = size; }
+    // カーソルを隠して閉じ込めているか
+    bool IsCursorLocked() const { return isCursorLocked_ && wasCursorLocked_; }
 
     // パッド
     bool IsPadConnected(int padIndex = 0) const;
@@ -93,6 +99,8 @@ private:
 
     void UpdatePads();
     void UpdateLastUsedDevice();
+    void UpdateCursorLock();
+    void ApplyCursorLock(bool isLocked);
     void SetVibration(int padIndex, float leftMotorSpeed, float rightMotorSpeed);
     static bool IsPadButtonDown(const XINPUT_GAMEPAD& pad, PadButton button);
     static bool IsValidPad(int padIndex) { return padIndex >= 0 && padIndex < kMaxPadCount; }
@@ -117,6 +125,12 @@ private:
     float disconnectedPadPollTimers_[kMaxPadCount] = {};
 
     Device lastUsedDevice_ = Device::KeyboardMouse;
+
+    bool isCursorLockRequested_ = false;
+    bool isCursorLocked_ = false;
+    bool wasCursorLocked_ = false;
+    Vector2 cursorLockAreaMin_ = { 0.0f, 0.0f };
+    Vector2 cursorLockAreaSize_ = { 0.0f, 0.0f };
 };
 
 }
