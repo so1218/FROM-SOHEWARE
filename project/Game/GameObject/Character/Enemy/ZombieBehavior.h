@@ -111,6 +111,7 @@ public:
 
     const EnemyBodyConfig& GetBodyConfig() const override { return config_.body; }
     std::string GetDamageParticleName() const override { return "zombieHitBullet"; }
+    bool IsBurning() const override { return burn_.IsBurning(); }
     bool DrawsBodyModel() const override { return false; }
 
     bool OnHealthDepleted(Enemy* owner) override;

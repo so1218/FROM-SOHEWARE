@@ -71,11 +71,21 @@ void PlayerConcealment::Update(const Vector3& footPosition, const Vector3& bodyC
         postEffectManager->SetOverlayVignette(vignetteAmount_ * easedRatio, vignetteColor_, vignetteStart_, vignetteEnd_);
     }
 
-    // 周りの音を小さくこもらせる
-    const float easedRatio = effectRatio_ * effectRatio_ * (3.0f - 2.0f * effectRatio_);
+    // 周りの音を小さくこもらせる。リザルトなどで外から頼まれたときも同じにする
+    // リザルトは時間を止めることがあるので、音の変化は止まらない時間で進める
+    const float unscaledDeltaTime = TimeManager::GetInstance()->GetUnscaledDeltaTime();
+    if (isHidden_ || isWorldSoundMuffled_)
+    {
+        soundRatio_ = std::min(soundRatio_ + unscaledDeltaTime / fadeInTime_, 1.0f);
+    }
+    else
+    {
+        soundRatio_ = std::max(soundRatio_ - unscaledDeltaTime / fadeOutTime_, 0.0f);
+    }
+    const float easedSoundRatio = soundRatio_ * soundRatio_ * (3.0f - 2.0f * soundRatio_);
     AudioPlayer& audioPlayer = AudioPlayer::GetInstance();
-    audioPlayer.SetWorldVolume(1.0f + (hiddenWorldVolume_ - 1.0f) * easedRatio);
-    audioPlayer.SetWorldMuffle(hiddenWorldMuffle_ * easedRatio);
+    audioPlayer.SetWorldVolume(1.0f + (hiddenWorldVolume_ - 1.0f) * easedSoundRatio);
+    audioPlayer.SetWorldMuffle(hiddenWorldMuffle_ * easedSoundRatio);
 }
 
 void PlayerConcealment::Reset()
@@ -85,6 +95,7 @@ void PlayerConcealment::Reset()
     isInFogVolume_ = false;
     isHidden_ = false;
     effectRatio_ = 0.0f;
+    soundRatio_ = 0.0f;
 
     PostEffectManager* postEffectManager = engine_ ? engine_->GetPostEffectManager() : nullptr;
     if (postEffectManager)

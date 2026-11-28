@@ -3,7 +3,7 @@
         "ChoiceDelay": 0.6000000238418579,
         "ChoiceFadeTime": 0.4000000059604645,
         "ChoiceFontSize": 30.0,
-        "ChoiceOffsetY": 200.0,
+        "ChoiceOffsetY": 230.0,
         "ChoiceSelectedColor": [
             1.0,
             1.0,
@@ -17,11 +17,53 @@
             1.0,
             0.3499999940395355
         ],
+        "ClearSound": "resultClear",
+        "ClearSoundVolume": 0.800000011920929,
+        "Comment1": "…お前はだめだな。もう一度新人からやり直せ！",
+        "Comment2": "うーむ、何とも言えない結果だな...w",
+        "Comment3": "合格点だ。…その粘り強さだけは褒めてやる",
+        "Comment4": "大した奴だ。俺の偉大な背中が見えてきたか",
+        "Comment5": "…化け物か、お前は。俺の後を継げそうだな",
+        "CommentCharactersPerSecond": 16.0,
+        "CommentClickSound": "radioClick",
+        "CommentClickVolume": 0.6000000238418579,
+        "CommentCommaPause": 0.11999999731779099,
+        "CommentDelay": 0.5,
+        "CommentFlickerTime": 0.3499999940395355,
+        "CommentFont": "Maru",
+        "CommentFontSize": 30.0,
+        "CommentLineGap": 42.0,
+        "CommentLinePause": 0.4000000059604645,
+        "CommentNoiseSound": "radioNoise",
+        "CommentNoiseVolume": 0.3499999940395355,
+        "CommentOffsetY": 50.0,
+        "CommentPeriodPause": 0.25,
+        "CommentSpeaker": "ホーリー隊長",
+        "CommentSpeakerColor": [
+            0.699999988079071,
+            0.75,
+            0.699999988079071,
+            0.8999999761581421
+        ],
+        "CommentSpeakerFontSize": 20.0,
+        "CommentSpeakerGap": 34.0,
+        "CommentTextColor": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "CommentThreshold2": 200,
+        "CommentThreshold3": 400,
+        "CommentThreshold4": 500,
+        "CommentThreshold5": 600,
+        "CommentTypeSound": "radioType",
+        "CommentTypeSoundVolume": 0.25,
         "DimColor": [
-            0.0,
-            0.0,
-            0.0,
-            0.699999988079071
+            0.015527963638305664,
+            0.015527963638305664,
+            0.015527963638305664,
+            1.0
         ],
         "DimTime": 1.2000000476837158,
         "FadeInTime": 1.0,
@@ -46,8 +88,35 @@
             1.0
         ],
         "MoneyLabelFontSize": 28.0,
-        "MoneyLabelOffsetY": -40.0,
-        "MoneyOffsetY": 30.0,
+        "MoneyLabelOffsetY": -85.0,
+        "MoneyOffsetY": -15.0,
+        "Reward1": "隊長の熱血鉄拳",
+        "Reward2": "隊長の冷笑",
+        "Reward3": "隊長が密かに作っていた納豆",
+        "Reward4": "隊長の武勇伝(3時間コース)",
+        "Reward5": "隊長の愛銃",
+        "RewardColor": [
+            1.0,
+            0.10559004545211792,
+            0.10559004545211792,
+            1.0
+        ],
+        "RewardDelay": 0.4000000059604645,
+        "RewardFontSize": 38.0,
+        "RewardGap": 66.0,
+        "RewardLabel": "報酬",
+        "RewardLabelColor": [
+            1.0,
+            1.0,
+            1.0,
+            0.699999988079071
+        ],
+        "RewardLabelFontSize": 22.0,
+        "RewardLabelGap": 15.0,
+        "RewardSound": "rewardStamp",
+        "RewardSoundVolume": 1.2000000476837158,
+        "RewardStampScale": 2.0,
+        "RewardStampTime": 0.25,
         "TitleCharSpacing": 8.0,
         "TitleColor": [
             0.3919254541397095,
@@ -68,6 +137,6 @@
             0.699999988079071
         ],
         "TitleGlowSoftness": 11.899999618530273,
-        "TitleOffsetY": -170.0
+        "TitleOffsetY": -200.0
     }
 }

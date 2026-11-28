@@ -180,6 +180,10 @@ public:
 
     // false の間は入力を受け付けず、HUD も出さない
     void SetControllable(bool isControllable) { isControllable_ = isControllable; }
+    // true の間は、周りの音を隠れているときと同じにする
+    void SetWorldSoundMuffled(bool isMuffled);
+    // false の間は、攻撃や炎でダメージを受けない (チュートリアルなど)
+    void SetDamageEnabled(bool isEnabled) { isDamageEnabled_ = isEnabled; }
     bool IsControllable() const { return isControllable_; }
 
     // true の間は敵に気づかれず、狙われていても見失われる
@@ -258,6 +262,7 @@ private:
     float hitStopTimer_ = 0.0f;
     float timeScaleBeforeHitStop_ = 1.0f;
     bool isControllable_ = true;
+    bool isDamageEnabled_ = true;
     bool isIgnoredByEnemies_ = false;
 };
 

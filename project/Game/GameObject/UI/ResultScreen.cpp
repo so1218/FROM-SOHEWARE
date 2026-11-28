@@ -29,7 +29,7 @@ float Ratio(float time, float duration)
 }
 
 ResultScreen::ResultScreen(Engine* engine)
-    : engine_(engine)
+    : engine_(engine), comment_(engine)
 {
     binder_ = std::make_unique<PropertyBinder>(engine_, "ResultScreen");
 
@@ -63,16 +63,28 @@ ResultScreen::ResultScreen(Engine* engine)
         text->SetAlign(TextAlign::Center);
         text->SetLayerOrder(46);
     }
+
+    // 「報酬」と品物を横に並べ、ひとまとまりで中央にそろえる
+    rewardLabelText_ = std::make_unique<Text>(engine_, "Maru");
+    rewardText_ = std::make_unique<Text>(engine_, "Maru");
+    for (Text* text : { rewardLabelText_.get(), rewardText_.get() })
+    {
+        UITextStyle::ApplyMaruShadow(*text);
+        text->SetScreenAnchor({ 0.5f, 0.5f });
+        text->SetPivot({ 0.5f, 0.5f });
+        text->SetAlign(TextAlign::Center);
+        text->SetLayerOrder(46);
+    }
 }
 
 void ResultScreen::Initialize()
 {
-    binder_->BindColor("DimColor", &dimColor_, { 0.0f, 0.0f, 0.0f, 0.7f });
+    binder_->BindColor("DimColor", &dimColor_, { 0.0f, 0.0f, 0.0f, 0.88f });
     binder_->Bind("DimTime", &dimTime_, 1.2f, 0.01f, 0.01f, 5.0f);
 
     binder_->BindFontName("Font", "Maru", [this](const std::string& fontName)
         {
-            for (Text* text : { moneyLabelText_.get(), retryText_.get(), titleChoiceText_.get() })
+            for (Text* text : { moneyLabelText_.get(), retryText_.get(), titleChoiceText_.get(), rewardLabelText_.get(), rewardText_.get() })
             {
                 text->SetFont(fontName);
             }
@@ -82,9 +94,11 @@ void ResultScreen::Initialize()
     binder_->BindString("TitleContent", "YOU SURVIVED", [this](const std::string& content) { titleText_->SetText(content); });
 
     binder_->Bind("TitleDelay", &titleDelay_, 0.6f, 0.01f, 0.0f, 10.0f);
+    binder_->BindString("ClearSound", clearSoundName_, [this](const std::string& name) { clearSoundName_ = name; });
+    binder_->Bind("ClearSoundVolume", &clearSoundVolume_, 0.8f, 0.01f, 0.0f, 2.0f);
     binder_->Bind("TitleFadeTime", &titleFadeTime_, 0.8f, 0.01f, 0.01f, 5.0f);
     binder_->Bind("TitleFontSize", &titleFontSize_, 96.0f, 1.0f, 8.0f, 1000.0f);
-    binder_->Bind("TitleOffsetY", &titleOffsetY_, -170.0f, 1.0f);
+    binder_->Bind("TitleOffsetY", &titleOffsetY_, -200.0f, 1.0f);
     binder_->BindColor("TitleColor", &titleColor_, { 0.86f, 0.72f, 0.38f, 1.0f });
     binder_->BindColor("TitleGlowColor", &titleGlowColor_, { 0.45f, 0.3f, 0.05f, 0.7f });
     binder_->Bind("TitleGlowSoftness", &titleGlowSoftness_, 12.0f, 0.1f, 0.0f, 50.0f);
@@ -94,17 +108,47 @@ void ResultScreen::Initialize()
     binder_->Bind("MoneyDelay", &moneyDelay_, 1.4f, 0.01f, 0.0f, 10.0f);
     binder_->Bind("MoneyCountTime", &moneyCountTime_, 1.2f, 0.01f, 0.01f, 10.0f);
     binder_->Bind("MoneyLabelFontSize", &moneyLabelFontSize_, 28.0f, 0.5f, 4.0f, 200.0f);
-    binder_->Bind("MoneyLabelOffsetY", &moneyLabelOffsetY_, -40.0f, 1.0f);
+    binder_->Bind("MoneyLabelOffsetY", &moneyLabelOffsetY_, -85.0f, 1.0f);
     binder_->Bind("MoneyFontSize", &moneyFontSize_, 80.0f, 0.5f, 4.0f, 400.0f);
-    binder_->Bind("MoneyOffsetY", &moneyOffsetY_, 30.0f, 1.0f);
+    binder_->Bind("MoneyOffsetY", &moneyOffsetY_, -15.0f, 1.0f);
     binder_->BindColor("MoneyLabelColor", &moneyLabelColor_, { 1.0f, 1.0f, 1.0f, 0.7f });
     binder_->BindColor("MoneyColor", &moneyColor_, { 1.0f, 0.85f, 0.4f, 1.0f });
     binder_->Bind("MoneyCountSoundVolume", &moneyCountSoundVolume_, 0.6f, 0.01f, 0.0f, 2.0f);
 
+    binder_->BindString("CommentSpeaker", commentSpeaker_, [this](const std::string& text) { commentSpeaker_ = text; });
+    for (int rank = 0; rank < kCommentRankCount; ++rank)
+    {
+        const std::string number = std::to_string(rank + 1);
+        binder_->BindString("Comment" + number, comments_[rank], [this, rank](const std::string& text) { comments_[rank] = text; });
+        if (rank > 0)
+        {
+            binder_->Bind("CommentThreshold" + number, &commentThresholds_[rank - 1], commentThresholds_[rank - 1], 10.0f, 0, 1000000);
+        }
+    }
+    for (int rank = 0; rank < kCommentRankCount; ++rank)
+    {
+        binder_->BindString("Reward" + std::to_string(rank + 1), rewards_[rank], [this, rank](const std::string& text) { rewards_[rank] = text; });
+    }
+    binder_->BindString("RewardLabel", rewardLabel_, [this](const std::string& text) { rewardLabel_ = text; });
+    binder_->Bind("RewardDelay", &rewardDelay_, 0.4f, 0.01f, 0.0f, 10.0f);
+    binder_->Bind("RewardGap", &rewardGap_, 52.0f, 0.5f, 0.0f, 500.0f);
+    binder_->Bind("RewardStampTime", &rewardStampTime_, 0.25f, 0.01f, 0.01f, 3.0f);
+    binder_->Bind("RewardStampScale", &rewardStampScale_, 1.6f, 0.01f, 1.0f, 5.0f);
+    binder_->Bind("RewardFontSize", &rewardFontSize_, 34.0f, 0.5f, 4.0f, 200.0f);
+    binder_->Bind("RewardLabelFontSize", &rewardLabelFontSize_, 22.0f, 0.5f, 4.0f, 200.0f);
+    binder_->Bind("RewardLabelGap", &rewardLabelGap_, 16.0f, 0.5f, 0.0f, 200.0f);
+    binder_->BindColor("RewardColor", &rewardColor_, { 1.0f, 0.85f, 0.4f, 1.0f });
+    binder_->BindColor("RewardLabelColor", &rewardLabelColor_, { 1.0f, 1.0f, 1.0f, 0.7f });
+    binder_->BindString("RewardSound", rewardSoundName_, [this](const std::string& name) { rewardSoundName_ = name; });
+    binder_->Bind("RewardSoundVolume", &rewardSoundVolume_, 0.8f, 0.01f, 0.0f, 2.0f);
+    binder_->Bind("CommentDelay", &commentDelay_, 0.5f, 0.01f, 0.0f, 10.0f);
+    binder_->Bind("CommentOffsetY", &commentOffsetY_, 50.0f, 1.0f);
+    comment_.BindProperties(*binder_, "Comment");
+
     binder_->Bind("ChoiceDelay", &choiceDelay_, 0.6f, 0.01f, 0.0f, 10.0f);
     binder_->Bind("ChoiceFadeTime", &choiceFadeTime_, 0.4f, 0.01f, 0.01f, 5.0f);
     binder_->Bind("ChoiceFontSize", &choiceFontSize_, 30.0f, 0.5f, 4.0f, 200.0f);
-    binder_->Bind("ChoiceOffsetY", &choiceOffsetY_, 200.0f, 1.0f);
+    binder_->Bind("ChoiceOffsetY", &choiceOffsetY_, 230.0f, 1.0f);
     binder_->Bind("ChoiceSpacing", &choiceSpacing_, 260.0f, 1.0f, 0.0f, 1000.0f);
     binder_->BindColor("ChoiceSelectedColor", &choiceSelectedColor_, { 1.0f, 1.0f, 1.0f, 1.0f });
     binder_->BindColor("ChoiceUnselectedColor", &choiceUnselectedColor_, { 1.0f, 1.0f, 1.0f, 0.35f });
@@ -130,13 +174,48 @@ void ResultScreen::Begin(int money)
     request_.reset();
     // 遊んでいる最中に倒していた方向キーで、すぐに選択が動かないようにする
     isHorizontalHeld_ = true;
+    hasStartedComment_ = false;
+    hasShownReward_ = false;
+    comment_.Stop();
     ChangePhase(Phase::Reveal);
 }
 
 void ResultScreen::Cancel()
 {
     request_.reset();
+    comment_.Stop();
     ChangePhase(Phase::Hidden);
+}
+
+int ResultScreen::GetRank() const
+{
+    int rank = 0;
+    while (rank < kCommentRankCount - 1 && money_ >= commentThresholds_[rank])
+    {
+        ++rank;
+    }
+    return rank;
+}
+
+float ResultScreen::GetRewardTime() const
+{
+    if (!SelectComment().empty())
+    {
+        return comment_.IsTyped() ? comment_.GetTypedTime() - rewardDelay_ : -1.0f;
+    }
+    // 一言がない段階は、無線が入るはずだった時刻から数える
+    return revealTimer_ - (moneyDelay_ + moneyCountTime_ + commentDelay_) - rewardDelay_;
+}
+
+bool ResultScreen::IsCommentFinished() const
+{
+    const float countEndTime = moneyDelay_ + moneyCountTime_;
+    if (revealTimer_ < countEndTime + commentDelay_)
+    {
+        return false;
+    }
+    // 一言を空にした段階では、無線を入れずにそのまま選択肢へ進む
+    return SelectComment().empty() || comment_.IsTyped();
 }
 
 std::optional<ResultScreen::Choice> ResultScreen::TakeRequest()
@@ -161,6 +240,7 @@ void ResultScreen::Update()
 
     const float deltaTime = TimeManager::GetInstance()->GetUnscaledDeltaTime();
     phaseTimer_ += deltaTime;
+    comment_.Update(deltaTime);
 
     switch (phase_)
     {
@@ -168,13 +248,45 @@ void ResultScreen::Update()
     {
         const float previousTimer = revealTimer_;
         revealTimer_ += deltaTime;
+        if (previousTimer <= titleDelay_ && revealTimer_ > titleDelay_)
+        {
+            PlayIfLoaded(clearSoundName_, clearSoundVolume_);
+        }
         if (previousTimer < moneyDelay_ && revealTimer_ >= moneyDelay_ && money_ > 0)
         {
             PlayIfLoaded("coinBurst", moneyCountSoundVolume_);
         }
-        if (revealTimer_ >= moneyDelay_ + moneyCountTime_ + choiceDelay_)
+        // 数え終えて少ししたら、隊長から無線が入る
+        if (!hasStartedComment_ && revealTimer_ >= moneyDelay_ + moneyCountTime_ + commentDelay_)
         {
-            ChangePhase(Phase::Select);
+            hasStartedComment_ = true;
+            const std::string& comment = SelectComment();
+            if (!comment.empty())
+            {
+                comment_.Start(commentSpeaker_, { comment });
+            }
+        }
+        // 言っている途中に決定を押したら、残りを一気に出す
+        if (comment_.IsStarted() && !comment_.IsTyped() && GameInput::IsTriggered(GameAction::Confirm))
+        {
+            comment_.SkipTyping();
+        }
+        // 言い終えたら、判子を押すように報酬を出す
+        if (!hasShownReward_ && !SelectReward().empty() && GetRewardTime() >= 0.0f)
+        {
+            hasShownReward_ = true;
+            PlayIfLoaded(rewardSoundName_, rewardSoundVolume_);
+        }
+        // 報酬を出して少ししたら選べるようにする
+        if (IsCommentFinished())
+        {
+            const float waitedTime = SelectReward().empty()
+                ? (SelectComment().empty() ? choiceDelay_ : comment_.GetTypedTime())
+                : GetRewardTime();
+            if (waitedTime >= choiceDelay_)
+            {
+                ChangePhase(Phase::Select);
+            }
         }
         break;
     }
@@ -209,6 +321,7 @@ void ResultScreen::Update()
     case Phase::FadeIn:
         if (phaseTimer_ >= fadeInTime_)
         {
+            comment_.Stop();
             ChangePhase(Phase::Hidden);
         }
         break;
@@ -328,11 +441,52 @@ void ResultScreen::DrawContent(float opacity)
         moneyText_->Draw();
     }
 
+    comment_.Draw(commentOffsetY_, opacity);
+    DrawReward(opacity);
+
     const float choiceRatio = phase_ == Phase::Reveal ? 0.0f : Ratio(phase_ == Phase::Select ? phaseTimer_ : choiceFadeTime_, choiceFadeTime_);
     if (choiceRatio > 0.0f)
     {
         DrawChoices(opacity * SmoothStep01(choiceRatio));
     }
+}
+
+void ResultScreen::DrawReward(float opacity)
+{
+    const std::string& reward = SelectReward();
+    const float rewardTime = phase_ == Phase::Reveal ? GetRewardTime() : rewardStampTime_;
+    if (reward.empty() || rewardTime < 0.0f || (phase_ == Phase::Reveal && !hasShownReward_))
+    {
+        return;
+    }
+
+    // 大きく現れて、押し付けるように元の大きさへ縮む
+    const float stampRatio = Ratio(rewardTime, rewardStampTime_);
+    const float inverse = 1.0f - stampRatio;
+    const float scale = 1.0f + (rewardStampScale_ - 1.0f) * inverse * inverse;
+    const float rewardOpacity = opacity * SmoothStep01(stampRatio * 2.0f);
+
+    const float rewardY = SelectComment().empty() ? commentOffsetY_ : comment_.GetLastLineY(commentOffsetY_) + rewardGap_;
+
+    rewardLabelText_->SetText(rewardLabel_);
+    rewardLabelText_->SetFontSize(rewardLabelFontSize_);
+    rewardText_->SetText(reward);
+    rewardText_->SetFontSize(rewardFontSize_);
+    // 並べる位置は、縮みきった大きさで決めておき、揺れないようにする
+    const float labelWidth = rewardLabelText_->MeasureSize().x;
+    const float rewardWidth = rewardText_->MeasureSize().x;
+    const float groupLeft = -(labelWidth + rewardLabelGap_ + rewardWidth) * 0.5f;
+
+    rewardLabelText_->SetPosition({ groupLeft + labelWidth * 0.5f, rewardY });
+    rewardLabelText_->SetColor(rewardLabelColor_);
+    rewardLabelText_->SetOpacity(rewardOpacity);
+    rewardLabelText_->Draw();
+
+    rewardText_->SetFontSize(rewardFontSize_ * scale);
+    rewardText_->SetPosition({ groupLeft + labelWidth + rewardLabelGap_ + rewardWidth * 0.5f, rewardY });
+    rewardText_->SetColor(rewardColor_);
+    rewardText_->SetOpacity(rewardOpacity);
+    rewardText_->Draw();
 }
 
 void ResultScreen::DrawChoices(float opacity)
@@ -383,6 +537,8 @@ void ResultScreen::DebugGui()
         binder_->Draw("TitleContent", "文字");
         binder_->Draw("TitleFont", "フォント");
         binder_->Draw("TitleDelay", "出るまで (秒)");
+        binder_->Draw("ClearSound", "出るときの音");
+        binder_->Draw("ClearSoundVolume", "出るときの音の大きさ");
         binder_->Draw("TitleFadeTime", "濃くなるまで (秒)");
         binder_->Draw("TitleFontSize", "大きさ");
         binder_->Draw("TitleOffsetY", "位置 (画面中央から)");
@@ -409,9 +565,61 @@ void ResultScreen::DebugGui()
         ImGui::TreePop();
     }
 
+    if (ImGui::TreeNode("隊長の一言"))
+    {
+        ImGui::TextDisabled("所持金が段階の金額に届くと、次の段階の一言になる。空にした段階は何も言わない");
+        binder_->Draw("CommentSpeaker", "話している人");
+        for (int rank = 0; rank < kCommentRankCount; ++rank)
+        {
+            const std::string number = std::to_string(rank + 1);
+            if (rank > 0)
+            {
+                binder_->Draw("CommentThreshold" + number, "段階 " + number + " になる金額");
+            }
+            binder_->Draw("Comment" + number, "段階 " + number + " の一言");
+        }
+        ImGui::SeparatorText("報酬");
+        binder_->Draw("RewardLabel", "見出しの文字");
+        for (int rank = 0; rank < kCommentRankCount; ++rank)
+        {
+            const std::string number = std::to_string(rank + 1);
+            binder_->Draw("Reward" + number, "段階 " + number + " の報酬");
+        }
+        binder_->Draw("RewardDelay", "言い終えてから出るまで (秒)");
+        binder_->Draw("RewardGap", "一言から報酬までの間");
+        binder_->Draw("RewardStampTime", "押し付けるまでの時間 (秒)");
+        binder_->Draw("RewardStampScale", "出始めの大きさ (倍)");
+        binder_->Draw("RewardFontSize", "報酬の大きさ");
+        binder_->Draw("RewardLabelFontSize", "見出しの大きさ");
+        binder_->Draw("RewardLabelGap", "見出しと報酬の間");
+        binder_->Draw("RewardColor", "報酬の色");
+        binder_->Draw("RewardLabelColor", "見出しの色");
+        binder_->Draw("RewardSound", "出るときの音");
+        binder_->Draw("RewardSoundVolume", "出るときの音の大きさ");
+        ImGui::SeparatorText("無線");
+        binder_->Draw("CommentDelay", "数え終わってから無線が入るまで (秒)");
+        binder_->Draw("CommentOffsetY", "上端の位置 (画面中央から)");
+        if (ImGui::TreeNode("字幕の時間"))
+        {
+            comment_.DrawTimeProperties(*binder_, "Comment");
+            ImGui::TreePop();
+        }
+        if (ImGui::TreeNode("字幕の見た目"))
+        {
+            comment_.DrawLookProperties(*binder_, "Comment");
+            ImGui::TreePop();
+        }
+        if (ImGui::TreeNode("字幕の音"))
+        {
+            comment_.DrawSoundProperties(*binder_, "Comment");
+            ImGui::TreePop();
+        }
+        ImGui::TreePop();
+    }
+
     if (ImGui::TreeNode("選択肢"))
     {
-        binder_->Draw("ChoiceDelay", "数え終わってから出るまで (秒)");
+        binder_->Draw("ChoiceDelay", "言い終わってから出るまで (秒)");
         binder_->Draw("ChoiceFadeTime", "濃くなるまで (秒)");
         binder_->Draw("ChoiceFontSize", "大きさ");
         binder_->Draw("ChoiceOffsetY", "位置 (画面中央から)");

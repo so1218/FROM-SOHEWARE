@@ -50,6 +50,8 @@ public:
         float shotBoomVolume = 0.8f;        
         float shotTrailVolume = 0.15f;       
         float shotIncendiaryVolume = 0.6f;  
+        // 弾を切り替えたときの音
+        float ammoSwitchVolume = 0.6f;
 
         int baseDamage = 20;
         float maxDistance = 150.0f;

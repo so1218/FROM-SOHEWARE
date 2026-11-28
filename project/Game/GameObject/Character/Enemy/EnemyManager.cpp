@@ -98,6 +98,12 @@ void EnemyManager::SpawnEnemies()
     }
 }
 
+bool EnemyManager::HasBurningEnemy() const
+{
+    return std::any_of(enemies_.begin(), enemies_.end(),
+        [](const std::unique_ptr<Enemy>& enemy) { return enemy->IsActive() && enemy->IsBurning(); });
+}
+
 int EnemyManager::CountAliveFloating() const
 {
     return static_cast<int>(std::count_if(enemies_.begin(), enemies_.end(),

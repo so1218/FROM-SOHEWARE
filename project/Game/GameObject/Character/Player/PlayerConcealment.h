@@ -18,6 +18,8 @@ public:
     void Update(const FS::Vector3& footPosition, const FS::Vector3& bodyCenter, bool isCrawling, bool isControllable);
     // 隠れていないことにして、画面の演出も消す
     void Reset();
+    // true の間は、隠れていなくても周りの音を隠れているときと同じにする (リザルトなど)
+    void SetWorldSoundMuffled(bool isMuffled) { isWorldSoundMuffled_ = isMuffled; }
 
     bool IsHidden() const { return isHidden_; }
     // 焼けていない草の中にいるか
@@ -37,6 +39,9 @@ private:
 
     // 画面の演出の強さ
     float effectRatio_ = 0.0f;
+    // 周りの音だけの割合。隠れているときに加えて、外から音だけこもらせるときにも上がる
+    float soundRatio_ = 0.0f;
+    bool isWorldSoundMuffled_ = false;
 
     // 燃え進み具合がこれを超えた草には隠れられない
     float burntHideThreshold_ = 0.3f;

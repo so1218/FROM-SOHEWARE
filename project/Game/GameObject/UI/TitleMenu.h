@@ -38,6 +38,7 @@ private:
     bool IsConfirmTriggered() const;
     // 見出しとステージ名と、左右のボタンの絵を出す
     void DrawStageSelect(float opacity);
+    void DrawBestRecord(float opacity);
     // 決定を待つ間の左右の入力で、選ぶステージを変える
     void UpdateStageSelect(float deltaTime);
 
@@ -48,6 +49,13 @@ private:
     std::unique_ptr<FS::Text> startText_;
     std::unique_ptr<FS::Text> stageText_;
     std::unique_ptr<FS::Text> stageLabelText_;
+    // 選んでいるステージの最高記録
+    std::unique_ptr<FS::Text> bestText_;
+    std::unique_ptr<FS::Sprite> bestIcon_;
+    std::string bestFormat_;
+    float bestIconSize_ = 28.0f;
+    float bestIconGap_ = 8.0f;
+    float bestIconOffsetY_ = 0.0f;
     std::unique_ptr<FS::Sprite> stageLeftIcon_;
     std::unique_ptr<FS::Sprite> stageRightIcon_;
     float arrowTimer_ = 0.0f;

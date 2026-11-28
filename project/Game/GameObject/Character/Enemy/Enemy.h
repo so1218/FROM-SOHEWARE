@@ -35,6 +35,7 @@ public:
     void Despawn();
     // 倒されて消えたか
     bool IsDefeated() const { return isDefeated_; }
+    bool IsBurning() const { return behavior_ && behavior_->IsBurning(); }
 
     // アクセサ
     FS::Engine* GetEngine() const { return engine_; }

@@ -32,6 +32,7 @@
 #include "PostEffectManager.h"
 #include "RendererManager.h"
 #include "StageCatalog.h"
+#include "GameRecords.h"
 
 using namespace FS;
 
@@ -66,6 +67,7 @@ PlayScene::PlayScene(Engine* engine)
     objectManager_.Create<FoliageField>(engine_, terrain, stage.GetGroupName("FoliageField"));
     gameUI_ = objectManager_.Create<GameUI>(engine_);
     tutorial_ = objectManager_.Create<Tutorial>(engine_, player);
+    tutorial_->SetEnemyManager(enemyManager_);
     titleMenu_ = objectManager_.Create<TitleMenu>(engine_);
     objectManager_.Create<PauseMenuHint>(engine_);
     pauseMenu_ = objectManager_.Create<PauseMenu>(engine_);
@@ -85,6 +87,24 @@ void PlayScene::OnInitialize()
     flowBinder_->Bind("StormDuration", &stormDuration_, 60.0f, 1.0f, 1.0f, 3600.0f);
     flowBinder_->Bind("StormLeadTime", &stormLeadTime_, 10.0f, 0.1f, 0.0f, 60.0f);
     flowBinder_->Bind("TutorialEndDelay", &tutorialEndDelay_, 2.0f, 0.1f, 0.0f, 10.0f);
+    flowBinder_->BindString("CombatBgmSound", combatBgmSoundName_, [this](const std::string& name)
+        {
+            // 曲を変えたら鳴らし直す
+            combatBgmSoundName_ = name;
+            StopCombatBgm();
+            UpdateCombatBgm();
+        });
+    flowBinder_->Bind("CombatBgmVolume", &combatBgmVolume_, 0.2f, 0.01f, 0.0f, 1.0f, [this]()
+        {
+            if (combatBgmHandle_ >= 0)
+            {
+                AudioPlayer::GetInstance().SetVolume(combatBgmHandle_, combatBgmVolume_);
+            }
+        });
+    flowBinder_->BindString("HelicopterSound", helicopterSoundName_, [this](const std::string& name) { helicopterSoundName_ = name; });
+    flowBinder_->Bind("HelicopterLeadTime", &helicopterLeadTime_, 10.0f, 0.1f, 0.0f, 120.0f);
+    flowBinder_->Bind("HelicopterVolume", &helicopterVolume_, 0.8f, 0.01f, 0.0f, 2.0f);
+    flowBinder_->Bind("HelicopterLoop", &isHelicopterLoop_, true);
 
     followCamera_->Initialize();
     titleCamera_->Initialize();
@@ -129,6 +149,7 @@ void PlayScene::OnUpdate()
     case Phase::Playing:
         if (player_->IsDead())
         {
+            StopHelicopterSound();
             gameOverScreen_->Begin();
             followCamera_->SetDeathFocus(true);
             ChangePhase(Phase::GameOver);
@@ -151,6 +172,8 @@ void PlayScene::OnUpdate()
         UpdateGameClock();
         if (playTimer_ >= GetTotalPlayTime())
         {
+            // 生き延びたときだけ、ステージの最高記録を更新する
+            GameRecords::SubmitMoney(StageCatalog::GetSelectedStage().settingsName, player_->GetMoney());
             resultScreen_->Begin(player_->GetMoney());
             ChangePhase(Phase::Result);
         }
@@ -201,6 +224,7 @@ void PlayScene::ResetGameClock()
     isClockRunning_ = false;
     isStormRequested_ = false;
     tutorialEndTimer_ = 0.0f;
+    StopHelicopterSound();
 
     EnvironmentManager* environment = EnvironmentManager::GetInstance();
     environment->SetTimeFlowEnabled(false);
@@ -240,6 +264,67 @@ void PlayScene::UpdateGameClock()
     {
         environment->RequestWeatherChange(WeatherState::Thunderstorm);
         isStormRequested_ = true;
+    }
+
+    UpdateHelicopterSound();
+}
+
+void PlayScene::UpdateHelicopterSound()
+{
+    const float remainingTime = GetTotalPlayTime() - playTimer_;
+    if (remainingTime > helicopterLeadTime_)
+    {
+        return;
+    }
+
+    AudioPlayer& audio = AudioPlayer::GetInstance();
+    if (helicopterHandle_ < 0)
+    {
+        if (!audio.HasSound(helicopterSoundName_))
+        {
+            return;
+        }
+        helicopterHandle_ = isHelicopterLoop_
+            ? audio.PlayLoop(helicopterSoundName_, 0.0f)
+            : audio.Play(helicopterSoundName_, 0.0f);
+    }
+
+    // 終わりの時刻に向けて、遠くから近づくように大きくする
+    const float approach = std::clamp(1.0f - remainingTime / std::max(helicopterLeadTime_, 0.001f), 0.0f, 1.0f);
+    audio.SetVolume(helicopterHandle_, helicopterVolume_ * approach * approach * (3.0f - 2.0f * approach));
+}
+
+void PlayScene::UpdateCombatBgm()
+{
+    const bool shouldPlay = phase_ == Phase::Playing && isClockRunning_;
+    if (!shouldPlay)
+    {
+        StopCombatBgm();
+        return;
+    }
+    AudioPlayer& audio = AudioPlayer::GetInstance();
+    // 曲のファイルがないうちは鳴らさない
+    if (combatBgmHandle_ < 0 && audio.HasSound(combatBgmSoundName_))
+    {
+        combatBgmHandle_ = audio.PlayLoop(combatBgmSoundName_, combatBgmVolume_);
+    }
+}
+
+void PlayScene::StopCombatBgm()
+{
+    if (combatBgmHandle_ >= 0)
+    {
+        AudioPlayer::GetInstance().Stop(combatBgmHandle_);
+        combatBgmHandle_ = -1;
+    }
+}
+
+void PlayScene::StopHelicopterSound()
+{
+    if (helicopterHandle_ >= 0)
+    {
+        AudioPlayer::GetInstance().Stop(helicopterHandle_);
+        helicopterHandle_ = -1;
     }
 }
 
@@ -320,6 +405,14 @@ void PlayScene::ApplyPhaseSettings()
 
     gameUI_->SetGameplayVisible(isPlaying);
     player_->SetControllable(isPlaying && !isPaused_);
+    // ポーズ中・倒れたあと・リザルトの間は、周りの音を隠れているときと同じに小さくこもらせる
+    player_->SetWorldSoundMuffled(isPaused_ || phase_ == Phase::GameOver || phase_ == Phase::Result);
+    // チュートリアル中 (時計がまだ動いていない間) はダメージを受けない
+    player_->SetDamageEnabled(!(isPlaying && !isClockRunning_));
+    // 戦闘の BGM は本番の間だけ。チュートリアル中 (時計がまだ動いていない間) やリザルトでは鳴らさない
+    UpdateCombatBgm();
+    // 目的の無線を聞いている間は、了解を押すまでカメラも回せない
+    followCamera_->SetLookInputEnabled(phase_ != Phase::Intro);
     titleMenu_->SetInputEnabled(!isPaused_);
 
     if (isPaused_)
@@ -414,6 +507,12 @@ void PlayScene::OnDebugGui()
     flowBinder_->Draw("StormDuration", "雷雨の間の長さ (秒)");
     flowBinder_->Draw("StormLeadTime", "雷雨に変え始める早さ (秒前)");
     flowBinder_->Draw("TutorialEndDelay", "チュートリアルを終えてから暗転するまで (秒)");
+    flowBinder_->Draw("CombatBgmSound", "本番の戦闘の BGM");
+    flowBinder_->Draw("CombatBgmVolume", "戦闘の BGM の大きさ");
+    flowBinder_->Draw("HelicopterSound", "救助のヘリの音");
+    flowBinder_->Draw("HelicopterLeadTime", "ヘリの音を終わりの何秒前から鳴らすか");
+    flowBinder_->Draw("HelicopterVolume", "ヘリの音の大きさ");
+    flowBinder_->Draw("HelicopterLoop", "ヘリの音を繰り返す");
 
     ImGui::SeparatorText("確認用");
     if (isClockRunning_)
@@ -458,4 +557,8 @@ void PlayScene::OnFinalize()
     engine_->GetPostEffectManager()->SetOverlayVignette(0.0f, { 0.0f, 0.0f, 0.0f });
     AudioPlayer::GetInstance().SetWorldVolume(1.0f);
     AudioPlayer::GetInstance().SetWorldMuffle(0.0f);
+
+    // 戦闘の BGM とヘリの音を次のシーンに残さない
+    StopCombatBgm();
+    StopHelicopterSound();
 }

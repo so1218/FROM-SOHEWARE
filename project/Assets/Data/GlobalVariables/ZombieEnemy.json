@@ -16,7 +16,7 @@
         "BurnSparkVolume": 0.3499999940395355,
         "BurnTickInterval": 0.5,
         "ChaseSpeed": 5.550000190734863,
-        "CloseNoticeRange": 4.0,
+        "CloseNoticeRange": 5.0,
         "ColliderOffset": [
             0.0,
             0.8999999761581421,
@@ -61,7 +61,7 @@
         ],
         "SearchTime": 6.0,
         "SeparationRadius": 6.050000190734863,
-        "SightRange": 40.0,
+        "SightRange": 60.0,
         "SparkSoundVolume": 0.3100000023841858,
         "SpawnEnable": true,
         "SpawnInterval": 5.0,

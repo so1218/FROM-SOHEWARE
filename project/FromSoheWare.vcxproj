@@ -173,6 +173,7 @@
     <ClCompile Include="Game\GameObject\UI\PauseMenuHint.cpp" />
     <ClCompile Include="Game\GameObject\UI\PauseMenu.cpp" />
     <ClCompile Include="Game\GameObject\UI\UISound.cpp" />
+    <ClCompile Include="Game\GameObject\UI\RadioSubtitle.cpp" />
     <ClCompile Include="Game\GameObject\UI\GameOverScreen.cpp" />
     <ClCompile Include="Game\GameObject\UI\ResultScreen.cpp" />
     <ClCompile Include="Game\GameObject\UI\ObjectiveBanner.cpp" />
@@ -181,6 +182,7 @@
     <ClCompile Include="Game\GameObject\Field\FireflyField.cpp" />
     <ClCompile Include="Game\GameObject\Field\DistantMountains.cpp" />
     <ClCompile Include="Game\Global\GameInput.cpp" />
+    <ClCompile Include="Game\Global\GameRecords.cpp" />
     <ClCompile Include="Game\Global\StageCatalog.cpp" />
     <ClCompile Include="Game\Camera\FollowCamera.cpp" />
     <ClCompile Include="Game\Camera\TitleCamera.cpp" />
@@ -228,6 +230,7 @@
     <ClInclude Include="Game\GameObject\UI\PauseMenuHint.h" />
     <ClInclude Include="Game\GameObject\UI\PauseMenu.h" />
     <ClInclude Include="Game\GameObject\UI\UISound.h" />
+    <ClInclude Include="Game\GameObject\UI\RadioSubtitle.h" />
     <ClInclude Include="Game\GameObject\UI\UITextStyle.h" />
     <ClInclude Include="Game\GameObject\UI\GameOverScreen.h" />
     <ClInclude Include="Game\GameObject\UI\ResultScreen.h" />
@@ -247,6 +250,7 @@
     <ClInclude Include="Game\GameObject\Field\WeatherEffectManager.h" />
     <ClInclude Include="Game\Global\GameDefine.h" />
     <ClInclude Include="Game\Global\GameRandom.h" />
+    <ClInclude Include="Game\Global\GameRecords.h" />
     <ClInclude Include="Game\Global\CollisionConfig.h" />
     <ClInclude Include="Game\Scene\TestScene\TestScene.h" />
     <ClInclude Include="Game\GameObject\Field\Ground.h" />

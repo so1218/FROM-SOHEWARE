@@ -5,6 +5,7 @@
 #include "AudioPlayer.h"
 #include "GameInput.h"
 #include "StageCatalog.h"
+#include "GameRecords.h"
 #include "UISound.h"
 
 using namespace FS;
@@ -30,6 +31,21 @@ TitleMenu::TitleMenu(Engine* engine)
     stageText_->SetCharacterSpacing(4.0f);
     UITextStyle::ApplyMaruShadow(*stageText_);
     stageText_->SetLayerOrder(31);
+
+    bestText_ = std::make_unique<Text>(engine_, "Title");
+    bestText_->SetScreenAnchor({ 0.5f, 0.5f });
+    bestText_->SetPivot({ 0.5f, 0.5f });
+    bestText_->SetPosition({ 0.0f, 150.0f });
+    bestText_->SetAlign(TextAlign::Center);
+    bestIcon_ = std::make_unique<Sprite>(engine_);
+    bestIcon_->SetTexture("pouch");
+    bestIcon_->SetScreenAnchor({ 0.5f, 0.5f });
+    bestIcon_->SetAnchorPoint({ 0.5f, 0.5f });
+    bestIcon_->SetLayerOrder(31);
+    bestText_->SetFontSize(22.0f);
+    bestText_->SetCharacterSpacing(2.0f);
+    UITextStyle::ApplyNumberShadow(*bestText_);
+    bestText_->SetLayerOrder(31);
 
     stageLabelText_ = std::make_unique<Text>(engine_, "Maru");
     stageLabelText_->SetText("STAGE");
@@ -79,6 +95,11 @@ void TitleMenu::Initialize()
     binder_->BindTextElement("SubtitleText", subtitleText_.get());
     binder_->BindTextElement("StartText", startText_.get());
     binder_->BindTextElement("StageText", stageText_.get(), false);
+    binder_->BindTextElement("BestText", bestText_.get(), false);
+    binder_->BindString("BestFormat", "{}", [this](const std::string& format) { bestFormat_ = format; });
+    binder_->Bind("BestIconSize", &bestIconSize_, 28.0f, 0.5f, 4.0f, 200.0f);
+    binder_->Bind("BestIconGap", &bestIconGap_, 8.0f, 0.5f, -50.0f, 100.0f);
+    binder_->Bind("BestIconOffsetY", &bestIconOffsetY_, 0.0f, 0.5f, -100.0f, 100.0f);
     binder_->BindTextElement("StageLabelText", stageLabelText_.get());
     binder_->Bind("StageLabelOpacity", &stageLabelOpacity_, 0.6f, 0.01f, 0.0f, 1.0f);
     binder_->Bind("StageArrowSize", &stageArrowSize_, 36.0f, 0.5f, 1.0f, 300.0f);
@@ -243,10 +264,48 @@ void TitleMenu::Draw()
         DrawStageSelect(textOpacity);
     }
 
+    DrawBestRecord(textOpacity);
+
     padHintIcon_->SetColor(Vector4(1.0f, 1.0f, 1.0f, textOpacity));
     padHintIcon_->Draw();
     padHintText_->SetOpacity(textOpacity);
     padHintText_->Draw();
+}
+
+void TitleMenu::DrawBestRecord(float opacity)
+{
+    // まだ記録がなければ数字の代わりに線を出す
+    const int bestMoney = GameRecords::GetBestMoney(StageCatalog::GetSelectedStage().settingsName);
+    const std::string value = bestMoney > 0 ? std::to_string(bestMoney) : "---";
+    std::string text = bestFormat_;
+    const size_t placeholder = text.find("{}");
+    if (placeholder != std::string::npos)
+    {
+        text.replace(placeholder, 2, value);
+    }
+    bestText_->SetText(text);
+
+    // 保存している文字の位置を、絵と文字のまとまりの中心として使う
+    const Vector2 basePosition = *bestText_->GetPositionPtr();
+    const float textWidth = bestText_->MeasureSize().x;
+    const float groupLeft = basePosition.x - (bestIconSize_ + bestIconGap_ + textWidth) * 0.5f;
+
+    bestIcon_->SetPosition({ groupLeft + bestIconSize_ * 0.5f, basePosition.y + bestIconOffsetY_ });
+    bestIcon_->SetSize({ bestIconSize_, bestIconSize_ });
+    Vector4 iconColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+    const std::any savedColor = GlobalVariables::GetInstance()->GetAnyValue({ "Player" }, "Money_IconColor");
+    if (const Vector4* color = std::any_cast<Vector4>(&savedColor))
+    {
+        iconColor = *color;
+    }
+    iconColor.w *= opacity;
+    bestIcon_->SetColor(iconColor);
+    bestIcon_->Draw();
+
+    bestText_->SetPosition({ groupLeft + bestIconSize_ + bestIconGap_ + textWidth * 0.5f, basePosition.y });
+    bestText_->SetOpacity(opacity);
+    bestText_->Draw();
+    bestText_->SetPosition(basePosition);
 }
 
 void TitleMenu::DrawStageSelect(float opacity)
@@ -301,6 +360,17 @@ void TitleMenu::DebugGui()
         binder_->Draw("StageArrowGap", "ステージ名から絵までの間");
         binder_->Draw("StageArrowBobDistance", "絵を揺らす幅");
         binder_->Draw("StageArrowBobSpeed", "絵を揺らす速さ");
+        ImGui::TreePop();
+    }
+    if (ImGui::TreeNode("最高記録"))
+    {
+        binder_->Draw("BestText_FontSize", "金額の大きさ");
+        binder_->Draw("BestText_Pos", "位置 (お金の絵と金額をまとめた中心)");
+        binder_->DrawTextElement("BestText", "金額のそのほかの設定");
+        binder_->Draw("BestFormat", "書式 ({} に金額が入る)");
+        binder_->Draw("BestIconSize", "お金の絵の大きさ");
+        binder_->Draw("BestIconGap", "お金の絵と金額の間");
+        binder_->Draw("BestIconOffsetY", "お金の絵の上下のずれ");
         ImGui::TreePop();
     }
     if (ImGui::TreeNode("パッド推奨"))

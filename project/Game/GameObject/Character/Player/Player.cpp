@@ -405,7 +405,7 @@ void Player::FireWeapon()
 
 void Player::TakeDamage(int damage)
 {
-    if (IsDead() || stateMachine_->IsCurrentState<PlayerStateDodge>())
+    if (!isDamageEnabled_ || IsDead() || stateMachine_->IsCurrentState<PlayerStateDodge>())
     {
         return;
     }
@@ -433,7 +433,7 @@ void Player::PlayDamagedSound()
 
 void Player::TakeBurnDamage(int damage)
 {
-    if (IsDead())
+    if (!isDamageEnabled_ || IsDead())
     {
         return;
     }
@@ -460,7 +460,7 @@ void Player::TakeBurnDamage(int damage)
 void Player::TakeHit(int damage, const Vector3& knockbackDirection)
 {
     // 囲まれて続けざまに殴られないよう、殴られた直後は効かない
-    if (IsDead() || invulnerableTimer_ > 0.0f || stateMachine_->IsCurrentState<PlayerStateDodge>())
+    if (!isDamageEnabled_ || IsDead() || invulnerableTimer_ > 0.0f || stateMachine_->IsCurrentState<PlayerStateDodge>())
     {
         return;
     }
@@ -579,6 +579,11 @@ void Player::ResetToSpawn()
         followCamera_->SetAiming(false);
     }
     stateMachine_->ChangeState<PlayerStateNormal>();
+}
+
+void Player::SetWorldSoundMuffled(bool isMuffled)
+{
+    concealment_->SetWorldSoundMuffled(isMuffled);
 }
 
 void Player::AddMoney(int amount)

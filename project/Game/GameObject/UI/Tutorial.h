@@ -5,6 +5,7 @@
 #include "Text.h"
 
 class Player;
+class EnemyManager;
 
 class Tutorial : public FS::GameObject
 {
@@ -16,13 +17,15 @@ public:
     void Draw() override;
     void DebugGui() override;
 
-    // まだ終えていない説明から始める
+    // 最初の説明から始める
     void Begin();
     void Stop() { StartStep(Step::Finished); }
     // 最後の説明まで終えたか
     bool IsCompleted() const { return !isEnabled_ || resumeStep_ == Step::Finished; }
     // 長押しで飛ばしたか
     bool IsSkipped() const { return isSkipped_; }
+    // 敵を燃やす説明で、燃えている敵がいるかを見る
+    void SetEnemyManager(const EnemyManager* enemyManager) { enemyManager_ = enemyManager; }
 
 private:
     // 説明の順番
@@ -39,6 +42,7 @@ private:
         Reload,
         SwitchAmmo,
         Ignite,      
+        BurnZombie,
         Complete,
         Finished,
     };
@@ -74,6 +78,7 @@ private:
 
     FS::Engine* engine_ = nullptr;
     Player* player_ = nullptr;
+    const EnemyManager* enemyManager_ = nullptr;
 
     std::unique_ptr<FS::PropertyBinder> binder_;
     std::unique_ptr<FS::Sprite> panel_;
@@ -112,6 +117,8 @@ private:
     float clearedWaitTime_ = 0.6f;  
     float requiredHoldTime_ = 1.0f; 
     float completeShowTime_ = 2.0f; 
+    // ゾンビに火がついてから次へ進むまで
+    float burnZombieWaitTime_ = 5.0f;
     float skipHoldTime_ = 1.0f;
     FS::Vector2 skipHintMargin_ = { 40.0f, 40.0f };
     float skipHintFontSize_ = 22.0f;

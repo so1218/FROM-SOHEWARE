@@ -1,5 +1,6 @@
 {
     "Tutorial": {
+        "BurnZombieWaitTime": 5.0,
         "ClearedWaitTime": 0.6000000238418579,
         "CompleteShowTime": 2.0,
         "FadeTime": 0.30000001192092896,
@@ -61,7 +62,8 @@
         "Step4_Message": "エイム",
         "Step5_Message": "エイム中に射撃",
         "Step6_Message": "リロード",
-        "Step7_Message": "準備完了 まもなく本番",
+        "Step7_Message": "準備完了だ！",
+        "StepBurnZombie_Message": "燃えている草にゾンビを誘い込むと、ゾンビも燃やせる",
         "StepCrawl_Message": "這う",
         "StepHide_Message": "草むらで這うか霧の中に入ると、敵に見つかりにくくなる",
         "StepIgnite_Message": "焼夷弾で草を撃つと燃やせる",

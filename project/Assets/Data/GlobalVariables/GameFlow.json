@@ -1,7 +1,13 @@
 {
     "GameFlow": {
         "CalmDuration": 120.0,
+        "CombatBgmSound": "combatBGM",
+        "CombatBgmVolume": 0.20000000298023224,
         "EndHour": 20.0,
+        "HelicopterLeadTime": 10.0,
+        "HelicopterLoop": false,
+        "HelicopterSound": "helicopter",
+        "HelicopterVolume": 0.949999988079071,
         "StartHour": 17.0,
         "StormDuration": 60.0,
         "StormHour": 19.0,

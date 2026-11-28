@@ -66,6 +66,7 @@ void PlayerWeapon::Initialize()
     binder_->Bind("Shot Boom Volume", &config_.shotBoomVolume, 0.8f, 0.01f, 0.0f, 2.0f);
     binder_->Bind("Shot Trail Volume", &config_.shotTrailVolume, 0.15f, 0.01f, 0.0f, 2.0f);
     binder_->Bind("Shot Incendiary Volume", &config_.shotIncendiaryVolume, 0.6f, 0.01f, 0.0f, 2.0f);
+    binder_->Bind("AmmoSwitchVolume", &config_.ammoSwitchVolume, 0.6f, 0.01f, 0.0f, 2.0f);
     binder_->Bind("BaseDamage", &config_.baseDamage, 1);
     binder_->Bind("MaxDistance", &config_.maxDistance, 5.0f);
     binder_->Bind("IncendiaryRadius", &config_.incendiaryRadius, 2.0f, 0.1f, 0.1f, 20.0f);
@@ -215,6 +216,12 @@ void PlayerWeapon::ToggleAmmoType()
     // 弾倉は弾の種類ごとに分かれているので、リロードの途中で切り替えたらやめる
     CancelReload();
     ammoType_ = (ammoType_ == AmmoType::Normal) ? AmmoType::Incendiary : AmmoType::Normal;
+
+    AudioPlayer& audioPlayer = AudioPlayer::GetInstance();
+    if (audioPlayer.HasSound("ammoSwitch"))
+    {
+        audioPlayer.Play("ammoSwitch", config_.ammoSwitchVolume);
+    }
 }
 
 bool PlayerWeapon::RaycastTerrain(const Terrain* terrain, const Vector3& start, const Vector3& direction, float maxDistance, Vector3& outPoint)
@@ -548,6 +555,7 @@ void PlayerWeapon::DebugGui()
         binder_->Draw("Shot Boom Volume", "低い音 (gunShotBoom) の大きさ");
         binder_->Draw("Shot Trail Volume", "遠くへ響く音 (gunShotTrail) の大きさ");
         binder_->Draw("Shot Incendiary Volume", "焼夷弾のときに重ねる燃える音 (gunShotIncendiary) の大きさ");
+        binder_->Draw("AmmoSwitchVolume", "弾を切り替えたときの音 (ammoSwitch) の大きさ");
 
         ImGui::Spacing();
         ImGui::TextDisabled("性能設定");

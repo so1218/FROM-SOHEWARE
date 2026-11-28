@@ -93,16 +93,32 @@ private:
     float tutorialEndTimer_ = 0.0f;
     bool hasShownObjective_ = false;
 
-    // チュートリアルを終えてから暗転し始めるまで (秒)
+    // チュートリアルを終えてから暗転し始めるまで
     float tutorialEndDelay_ = 2.0f;
 
     float startHour_ = 17.0f;
     float stormHour_ = 19.0f;
     float endHour_ = 20.0f;
-    // 晴れの間の長さ (秒)
+    // 晴れの間の長さ
     float calmDuration_ = 120.0f;
-    // 雷雨の間の長さ (秒)
+    // 雷雨の間の長さ 
     float stormDuration_ = 60.0f;
     // 雷雨の時刻ちょうどに降り終わっているよう、何秒前から天候を変え始めるか
     float stormLeadTime_ = 10.0f;
+
+    // 本番の間だけ、環境の BGM の上に戦闘の BGM を重ねる
+    void UpdateCombatBgm();
+    void StopCombatBgm();
+    int combatBgmHandle_ = -1;
+    std::string combatBgmSoundName_ = "combatBGM";
+    float combatBgmVolume_ = 0.2f;
+
+    // 終わりの時刻が近づくと、救助のヘリの音が遠くから大きくなってくる
+    void UpdateHelicopterSound();
+    void StopHelicopterSound();
+    int helicopterHandle_ = -1;
+    std::string helicopterSoundName_ = "helicopter";
+    float helicopterLeadTime_ = 10.0f;
+    float helicopterVolume_ = 0.8f;
+    bool isHelicopterLoop_ = true;
 };

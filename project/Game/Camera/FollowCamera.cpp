@@ -106,8 +106,9 @@ void FollowCamera::UpdateCamera(Camera* camera)
     // ---------------------------------------------------------
     // バインドされたデッドゾーンを使用
     const float currentDeadzone = isAiming_ ? aimDeadzone_ : normalDeadzone_;
-    // 倒れている間は回せない
-    const Vector2 lookAxis = isDeathFocus_ ? Vector2(0.0f, 0.0f) : GameInput::GetLookAxis(currentDeadzone);
+    // 倒れている間と、回せなくしている間は回せない
+    const bool canLook = isLookInputEnabled_ && !isDeathFocus_;
+    const Vector2 lookAxis = canLook ? GameInput::GetLookAxis(currentDeadzone) : Vector2(0.0f, 0.0f);
     const float rx = lookAxis.x;
     const float ry = lookAxis.y;
 

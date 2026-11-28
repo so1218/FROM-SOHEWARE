@@ -1,5 +1,55 @@
 {
     "TitleMenu": {
+        "BestFormat": "{}",
+        "BestIconGap": 7.0,
+        "BestIconOffsetY": -2.5,
+        "BestIconSize": 30.0,
+        "BestText_Align": 1,
+        "BestText_CharSpacing": 2.0,
+        "BestText_Color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "BestText_Direction": 0,
+        "BestText_Font": "Title",
+        "BestText_FontSize": 29.5,
+        "BestText_Layer": 31,
+        "BestText_LineSpacing": 1.0,
+        "BestText_OutlineColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+        ],
+        "BestText_OutlineWidth": 0.0,
+        "BestText_Pivot": [
+            0.5,
+            0.5
+        ],
+        "BestText_Pos": [
+            0.0,
+            150.0
+        ],
+        "BestText_ScreenAnchor": [
+            0.5,
+            0.5
+        ],
+        "BestText_ShadowColor": [
+            0.0,
+            0.0,
+            0.0,
+            0.6235294342041016
+        ],
+        "BestText_ShadowOffset": [
+            1.5,
+            1.5
+        ],
+        "BestText_ShadowSoftness": 1.7999999523162842,
+        "BestText_ShadowSpread": 0.5,
+        "BestText_Visible": true,
+        "BestText_WrapLength": 0.0,
         "BlinkMinOpacity": 0.3499999940395355,
         "BlinkSpeed": 2.5,
         "FadeInTime": 2.0,

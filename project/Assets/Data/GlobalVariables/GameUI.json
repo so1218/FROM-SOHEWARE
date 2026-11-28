@@ -48,7 +48,17 @@
         "MessageText_ShadowSpread": 1.7999999523162842,
         "MessageText_Visible": true,
         "MessageText_WrapLength": 0.0,
+        "MissionStartSound": "missionStart",
+        "MissionStartSoundVolume": 0.800000011920929,
         "ObjectiveFadeTime": 0.6000000238418579,
+        "ObjectiveIntroColor": [
+            1.0,
+            0.3499999940395355,
+            0.25,
+            1.0
+        ],
+        "ObjectiveIntroSlide": 60.0,
+        "ObjectiveIntroTime": 0.800000011920929,
         "ObjectiveSubText_Align": 0,
         "ObjectiveSubText_CharSpacing": 0.0,
         "ObjectiveSubText_Color": [

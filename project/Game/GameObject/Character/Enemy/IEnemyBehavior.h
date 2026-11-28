@@ -48,4 +48,6 @@ public:
 
     // 倒されずに消えるとき
     virtual void OnDespawn(Enemy* owner) {}
+    // 燃えているか
+    virtual bool IsBurning() const { return false; }
 };

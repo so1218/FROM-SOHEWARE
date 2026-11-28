@@ -42,6 +42,9 @@
     <ClCompile Include="Game\Global\GameInput.cpp">
       <Filter>Game\Global</Filter>
     </ClCompile>
+    <ClCompile Include="Game\Global\GameRecords.cpp">
+      <Filter>Game\Global</Filter>
+    </ClCompile>
     <ClCompile Include="Game\Global\StageCatalog.cpp">
       <Filter>Game\Global</Filter>
     </ClCompile>
@@ -151,6 +154,9 @@
       <Filter>Game\GameObject\UI</Filter>
     </ClCompile>
     <ClCompile Include="Game\GameObject\UI\UISound.cpp">
+      <Filter>Game\GameObject\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\GameObject\UI\RadioSubtitle.cpp">
       <Filter>Game\GameObject\UI</Filter>
     </ClCompile>
     <ClCompile Include="Game\GameObject\UI\PauseMenu.cpp">
@@ -306,6 +312,9 @@
     <ClInclude Include="Game\GameObject\UI\UISound.h">
       <Filter>Game\GameObject\UI</Filter>
     </ClInclude>
+    <ClInclude Include="Game\GameObject\UI\RadioSubtitle.h">
+      <Filter>Game\GameObject\UI</Filter>
+    </ClInclude>
     <ClInclude Include="Game\GameObject\UI\UITextStyle.h">
       <Filter>Game\GameObject\UI</Filter>
     </ClInclude>
@@ -340,6 +349,9 @@
       <Filter>Game\Global</Filter>
     </ClInclude>
     <ClInclude Include="Game\Global\GameRandom.h">
+      <Filter>Game\Global</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\Global\GameRecords.h">
       <Filter>Game\Global</Filter>
     </ClInclude>
     <ClInclude Include="Game\Scene\TestScene\TestScene.h">

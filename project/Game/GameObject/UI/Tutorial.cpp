@@ -2,6 +2,7 @@
 #include "Tutorial.h"
 #include "UITextStyle.h"
 #include "Player.h"
+#include "EnemyManager.h"
 #include "PlayerWeapon.h"
 #include "PlayerStateSprint.h"
 #include "PlayerStateDodge.h"
@@ -30,6 +31,7 @@ namespace
         { "Step6", "リロード", "keyboard_r", "xbox_button_x" },
         { "StepSwitchAmmo", "弾を切り替える", "keyboard_q", "xbox_button_y" },
         { "StepIgnite", "焼夷弾で草を撃つと燃やせる", "keyboard_j", "xbox_rt" },
+        { "StepBurnZombie", "燃えている草にゾンビを誘い込むと、ゾンビも燃やせる", "", "" },
         { "Step7", "準備完了だ！！", "", "" },
     };
 
@@ -87,6 +89,7 @@ void Tutorial::Initialize()
     binder_->Bind("ClearedWaitTime", &clearedWaitTime_, 0.6f, 0.01f, 0.0f, 5.0f);
     binder_->Bind("RequiredHoldTime", &requiredHoldTime_, 1.0f, 0.01f, 0.0f, 10.0f);
     binder_->Bind("CompleteShowTime", &completeShowTime_, 2.0f, 0.01f, 0.0f, 10.0f);
+    binder_->Bind("BurnZombieWaitTime", &burnZombieWaitTime_, 5.0f, 0.01f, 0.0f, 30.0f);
     binder_->Bind("SkipHoldTime", &skipHoldTime_, 1.0f, 0.01f, 0.1f, 5.0f);
     binder_->Bind("SkipHintMargin", &skipHintMargin_, { 40.0f, 40.0f }, 1.0f);
     binder_->Bind("SkipHintFontSize", &skipHintFontSize_, 22.0f, 0.5f, 4.0f, 200.0f);
@@ -139,16 +142,19 @@ void Tutorial::Initialize()
 
 void Tutorial::Begin()
 {
-    if (!isEnabled_ || resumeStep_ == Step::Finished)
+    if (!isEnabled_)
     {
+        resumeStep_ = Step::Finished;
         return;
     }
 
+    // 長押しで飛ばせるので、前に終えていても毎回最初から出す
+    resumeStep_ = Step::Move;
     isSkipped_ = false;
     skipHoldTimer_ = 0.0f;
     skipHintVisibility_ = 0.0f;
 
-    // 途中から始めるときも、ゲームが始まってから少し待って出す
+    // ゲームが始まってから少し待って出す
     currentStep_ = Step::Finished;
     StartStep(resumeStep_);
     phase_ = Phase::Delay;
@@ -373,6 +379,14 @@ bool Tutorial::IsStepCleared()
     case Step::Ignite:
         return player_->GetWeapon()->GetIgniteCount() > igniteCountAtStart_;
 
+    case Step::BurnZombie:
+        // 実際にゾンビに火がついたら、少し待ってから先へ進む
+        if (heldTime_ > 0.0f || (enemyManager_ && enemyManager_->HasBurningEnemy()))
+        {
+            heldTime_ += deltaTime;
+        }
+        return heldTime_ >= burnZombieWaitTime_;
+
     case Step::Complete:
         heldTime_ += deltaTime;
         return heldTime_ >= completeShowTime_;
@@ -576,6 +590,7 @@ void Tutorial::DebugGui()
     binder_->Draw("ClearedWaitTime", "できてから消えるまで (秒)");
     binder_->Draw("RequiredHoldTime", "移動・ダッシュ・エイムを続ける時間 (秒)");
     binder_->Draw("CompleteShowTime", "完了を出しておく時間 (秒)");
+    binder_->Draw("BurnZombieWaitTime", "ゾンビに火がついてから次へ進むまで (秒)");
     binder_->Draw("SkipHoldTime", "長押しで飛ばすまでの時間 (秒)");
 
     if (ImGui::CollapsingHeader("帯"))
@@ -618,7 +633,7 @@ void Tutorial::DebugGui()
     {
         for (size_t stepIndex = 0; stepIndex < stepContents_.size(); ++stepIndex)
         {
-            binder_->Draw(std::format("Step{}_Message", stepIndex), std::format("{} 番目", stepIndex + 1));
+            binder_->Draw(stepContents_[stepIndex].saveKey + "_Message", std::format("{} 番目", stepIndex + 1));
         }
     }
 

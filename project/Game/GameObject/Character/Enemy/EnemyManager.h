@@ -23,6 +23,8 @@ public:
 
     // 全部消して、遊び始めの状態に戻す
     void ResetEnemies();
+    // 燃えている敵がいるか
+    bool HasBurningEnemy() const;
 
 private:
     void SpawnEnemies();

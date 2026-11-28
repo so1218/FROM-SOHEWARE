@@ -23,6 +23,8 @@ public:
 
     // 倒れている間は操作を受け付けず、倒れた体を見下ろす位置へ寄る
     void SetDeathFocus(bool isDeathFocus);
+    // false の間は、視点の入力でカメラを回せない
+    void SetLookInputEnabled(bool isEnabled) { isLookInputEnabled_ = isEnabled; }
 
 private:
     float SmoothDamp(float current, float target, float& currentVelocity,
@@ -56,6 +58,7 @@ private:
 
     // 倒れたときのカメラ設定
     bool isDeathFocus_ = false;
+    bool isLookInputEnabled_ = true;
     float deathDistance_ = 30.0f;
     FS::Vector3 deathLookAtOffset_ = { 0.0f, 0.5f, 0.0f };
     float deathPitch_ = 0.6f;

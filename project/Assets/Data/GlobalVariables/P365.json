@@ -1,5 +1,6 @@
 {
     "P365": {
+        "AmmoSwitchVolume": 0.6000000238418579,
         "BaseDamage": 10,
         "Casing Direction": [
             0.30000001192092896,
@@ -340,7 +341,7 @@
             0.0,
             0.0
         ],
-        "MagazineSize": 10,
+        "MagazineSize": 6,
         "MaxDistance": 500.0,
         "Muzzle Flash Color": [
             1.0,
