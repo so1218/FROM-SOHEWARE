@@ -461,11 +461,6 @@ void EnvironmentProp::OnCollisionStay(FS::Collider* mine, FS::Collider* other)
     }
 }
 
-void EnvironmentProp::OnCollisionExit(FS::Collider* mine, FS::Collider* other)
-{
-
-}
-
 void EnvironmentProp::ReassignID(int newID)
 {
     id_ = newID;

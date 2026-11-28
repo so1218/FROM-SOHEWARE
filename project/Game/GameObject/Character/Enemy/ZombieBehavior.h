@@ -120,9 +120,6 @@ public:
     int ModifyDamage(Enemy* owner, int damage, const FS::Collider* hitCollider) override;
     void OnTakeDamage(Enemy* owner, int damage, const FS::Vector3& hitPoint, const FS::Vector3& hitNormal) override;
 
-    // ゾンビどうしを押し離すのに使う
-    bool IsDying() const { return state_ == State::Dying; }
-
 private:
     enum class State
     {

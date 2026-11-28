@@ -120,8 +120,6 @@ void PlayScene::OnInitialize()
 void PlayScene::OnUpdate()
 {
     UpdatePauseMenu();
-    // 本番の時計が動いている間は、左上に目的と制限時間を出しておく
-    gameUI_->SetObjectiveVisible(isClockRunning_);
 
     switch (phase_)
     {
@@ -146,29 +144,32 @@ void PlayScene::OnUpdate()
         }
         break;
 
+    case Phase::Tutorial:
+        if (player_->IsDead())
+        {
+            EnterGameOver();
+            break;
+        }
+
+        // 終えたら少し待って本番の準備に移る
+        if (tutorial_->IsCompleted())
+        {
+            // 長押しで飛ばしたときは、待たずにすぐ暗転する
+            tutorialEndTimer_ += TimeManager::GetInstance()->GetDeltaTime();
+            if (tutorialEndTimer_ >= tutorialEndDelay_ || tutorial_->IsSkipped())
+            {
+                BeginObjective(true);
+            }
+        }
+        break;
+
     case Phase::Playing:
         if (player_->IsDead())
         {
-            StopHelicopterSound();
-            gameOverScreen_->Begin();
-            followCamera_->SetDeathFocus(true);
-            ChangePhase(Phase::GameOver);
+            EnterGameOver();
             break;
         }
-        // チュートリアル中は時計を止めておき、終えたら少し待って本番の準備に移る
-        if (!isClockRunning_)
-        {
-            if (tutorial_->IsCompleted())
-            {
-                // 長押しで飛ばしたときは、待たずにすぐ暗転する
-                tutorialEndTimer_ += TimeManager::GetInstance()->GetDeltaTime();
-                if (tutorialEndTimer_ >= tutorialEndDelay_ || tutorial_->IsSkipped())
-                {
-                    BeginObjective(true);
-                }
-            }
-            break;
-        }
+
         UpdateGameClock();
         if (playTimer_ >= GetTotalPlayTime())
         {
@@ -195,7 +196,6 @@ void PlayScene::OnUpdate()
         }
         if (objectiveBanner_->TakeFinished())
         {
-            isClockRunning_ = true;
             ChangePhase(Phase::Playing);
             gameUI_->PlayMissionStart();
         }
@@ -218,10 +218,17 @@ void PlayScene::OnUpdate()
     }
 }
 
+void PlayScene::EnterGameOver()
+{
+    StopHelicopterSound();
+    gameOverScreen_->Begin();
+    followCamera_->SetDeathFocus(true);
+    ChangePhase(Phase::GameOver);
+}
+
 void PlayScene::ResetGameClock()
 {
     playTimer_ = 0.0f;
-    isClockRunning_ = false;
     isStormRequested_ = false;
     tutorialEndTimer_ = 0.0f;
     StopHelicopterSound();
@@ -248,7 +255,7 @@ void PlayScene::BeginPlayingOrObjective()
     }
     else
     {
-        ChangePhase(Phase::Playing);
+        ChangePhase(Phase::Tutorial);
     }
 }
 
@@ -296,7 +303,7 @@ void PlayScene::UpdateHelicopterSound()
 
 void PlayScene::UpdateCombatBgm()
 {
-    const bool shouldPlay = phase_ == Phase::Playing && isClockRunning_;
+    const bool shouldPlay = phase_ == Phase::Playing;
     if (!shouldPlay)
     {
         StopCombatBgm();
@@ -341,8 +348,8 @@ float PlayScene::CalculateHour(float elapsedTime) const
 void PlayScene::UpdatePauseMenu()
 {
     // 倒れている間は時間の流れを演出で変えているので、ポーズさせない
-    pauseMenu_->SetCanOpen(phase_ != Phase::CameraMove && phase_ != Phase::GameOver && phase_ != Phase::Result && phase_ != Phase::Intro);
-    pauseMenu_->SetCanReturnToTitle(phase_ == Phase::Playing);
+    pauseMenu_->SetCanOpen(phase_ == Phase::Title || IsPlayablePhase(phase_));
+    pauseMenu_->SetCanReturnToTitle(IsPlayablePhase(phase_));
 
     if (std::optional<PauseMenu::Item> item = pauseMenu_->TakeSelectedItem())
     {
@@ -384,7 +391,7 @@ void PlayScene::UpdatePauseMenu()
 
 void PlayScene::ChangePhase(Phase phase)
 {
-    // 目的を見せている間とリザルトの間は敵に襲わせない。デバッグで切り替えていた状態は戻す
+    // 目的を見せている間とリザルトの間は敵に襲わせない
     if (IsEnemyFreePhase(phase) && !IsEnemyFreePhase(phase_))
     {
         wasIgnoredByEnemies_ = player_->IsIgnoredByEnemies();
@@ -401,15 +408,16 @@ void PlayScene::ChangePhase(Phase phase)
 
 void PlayScene::ApplyPhaseSettings()
 {
-    const bool isPlaying = phase_ == Phase::Playing;
+    const bool isPlaying = IsPlayablePhase(phase_);
 
     gameUI_->SetGameplayVisible(isPlaying);
     player_->SetControllable(isPlaying && !isPaused_);
     // ポーズ中・倒れたあと・リザルトの間は、周りの音を隠れているときと同じに小さくこもらせる
     player_->SetWorldSoundMuffled(isPaused_ || phase_ == Phase::GameOver || phase_ == Phase::Result);
-    // チュートリアル中 (時計がまだ動いていない間) はダメージを受けない
-    player_->SetDamageEnabled(!(isPlaying && !isClockRunning_));
-    // 戦闘の BGM は本番の間だけ。チュートリアル中 (時計がまだ動いていない間) やリザルトでは鳴らさない
+    player_->SetDamageEnabled(phase_ != Phase::Tutorial);
+    // 本番の間だけ、左上に目的と制限時間を出す
+    gameUI_->SetObjectiveVisible(phase_ == Phase::Playing);
+    // 戦闘の BGM は本番の間だけ
     UpdateCombatBgm();
     // 目的の無線を聞いている間は、了解を押すまでカメラも回せない
     followCamera_->SetLookInputEnabled(phase_ != Phase::Intro);
@@ -488,12 +496,12 @@ void PlayScene::OnDebugGui()
     titleCamera_->DrawProperties();
 
     ImGui::SeparatorText("確認用");
-    if (phase_ != Phase::Playing && ImGui::Button("タイトルを飛ばす"))
+    if (!IsPlayablePhase(phase_) && ImGui::Button("タイトルを飛ばす"))
     {
         titleMenu_->Skip();
         StartPlaying();
     }
-    if (phase_ == Phase::Playing && ImGui::Button("タイトルに戻る"))
+    if (IsPlayablePhase(phase_) && ImGui::Button("タイトルに戻る"))
     {
         ReturnToTitle();
     }
@@ -515,15 +523,15 @@ void PlayScene::OnDebugGui()
     flowBinder_->Draw("HelicopterLoop", "ヘリの音を繰り返す");
 
     ImGui::SeparatorText("確認用");
-    if (isClockRunning_)
+    if (phase_ == Phase::Playing)
     {
         ImGui::Text("経過 %.1f / %.1f 秒  (%.2f 時)", playTimer_, GetTotalPlayTime(), CalculateHour(playTimer_));
     }
     else
     {
-        ImGui::TextUnformatted("時計は止まっています (タイトル・チュートリアル中・目的の表示中)");
+        ImGui::TextUnformatted("時計は止まっています (本番の間だけ進む)");
     }
-    if (phase_ == Phase::Playing && isClockRunning_)
+    if (phase_ == Phase::Playing)
     {
         if (ImGui::Button("雷雨の直前へ"))
         {

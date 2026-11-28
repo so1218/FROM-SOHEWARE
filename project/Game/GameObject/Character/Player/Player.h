@@ -106,7 +106,6 @@ public:
 
     // 所持金
     void AddMoney(int amount);
-    bool TrySpend(int amount);  
     int GetMoney() const { return money_; }
     void UpdateAimRotation(); 
 
@@ -153,7 +152,6 @@ public:
 
     // ダッシュ・回避
     PlayerStamina* GetStamina() const { return stamina_.get(); }
-    PlayerHealth* GetHealth() const { return health_.get(); }
     FS::Vector3 GetColliderCenter() { return GetTransform().translation_ + GetCurrentColliderOffset(); }
     FS::Vector3 GetColliderHalfSize() const { return GetCurrentColliderSize() * 0.5f; }
     // 這っている間は低くなる

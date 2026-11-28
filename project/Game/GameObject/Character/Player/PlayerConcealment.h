@@ -22,9 +22,6 @@ public:
     void SetWorldSoundMuffled(bool isMuffled) { isWorldSoundMuffled_ = isMuffled; }
 
     bool IsHidden() const { return isHidden_; }
-    // 焼けていない草の中にいるか
-    bool IsInGrass() const { return isInGrass_; }
-    bool IsInFogVolume() const { return isInFogVolume_; }
 
 private:
     bool IsInsideFogVolume(const FS::Vector3& position) const;

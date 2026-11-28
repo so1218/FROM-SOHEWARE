@@ -94,14 +94,12 @@ private:
 
     float rotationAccelerationTime_ = 0.1f;   
     float rotationDecelerationTime_ = 0.04f;   
-    float zoomSmoothTime_ = 0.2f;
     float positionLerpSpeed_ = 8.0f;
 
     FS::Vector3 smoothedTargetPos_;
     FS::Vector3 posVelocity_;
 
     FS::Quaternion currentCameraRot_;
-    FS::Vector3 lookAtOffset_ = { 0.0f, 1.5f, 0.0f };
 
     float minPitch_ = -0.8f;
     float maxPitch_ = 1.4f;

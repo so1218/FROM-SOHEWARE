@@ -37,15 +37,9 @@ private:
 
     // 雷雨用の制御タイマー
     float thunderIntervalTimer_ = 0.0f; 
-    float flashTimer_ = 0.0f;           
-    bool isFlashing_ = false;         
 
     float thunderMinInterval_ = 3.0f;    
     float thunderMaxInterval_ = 8.0f;  
-    FS::Vector3 flashColor_ = { 0.9f, 0.95f, 1.0f }; 
-    float flashDuration_ = 0.4f;      
-    float maxFlashIntensity_ = 10.0f;  
-
 
     std::unique_ptr<FS::LightningSystem> lightningSystem_;
 

@@ -39,7 +39,6 @@ public:
 
     // アクセサ
     FS::Engine* GetEngine() const { return engine_; }
-    FS::PropertyBinder* GetBinder() const { return binder_.get(); }
     FS::WorldTransform& GetTransform() { return model_->GetTransform(); }
     FS::Model* GetModel() const { return model_.get(); }
     EnemyType GetType() const { return type_; }

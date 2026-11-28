@@ -32,12 +32,16 @@ private:
     enum class Phase
     {
         Title,
+        // タイトルからプレイヤーの後ろへカメラが移る間
         CameraMove,
+        // 時計を止めて操作を覚える間。ダメージは受けない
+        Tutorial,
+        // 本番の前に目的を見せている間
+        Intro,
+        // 時計が進む本番
         Playing,
         GameOver,
         Result,
-        // 本番の前に目的を見せている間
-        Intro,
     };
 
     void EnterTitle();
@@ -57,8 +61,12 @@ private:
     void BeginObjective(bool withFade);
     // チュートリアルを終えていれば目的を見せ、まだならそのまま遊ばせる
     void BeginPlayingOrObjective();
+    // 倒れたらゲームオーバーにする
+    void EnterGameOver();
     // 敵に襲わせないフェーズか
     static bool IsEnemyFreePhase(Phase phase) { return phase == Phase::Result || phase == Phase::Intro; }
+    // プレイヤーを動かせるフェーズか
+    static bool IsPlayablePhase(Phase phase) { return phase == Phase::Tutorial || phase == Phase::Playing; }
     // 時計を進め、途中で雷雨にする
     void UpdateGameClock();
     // 経過時間から、いまの時刻を求める
@@ -87,7 +95,6 @@ private:
 
     // ゲームの時計
     float playTimer_ = 0.0f;
-    bool isClockRunning_ = false;
     bool isStormRequested_ = false;
     bool wasIgnoredByEnemies_ = false;
     float tutorialEndTimer_ = 0.0f;

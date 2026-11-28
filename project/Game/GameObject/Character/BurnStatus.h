@@ -27,7 +27,6 @@ public:
     void Extinguish();
 
     bool IsBurning() const { return burnTimer_ > 0.0f; }
-    bool IsInFire() const { return isInFire_; }
     // 燃えている強さ
     float GetStrength() const;
 

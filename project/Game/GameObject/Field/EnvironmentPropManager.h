@@ -56,6 +56,5 @@ private:
     std::unique_ptr<FS::PropertyBinder> binder_;
 
     int propCount_ = 0;
-    int currentTemplateIndex_ = 0;
     int selectedPropIndex_ = -1;
 };

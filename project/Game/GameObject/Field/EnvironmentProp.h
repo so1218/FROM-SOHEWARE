@@ -32,7 +32,6 @@ public:
 
     void OnCollisionEnter(FS::Collider* mine, FS::Collider* other) override;
     void OnCollisionStay(FS::Collider* mine, FS::Collider* other) override;
-    void OnCollisionExit(FS::Collider* mine, FS::Collider* other) override;
 
     // 設定に合わせて、当たり判定とパーティクルを作ったり消したりする
     void ApplySettings();
@@ -62,7 +61,6 @@ public:
 
     void SetMasterModel(FS::Model* master) { masterModel_ = master; }
     void SetPrefabName(const std::string& name) { prefabName_ = name; }
-    const std::string& GetPrefabName() const { return prefabName_; }
 
 private:
     PropBehavior GetBehavior() const { return static_cast<PropBehavior>(propBehavior_); }

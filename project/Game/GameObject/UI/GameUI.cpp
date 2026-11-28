@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "GameUI.h"
-#include "UITextStyle.h"
 #include "ImGuiManager.h"
 #include "EnvironmentManager.h"
 #include "TimeManager.h"
@@ -12,30 +11,14 @@ GameUI::GameUI(Engine* engine) : engine_(engine)
 {
     binder_ = std::make_unique<FS::PropertyBinder>(engine_, "GameUI");
 
+    // 文字の配置と見た目は、Initialize で登録して保存している値を使う
     timeText_ = std::make_unique<Text>(engine_, "Title");
-    timeText_->SetAnchor(UIAnchor::TopRight);
-    timeText_->SetPosition({ -20.0f, 20.0f });
-    timeText_->SetFontSize(28.0f);
-
     messageText_ = std::make_unique<Text>(engine_, "Maru");
-    UITextStyle::ApplyMaruShadow(*messageText_);
 
     // 左上に、目的とその下に制限時間の線を出す
     objectiveTitleText_ = std::make_unique<Text>(engine_, "Maru");
     objectiveSubText_ = std::make_unique<Text>(engine_, "Maru");
     objectiveSubText_->SetText("敵を倒して金を手に入れろ");
-    for (Text* text : { objectiveTitleText_.get(), objectiveSubText_.get() })
-    {
-        text->SetScreenAnchor({ 0.03f, 0.17f });
-        text->SetPivot({ 0.0f, 0.5f });
-        text->SetAlign(TextAlign::Left);
-        UITextStyle::ApplyMaruShadow(*text);
-    }
-    objectiveTitleText_->SetFontSize(40.0f);
-    objectiveTitleText_->SetColor({ 0.95f, 0.9f, 0.8f, 1.0f });
-    objectiveSubText_->SetPosition({ 0.0f, 36.0f });
-    objectiveSubText_->SetFontSize(22.0f);
-    objectiveSubText_->SetColor({ 1.0f, 1.0f, 1.0f, 0.85f });
 
     timeBarBack_ = std::make_unique<Sprite>(engine_);
     timeBarStorm_ = std::make_unique<Sprite>(engine_);

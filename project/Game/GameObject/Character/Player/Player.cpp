@@ -592,16 +592,6 @@ void Player::AddMoney(int amount)
     moneyDisplay_->OnGain(amount);
 }
 
-bool Player::TrySpend(int amount)
-{
-    if (money_ < amount)
-    {
-        return false;
-    }
-    money_ -= amount;
-    return true;
-}
-
 void Player::PlaceAtSpawn()
 {
     const float yaw = spawnRotationY_ * Math::PI / 180.0f;

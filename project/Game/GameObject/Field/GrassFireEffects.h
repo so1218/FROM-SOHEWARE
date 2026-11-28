@@ -31,7 +31,6 @@ private:
     void UpdateFlamesAndSmoke(const std::vector<float>& readback, uint32_t resolution, float deltaTime);
     // マスの中のランダムな地面の位置
     FS::Vector3 CalculateRandomPositionInCell(uint32_t cellIndex, uint32_t resolution) const;
-    void StopEmbers();
     // 燃えている塊の近くで、燃える音
     void UpdateFireSounds(float deltaTime);
     void StopFireSounds();
